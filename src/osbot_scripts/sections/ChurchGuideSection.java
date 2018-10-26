@@ -1,6 +1,7 @@
 package osbot_scripts.sections;
 
 import org.osbot.rs07.api.map.Area;
+import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.ui.Tab;
 
 import osbot_scripts.TutorialScript;
@@ -30,6 +31,7 @@ public class ChurchGuideSection extends TutorialSection {
 			break;
 
 		case 560:
+			talkAndContinueWithInstructor();
 			getTabs().open(Tab.PRAYER);
 			break;
 
@@ -38,6 +40,7 @@ public class ChurchGuideSection extends TutorialSection {
 			break;
 
 		case 580:
+			talkAndContinueWithInstructor();
 			getTabs().open(Tab.FRIENDS);
 			break;
 
@@ -46,8 +49,10 @@ public class ChurchGuideSection extends TutorialSection {
 			break;
 
 		case 610:
-			clickObject(9723, "Open");
-
+			clickObject(9723, "Open", new Position(3122, 3103, 0));
+			break;
+			
+		case 620:
 			TutorialScript.mainState = getNextMainState();
 			break;
 		}

@@ -37,6 +37,7 @@ public class CombatGuideSection extends TutorialSection {
 			break;
 
 		case 390:
+			talkAndContinueWithInstructor();
 			if (getTabs().open(Tab.EQUIPMENT)) {
 			}
 			break;
@@ -90,7 +91,7 @@ public class CombatGuideSection extends TutorialSection {
 		case 450:
 			walkInto();
 			if (attackRat()) {
-				Sleep.sleepUntil(!myPlayer().isUnderAttack() && myPlayer().isAttackable(), 10000, 3000);
+				Sleep.sleepUntil(() -> !myPlayer().isUnderAttack() && myPlayer().isAttackable() && myPlayer().getAnimation() == -1, 25000, 8000);
 			}
 			break;
 
@@ -112,7 +113,7 @@ public class CombatGuideSection extends TutorialSection {
 					wieldItem("Bronze arrow");
 				}
 				if (attackRat()) {
-					Sleep.sleepUntil(!myPlayer().isUnderAttack() && myPlayer().isAttackable(), 25000, 8000);
+					Sleep.sleepUntil(() -> !myPlayer().isUnderAttack() && myPlayer().isAttackable() && myPlayer().getAnimation() == -1, 25000, 8000);
 				}
 			}
 			break;
@@ -158,7 +159,7 @@ public class CombatGuideSection extends TutorialSection {
 		NPC rat = getNpcs().closest(npc -> npc.getName().equalsIgnoreCase("Giant rat") && npc.isAttackable());
 		if (rat != null) {
 			if (rat.interact()) {
-				Sleep.sleepUntil(myPlayer().getInteracting() != null, 8000, 3000);
+				Sleep.sleepUntil(() -> myPlayer().getInteracting() != null, 8000, 3000);
 				return true;
 			}
 		}
@@ -171,7 +172,7 @@ public class CombatGuideSection extends TutorialSection {
 	 */
 	private void wieldItem(String name) {
 		if (getInventory().getItem(name).interact("Wield")) {
-			Sleep.sleepUntil(getEquipment().contains(name), 1500);
+			Sleep.sleepUntil(() -> getEquipment().contains(name), 1500);
 		}
 	}
 

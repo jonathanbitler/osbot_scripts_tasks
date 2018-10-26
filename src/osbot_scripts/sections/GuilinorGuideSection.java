@@ -40,7 +40,7 @@ public class GuilinorGuideSection extends TutorialSection {
 
 		case 10:
 			clickObject(9398, "Open", new Position(3097, 3107, 0));
-			Sleep.sleepUntil(!myPlayer().isMoving(), 3000, 1000);
+			Sleep.sleepUntil(() -> !myPlayer().isMoving(), 3000, 1000);
 			break;
 
 		case 20:

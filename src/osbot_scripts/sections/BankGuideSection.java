@@ -43,7 +43,7 @@ public class BankGuideSection extends TutorialSection {
 			} else if (getDialogues().isPendingOption()) {
 				getDialogues().selectOption("Yes.");
 			} else if (getObjects().closest("Bank booth").interact("Use")) {
-				Sleep.sleepUntil(pendingContinue(), 5000, 500);
+				Sleep.sleepUntil(() -> pendingContinue(), 5000, 500);
 			}
 			break;
 
@@ -73,6 +73,7 @@ public class BankGuideSection extends TutorialSection {
 
 		case 531:
 			isInInstrucorRoom();
+			talkAndContinueWithInstructor();
 			if (getTabs().open(Tab.IGNORES)) {
 			}
 			break;

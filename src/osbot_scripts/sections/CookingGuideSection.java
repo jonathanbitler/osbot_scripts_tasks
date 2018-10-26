@@ -25,7 +25,7 @@ public class CookingGuideSection extends TutorialSection {
 
 		if (doorObject != null) {
 			if (doorObject.interact("Open")) {
-				Sleep.sleepUntil(new Area(
+				Sleep.sleepUntil(() -> new Area(
 						new int[][] { { 3078, 3089 }, { 3075, 3089 }, { 3075, 3086 }, { 3079, 3086 }, { 3079, 3089 } })
 								.contains(myPlayer().getPosition()),
 						10000, 5000);
@@ -41,7 +41,7 @@ public class CookingGuideSection extends TutorialSection {
 			if (bucketOfWater != null) {
 				bucketOfWater.interact("Use");
 				flour.interact("Use");
-				Sleep.sleepUntil(getInventory().contains(2307), 2000, 1000);
+				Sleep.sleepUntil(() -> getInventory().contains(2307), 2000, 1000);
 			}
 		}
 	}
@@ -50,7 +50,7 @@ public class CookingGuideSection extends TutorialSection {
 		RS2Object fireRange = getObjects().closest(9736);
 		if (fireRange != null) {
 			fireRange.interact("Cook");
-			Sleep.sleepUntil(getInventory().contains(2309), 4000, 1000);
+			Sleep.sleepUntil(() -> getInventory().contains(2309), 4000, 1000);
 		}
 	}
 
@@ -59,11 +59,11 @@ public class CookingGuideSection extends TutorialSection {
 			RS2Widget emoteWidget = getWidgets().get(216, 1, new Random().nextInt(20));
 			if (emoteWidget != null) {
 				emoteWidget.interact();
-				Sleep.sleepUntil(!myPlayer().isAnimating(), 3000, 1000);
+				Sleep.sleepUntil(() -> !myPlayer().isAnimating(), 3000, 1000);
 				if (getTabs().open(Tab.SETTINGS)) {
 					if (!getSettings().isRunning()) {
 						getSettings().setRunning(true);
-						Sleep.sleepUntil(getSettings().isRunning(), 3000, 1000);
+						Sleep.sleepUntil(() -> getSettings().isRunning(), 3000, 1000);
 					}
 				}
 			}
@@ -72,9 +72,9 @@ public class CookingGuideSection extends TutorialSection {
 
 	private void walkToDungeon() {
 		clickObject(9716, "Open", new Position(3085, 3127, 0));
-		Sleep.sleepUntil(myPlayer().getArea(5).contains(new Position(3085, 3127, 0)), 10000, 3000);
+		Sleep.sleepUntil(() -> myPlayer().getArea(5).contains(new Position(3085, 3127, 0)), 10000, 3000);
 
-		Sleep.sleepUntil(new Area(new int[][] { { 3082, 3126 }, { 3090, 3126 }, { 3090, 3119 }, { 3080, 3119 },
+		Sleep.sleepUntil(() -> new Area(new int[][] { { 3082, 3126 }, { 3090, 3126 }, { 3090, 3119 }, { 3080, 3119 },
 				{ 3080, 3123 }, { 3080, 3124 } }).contains(myPlayer().getPosition()), 10000, 3000);
 	}
 
@@ -100,8 +100,9 @@ public class CookingGuideSection extends TutorialSection {
 			break;
 
 		case 170:
-			if (getTabs().open(Tab.MUSIC)) {
-			}
+			clickObject(9710, "Open", new Position(3073, 3090, 0));
+//			if (getTabs().open(Tab.MUSIC)) {
+//			}
 			break;
 
 		case 180:
@@ -118,6 +119,8 @@ public class CookingGuideSection extends TutorialSection {
 			// No progress
 			if (!getSettings().isRunning()) {
 				getSettings().setRunning(true);
+			} else {
+				getSettings().setRunning(false);
 			}
 			break;
 

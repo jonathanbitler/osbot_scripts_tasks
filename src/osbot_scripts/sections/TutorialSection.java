@@ -36,7 +36,7 @@ public abstract class TutorialSection extends MethodProvider {
 		RS2Object rs2Object = getObjects().closest(objectId);
 		if (rs2Object != null && rs2Object.getArea(10).contains(myPlayer().getPosition())) {
 			rs2Object.interact(interactName);
-			Sleep.sleepUntil(myPlayer().getArea(2).contains(rs2Object.getPosition()), 10000, 2000);
+			Sleep.sleepUntil(() -> myPlayer().getArea(2).contains(rs2Object.getPosition()), 10000, 2000);
 		} else if (rs2Object != null) {
 			getWalking().walk(rs2Object.getPosition());
 		}
@@ -62,7 +62,7 @@ public abstract class TutorialSection extends MethodProvider {
 		RS2Object rs2Object = getObjects().closest(objectId);
 		if (rs2Object != null) {
 			rs2Object.interact(interactName);
-			Sleep.sleepUntil(myPlayer().getArea(2).contains(rs2Object.getPosition()), 5000, 2000);
+			Sleep.sleepUntil(() -> myPlayer().getArea(2).contains(rs2Object.getPosition()), 5000, 2000);
 		}
 	}
 	
@@ -133,10 +133,10 @@ public abstract class TutorialSection extends MethodProvider {
 		}
 		if (continueWidget.getMessage().contains("Click here to continue")) {
 			getKeyboard().pressKey(KeyEvent.VK_SPACE);
-			Sleep.sleepUntil(!continueWidget.isVisible(), 1000, 500);
+			Sleep.sleepUntil(() -> !continueWidget.isVisible(), 1000, 500);
 			return true;
 		} else if (continueWidget.interact()) {
-			Sleep.sleepUntil(!continueWidget.isVisible(), 1000, 500);
+			Sleep.sleepUntil(() -> !continueWidget.isVisible(), 1000, 500);
 			return true;
 		}
 		return false;
@@ -159,7 +159,7 @@ public abstract class TutorialSection extends MethodProvider {
 	protected void talkToConstructor() {
 		if (getInstructor() != null) {
 			getInstructor().interact("Talk-to");
-			Sleep.sleepUntil(pendingContinue(), 5000, 3000);
+			Sleep.sleepUntil(() -> pendingContinue(), 5000, 3000);
 		}
 	}
 	

@@ -7,9 +7,15 @@ import org.osbot.rs07.event.Event;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 
+import com.mysql.cj.protocol.Protocol.GetProfilerEventHandlerInstanceFunction;
+
+import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.DisableAudioEvent;
+import osbot_scripts.events.LoginEvent;
 import osbot_scripts.events.ToggleRoofsHiddenEvent;
 import osbot_scripts.events.ToggleShiftDropEvent;
+import osbot_scripts.framework.AccountStage;
+import osbot_scripts.login.LoginHandler;
 import osbot_scripts.sections.BankGuideSection;
 import osbot_scripts.sections.CharacterCreationSection;
 import osbot_scripts.sections.ChurchGuideSection;
@@ -24,7 +30,7 @@ import osbot_scripts.sections.WizardGuideSection;
 import osbot_scripts.sections.decide.CheckInWhatArea;
 import osbot_scripts.sections.total.progress.MainState;
 
-@ScriptManifest(author = "pim97@github & dormic@osbot", info = "test", logo = "", name = "test", version = 0)
+@ScriptManifest(author = "pim97@github & dormic@osbot", info = "completes the tutorial island for you", logo = "", name = "TUT_ISLAND", version = 0)
 public class TutorialScript extends Script {
 
 	/**
@@ -86,21 +92,30 @@ public class TutorialScript extends Script {
 	 * 
 	 */
 	private final TutorialSection wizardGuideSection = new WizardGuideSection();
-
+	
 	/**
 	 * Loops
 	 */
 	@Override
 	public int onLoop() throws InterruptedException {
 
-		if (mainState != MainState.CREATE_CHARACTER_DESIGN && mainState != MainState.TALK_TO_GIELINOR_GUIDE_ONE) {
-			executeAllEvents();
-		}
-
-		if (new Area(new int[][] { { 3230, 3228 }, { 3242, 3228 }, { 3242, 3214 }, { 3230, 3214 } })
+		if (!new Area(3030, 3148, 3170, 3040)
 				.contains(myPlayer().getPosition())) {
 			mainState = MainState.IN_LUMBRIDGE;
 			log("Succesfully completed!");
+			String username = null;
+			if (getParameters() != null) {
+				String[] params = getParameters().split("_"); // split the _ character!!!!!!
+				username = params[0];
+			}
+			DatabaseUtilities.updateStageProgress(this, AccountStage.QUEST_COOK_ASSISTANT.name(), 0, username);
+			stop();
+			return -1;
+		}
+
+		
+		if (mainState != MainState.CREATE_CHARACTER_DESIGN && mainState != MainState.TALK_TO_GIELINOR_GUIDE_ONE) {
+			executeAllEvents();
 		}
 
 		log(mainState);
@@ -126,17 +141,18 @@ public class TutorialScript extends Script {
 		} else if (mainState == MainState.WIZARD_GUIDE_SECTION) {
 			wizardGuideSection.onLoop();
 		} else if (mainState == MainState.IN_LUMBRIDGE) {
-			stop();
 			while (getClient().isLoggedIn()) {
 				getLogoutTab().logOut();
-				
+
 				Thread.sleep(5000);
 				log("Trying to logout...");
 			}
+			stop();
 		}
 
 		return random(600, 1200);
 	}
+
 
 	@Override
 	public void onStart() throws InterruptedException {

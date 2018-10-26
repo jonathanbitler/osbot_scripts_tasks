@@ -43,27 +43,32 @@ public class SurvivalExpertSection extends TutorialSection {
 			break;
 		case 30:
 			talkAndContinueWithInstructor();
-			Sleep.sleepUntil(getTabs().open(Tab.INVENTORY), 10000, 1000);
+			Sleep.sleepUntil(() -> getTabs().open(Tab.INVENTORY), 10000, 1000);
 			break;
 		case 40:
-			chopTree();
+			fish();
+//			chopTree();
 			break;
 		case 50:
-			lightFire();
+			Sleep.sleepUntil(() -> getTabs().open(Tab.SKILLS), 10000, 1000);
+//			lightFire();
 			break;
 		case 60:
-			Sleep.sleepUntil(getTabs().open(Tab.SKILLS), 10000, 1000);
-			break;
-		case 70:
+//			Sleep.sleepUntil(() -> getTabs().open(Tab.SKILLS), 10000, 1000);
 			talkAndContinueWithInstructor();
 			break;
+		case 70:
+//			talkAndContinueWithInstructor();
+			chopTree();
+			break;
 		case 80:
-			fish();
+//			fish();
+			lightFire();
 			break;
 		case 90:
 		case 100:
 		case 110:
-			Sleep.sleepUntil(getTabs().open(Tab.INVENTORY), 1000, 1000);
+			Sleep.sleepUntil(() -> getTabs().open(Tab.INVENTORY), 1000, 1000);
 
 			if (!getInventory().contains(RAW_SHRIMP)) {
 				fish();
@@ -105,7 +110,7 @@ public class SurvivalExpertSection extends TutorialSection {
 		log("fishspot" + fishingSpot);
 		if (fishingSpot != null) {
 			if (fishingSpot.interact("Net")) {
-				Sleep.sleepUntil(!myPlayer().isMoving() && myPlayer().getAnimation() == -1, 10000, 5000);
+				Sleep.sleepUntil(() -> !myPlayer().isMoving() && myPlayer().getAnimation() == -1, 10000, 5000);
 			}
 		}
 	}
@@ -118,7 +123,7 @@ public class SurvivalExpertSection extends TutorialSection {
 		if (tree != null) {
 			tree.interact("Chop down");
 
-			Sleep.sleepUntil(myPlayer().getAnimation() == -1, 10000, 1000);
+			Sleep.sleepUntil(() -> myPlayer().getAnimation() == -1, 10000, 2000);
 		}
 	}
 
@@ -136,7 +141,7 @@ public class SurvivalExpertSection extends TutorialSection {
 			getInventory().getItem("Tinderbox").interact("Use");
 		} else if (getInventory().getItem("Logs").interact()) {
 			Position playerPos = myPosition();
-			Sleep.sleepUntil(!myPosition().equals(playerPos), 10_000, 500);
+			Sleep.sleepUntil(() -> !myPosition().equals(playerPos), 10_000, 500);
 		}
 	}
 
@@ -185,7 +190,7 @@ public class SurvivalExpertSection extends TutorialSection {
 				if (shrimp.interact("Use")) {
 					if (fire.interact("Use")) {
 
-						Sleep.sleepUntil(myPlayer().getAnimation() == -1, 10000, 5000);
+						Sleep.sleepUntil(() -> myPlayer().getAnimation() == -1, 10000, 5000);
 					}
 				}
 			}

@@ -23,6 +23,9 @@ public class QuestGuideSection extends TutorialSection {
 			break;
 			
 		case 230:
+			if (pendingContinue()) {
+				selectContinue();
+			}
 			getTabs().open(Tab.QUEST);
 			break;
 			

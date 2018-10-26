@@ -34,10 +34,12 @@ public class MiningGuideSection extends TutorialSection {
 			
 		case 270:
 			clickObject(10080, "Prospect", new Position(3076, 9502, 0));
+			Thread.sleep(2000);
 			break;
 			
 		case 280:
 			clickObject(10079, "Prospect", new Position(3084, 9502, 0));
+			Thread.sleep(2000);
 			break;
 			
 		case 290:
@@ -77,13 +79,14 @@ public class MiningGuideSection extends TutorialSection {
 			
 		case 340:
 			clickObject(2097, "Smith", new Position(3082, 9499, 0));
+			Sleep.sleepUntil(() -> myPlayer().getAnimation() == -1, 5000, 1000);
 			break;
 			
 		case 350:
 			RS2Widget daggerWidget = getWidgets().get(312, 2, 2);
 			if (daggerWidget != null) {
 				if (daggerWidget.interact()) {
-					Sleep.sleepUntil(getInventory().contains(1205), 5000, 1000);
+					Sleep.sleepUntil(() -> getInventory().contains(1205), 5000, 1000);
 				}
 			}
 			break;
@@ -115,6 +118,7 @@ public class MiningGuideSection extends TutorialSection {
 	 */
 	private void mineCopper() {
 		clickObject(10079, "Mine", new Position(3084, 9502, 0));
+		Sleep.sleepUntil(() -> myPlayer().getAnimation() == -1, 5000, 1000);
 	}
 
 	/**
@@ -122,6 +126,7 @@ public class MiningGuideSection extends TutorialSection {
 	 */
 	private void mineTin() {
 		clickObject(10080, "Mine", new Position(3076, 9502, 0));
+		Sleep.sleepUntil(() -> myPlayer().getAnimation() == -1, 5000, 1000);
 	}
 
 	@Override

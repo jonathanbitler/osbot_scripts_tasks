@@ -1,31 +1,33 @@
 package osbot_scripts.util;
 
+import java.util.function.BooleanSupplier;
+
 import org.osbot.rs07.utility.ConditionalSleep;
 
 public final class Sleep extends ConditionalSleep {
 
-    private final boolean condition;
+    private final BooleanSupplier condition;
 
-    public Sleep(final boolean condition, final int timeout) {
+    public Sleep(final BooleanSupplier condition, final int timeout) {
         super(timeout);
         this.condition = condition;
     }
 
-    public Sleep(final boolean condition, final int timeout, final int interval) {
+    public Sleep(final BooleanSupplier condition, final int timeout, final int interval) {
         super(timeout, interval);
         this.condition = condition;
     }
 
     @Override
     public final boolean condition() throws InterruptedException {
-        return condition;
+        return condition.getAsBoolean();
     }
 
-    public static boolean sleepUntil(final boolean condition, final int timeout) {
+    public static boolean sleepUntil(final BooleanSupplier condition, final int timeout) {
         return new Sleep(condition, timeout).sleep();
     }
 
-    public static boolean sleepUntil(final boolean condition, final int timeout, final int interval) {
+    public static boolean sleepUntil(final BooleanSupplier condition, final int timeout, final int interval) {
         return new Sleep(condition, timeout, interval).sleep();
     }
 }
