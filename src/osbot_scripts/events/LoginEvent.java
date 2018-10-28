@@ -15,10 +15,15 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 
 	private final String username, password;
 
-	public LoginEvent(final String username, final String password) {
+	private String accountStage;
+
+	private int pid;
+
+	public LoginEvent(final String username, final String password, int pid, String accountStage) {
 		this.username = username;
 		this.password = password;
-
+		this.pid = pid;
+		this.accountStage = accountStage;
 		setAsync();
 	}
 
@@ -108,13 +113,29 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 			@Override
 			public boolean condition() throws InterruptedException {
 				return getLobbyButton() != null || getClient().getLoginUIState() == 3 || isDisabledMessageVisible()
-						|| isLocked();
+						|| isLocked() || isAlreadyLoggedInLocked();
 			}
 		}.sleep();
 
 		if (isLocked()) {
 			log("Account is locked, setting to locked");
 			DatabaseUtilities.updateAccountStatusInDatabase(this, "LOCKED", this.username);
+			System.exit(1);
+		} else if (isDisabledMessageVisible()) {
+			log("Account is banned, setting to locked");
+			DatabaseUtilities.updateAccountStatusInDatabase(this, "BANNED", this.username);
+			System.exit(1);
+		}
+		
+		if (isAlreadyLoggedInLocked()) {
+			log("Account is already logged in.. waiting 30 seconds to restart");
+			try {
+				Thread.sleep(30000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			System.exit(1);
 		}
 
 		if (!getClient().isLoggedIn()) {
@@ -138,12 +159,16 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 		return getColorPicker().isColorAt(222, 196, Color.YELLOW);
 	}
 
+	private boolean isAlreadyLoggedInLocked() {
+		return getColorPicker().isColorAt(272, 227, new Color(255, 255, 0));
+	}
+
 	private boolean clickTryAgainButton() {
 		return getMouse().click(new RectangleDestination(getBot(), 318, 262, 130, 26));
 	}
 
 	private boolean isDisabledMessageVisible() {
-		return getColorPicker().isColorAt(483, 205, Color.YELLOW);
+		return getColorPicker().isColorAt(483, 191, new Color(255, 255, 0));
 	}
 
 	private void clickLobbyButton() {
@@ -173,6 +198,7 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 			log("Login failed, account is disabled");
 			DatabaseUtilities.updateAccountStatusInDatabase(this, "BANNED", this.username);
 			setFailed();
+			System.exit(1);
 			return;
 		}
 
@@ -180,6 +206,7 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 			log("Connection error, attempts exceeded");
 			DatabaseUtilities.updateAccountStatusInDatabase(this, "TIMEOUT", this.username);
 			setFailed();
+			System.exit(1);
 			return;
 		}
 	}
@@ -191,4 +218,36 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 	public String getPassword() {
 		return password;
 	}
+
+	/**
+	 * @return the pid
+	 */
+	public int getPid() {
+		return pid;
+	}
+
+	/**
+	 * @param pid
+	 *            the pid to set
+	 */
+	public void setPid(int pid) {
+		this.pid = pid;
+	}
+
+	/**
+	 * @return the accountStage
+	 */
+	public String getAccountStage() {
+		return accountStage;
+	}
+	
+	/**
+	 * Sets an account stage
+	 * 
+	 * @param accountStage
+	 */
+	public void setAccountStage(String accountStage) {
+		this.accountStage = accountStage;
+	}
+	
 }

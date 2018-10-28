@@ -1,6 +1,7 @@
 package osbot_scripts.sections;
 
 import org.osbot.rs07.api.map.Position;
+import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.api.ui.Tab;
 
 import osbot_scripts.TutorialScript;

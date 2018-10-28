@@ -124,7 +124,7 @@ public class ItemOnObjectTask extends TaskSkeleton implements Task, AreaInterfac
 	@Override
 	public boolean finished() {
 		if (getWaitForItemString() != null && getWaitForItemString().length() > 0) {
-			return isClickedObject() || getProv().getInventory().contains(getWaitForItemString());
+			return isClickedObject() && getProv().getInventory().contains(getWaitForItemString());
 		}
 		if (getArea() != null) {
 			return getArea().contains(getProv().myPlayer()) && isClickedObject();

@@ -164,9 +164,17 @@ public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface
 		// .filter(obj -> obj.getId() == getObjectId()).findFirst();
 
 		if (object != null) {
-			Position pos = new Position(object.getPosition());
-			getProv().getWalking().walk(pos);
-			
+			Area area = object.getArea(3);
+			getProv().getWalking().walk(area);
+
+			// When cannot reach object, then turn to webwalking to the position
+			if (!getProv().getMap().isWithinRange(object.getPosition(), getProv().myPlayer(), 2)) {
+				if (!getProv().getWalking().webWalk(area)) {
+					if (getProv().getWalking().walk(area)) {
+						getProv().getDoorHandler().handleNextObstacle(area);
+					}
+				}
+			}
 			if (getInteractOption() != null && getInteractOption().length() > 0) {
 				object.interact(getInteractOption());
 				setClickedObject(true);
@@ -184,16 +192,19 @@ public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface
 		}
 
 		if (getWaitForItemString() != null && getWaitForItemString().length() > 0) {
-			Sleep.sleepUntil(() -> getProv().getInventory().contains(getWaitForItemString()), 60000);
+			Sleep.sleepUntil(() -> getProv().getInventory().contains(getWaitForItemString()), 10000);
 		}
 
 	}
 
 	@Override
 	public boolean finished() {
-		RS2Object object = getProv().getObjects().closest(getObjectId());
+		getProv().log("CONF: " + isClickedObject() + " "
+				+ (getWaitForItemString() != null && getWaitForItemString().length() > 0) + " "
+				+ getFinalDestinationArea() != null);
+
 		if (getWaitForItemString() != null && getWaitForItemString().length() > 0) {
-			return isClickedObject() || getProv().getInventory().contains(getWaitForItemString());
+			return isClickedObject() && getProv().getInventory().contains(getWaitForItemString());
 		}
 		if (getFinalDestinationArea() != null) {
 			return getFinalDestinationArea().contains(getProv().myPlayer()) && isClickedObject();

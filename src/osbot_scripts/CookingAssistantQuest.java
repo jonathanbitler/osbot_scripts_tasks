@@ -4,8 +4,11 @@ import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 
+import osbot_scripts.bot.utils.BotCommands;
+import osbot_scripts.bot.utils.RandomUtil;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
+import osbot_scripts.events.MandatoryEventsExecution;
 import osbot_scripts.framework.AccountStage;
 import osbot_scripts.login.LoginHandler;
 import osbot_scripts.qp7.progress.CookingsAssistant;
@@ -14,45 +17,29 @@ import osbot_scripts.task.Task;
 @ScriptManifest(author = "pim97", info = "CookingAssistantQuest", logo = "", name = "QUEST_COOK_ASSISTANT", version = 1.0)
 public class CookingAssistantQuest extends Script {
 
-	private CookingsAssistant cooksAssistant = new CookingsAssistant(4626, 29);
-	
+	private CookingsAssistant cooksAssistant;
+
 	private LoginEvent login;
-	
 
 	@Override
 	public int onLoop() throws InterruptedException {
 
 		// TODO Auto-generated method stub
 		RS2Widget closeQuestCompleted = getWidgets().get(277, 15);
-		if (getCooksAssistant().getQuestProgress() == 3 || closeQuestCompleted != null) {
+		log(getCooksAssistant().getQuestProgress());
+		if (getCooksAssistant().getQuestProgress() == 2 || closeQuestCompleted != null) {
 			log("Successfully completed quest cooks assistant");
-			closeQuestCompleted.interact();
-			DatabaseUtilities.updateStageProgress(this, AccountStage.QUEST_ROMEO_AND_JULIET.name(), 0, login.getUsername());
-			stop();
-			return -1;
+			if (closeQuestCompleted != null) {
+				closeQuestCompleted.interact();
+			}
+			
+			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage().name(), 0,
+					login.getUsername());
+			BotCommands.killProcess((Script)this);
+			return random(500, 600);
 		}
 
-		for (Task task : getCooksAssistant().getCookingAssistantTask()) {
-
-			if (getCooksAssistant().getCurrentTask() == null) {
-				log("System couldnt find a next action, logging out");
-				break;
-			}
-			if (task.requiredConfigQuestStep() == getCooksAssistant().getQuestProgress()) {
-				// Waiting for task to finish
-				log("finish: " + getCooksAssistant().getCurrentTask().finished());
-				while (!getCooksAssistant().getCurrentTask().finished()) {
-					// if (!getCooksAssistant().isInQuestCutscene()) {
-					getCooksAssistant().getCurrentTask().loop();
-					// }
-					log("performing task" + getCooksAssistant().getCurrentTask().getClass().getSimpleName());
-					Thread.sleep(1000, 1500);
-				}
-
-				log("On next task: " + task.scriptName());
-				getCooksAssistant().setCurrentTask(task);
-			}
-		}
+		getCooksAssistant().getTaskHandler().taskLoop();
 
 		return random(500, 600);
 	}
@@ -62,10 +49,17 @@ public class CookingAssistantQuest extends Script {
 	@Override
 	public void onStart() throws InterruptedException {
 		login = LoginHandler.login(this, getParameters());
+		cooksAssistant = new CookingsAssistant(4626, 29, login, (Script)this);
+
+		if (login != null && login.getUsername() != null) {
+			getCooksAssistant()
+					.setQuestStageStep(Integer.parseInt(DatabaseUtilities.getQuestProgress(this, login.getUsername())));
+		}
+		log("Quest progress: " + getCooksAssistant().getQuestStageStep());
 
 		getCooksAssistant().exchangeContext(getBot());
 		getCooksAssistant().onStart();
-		getCooksAssistant().decideOnStartTask();
+//		getCooksAssistant().getTaskHandler().decideOnStartTask();
 	}
 
 	/**

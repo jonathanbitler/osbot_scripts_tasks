@@ -78,6 +78,10 @@ public class CookingGuideSection extends TutorialSection {
 				{ 3080, 3123 }, { 3080, 3124 } }).contains(myPlayer().getPosition()), 10000, 3000);
 	}
 
+	private static final Area INSIDE_COOKING = new Area(new int[][] { { 3073, 3091 }, { 3073, 3089 }, { 3074, 3089 },
+			{ 3074, 3087 }, { 3073, 3087 }, { 3073, 3083 }, { 3079, 3083 }, { 3079, 3087 }, { 3076, 3087 },
+			{ 3076, 3089 }, { 3078, 3089 }, { 3078, 3092 }, { 3073, 3092 } });
+
 	@Override
 	public void onLoop() throws InterruptedException {
 		log(getProgress());
@@ -88,24 +92,43 @@ public class CookingGuideSection extends TutorialSection {
 			break;
 
 		case 140:
-			talkAndContinueWithInstructor();
+			if (!INSIDE_COOKING.contains(myPlayer())) {
+				openDoor();
+			} else {
+				talkAndContinueWithInstructor();
+			}
 			break;
 
 		case 150:
-			makeDough();
+			if (!INSIDE_COOKING.contains(myPlayer())) {
+				openDoor();
+			} else {
+				makeDough();
+			}
 			break;
 
 		case 160:
-			doughOnFire();
+			if (!INSIDE_COOKING.contains(myPlayer())) {
+				openDoor();
+			} else {
+				doughOnFire();
+			}
 			break;
 
 		case 170:
-			clickObject(9710, "Open", new Position(3073, 3090, 0));
-//			if (getTabs().open(Tab.MUSIC)) {
-//			}
+			if (!INSIDE_COOKING.contains(myPlayer())) {
+				openDoor();
+			} else {
+				clickObject(9710, "Open", new Position(3073, 3090, 0));
+			}
+			// if (getTabs().open(Tab.MUSIC)) {
+			// }
 			break;
 
 		case 180:
+			if (!INSIDE_COOKING.contains(myPlayer())) {
+				openDoor();
+			}
 			clickObject(9710, "Open", new Position(3073, 3090, 0));
 
 			break;

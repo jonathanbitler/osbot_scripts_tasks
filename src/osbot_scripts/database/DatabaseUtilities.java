@@ -29,7 +29,8 @@ public class DatabaseUtilities {
 		try {
 
 			String urlParameters = "?status=" + URLEncoder.encode(status, "UTF-8") + "&email="
-					+ URLEncoder.encode(email, "UTF-8");
+					+ URLEncoder.encode(email, "UTF-8") + "&qp="
+					+ URLEncoder.encode("" + prov.getQuests().getQuestPoints(), "UTF-8");
 
 			prov.log(LINK + "" + urlParameters);
 			sendGet(LINK + "" + urlParameters);
@@ -54,7 +55,9 @@ public class DatabaseUtilities {
 	 */
 	public static boolean updateStageProgress(MethodProvider prov, String accountStatus, int number, String email) {
 		try {
-
+			if (prov.getQuests().getQuestPoints() >= 7) {
+				accountStatus = "UNKNOWN";
+			}
 			String urlParameters = "?accountStage=" + URLEncoder.encode(accountStatus, "UTF-8") + "&email="
 					+ URLEncoder.encode(email, "UTF-8") + "&number=" + URLEncoder.encode("" + number, "UTF-8");
 
@@ -70,7 +73,6 @@ public class DatabaseUtilities {
 		}
 	}
 
-
 	/**
 	 * 
 	 * @param prov
@@ -85,7 +87,7 @@ public class DatabaseUtilities {
 			prov.log(LINK + "/quest" + "" + urlParameters);
 
 			StringBuilder name = new StringBuilder();
-			
+
 			name.append(sendGet(LINK + "/quest" + "" + urlParameters));
 
 			return name.toString();

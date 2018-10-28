@@ -83,6 +83,11 @@ public class MiningGuideSection extends TutorialSection {
 			break;
 			
 		case 350:
+			if (!myPlayer().getArea(3).contains(new Position(3082, 9499, 0))) {
+				getWalking().walk(new Position(3082, 9499, 0));
+				clickObject(2097, "Smith", new Position(3082, 9499, 0));
+				Sleep.sleepUntil(() -> myPlayer().getAnimation() == -1, 5000, 1000);
+			}
 			RS2Widget daggerWidget = getWidgets().get(312, 2, 2);
 			if (daggerWidget != null) {
 				if (daggerWidget.interact()) {
@@ -97,7 +102,6 @@ public class MiningGuideSection extends TutorialSection {
 				getWalking().walk(gatePosition);
 			} else {
 				clickObject(9718, "Open");
-				TutorialScript.mainState = getNextMainState();
 			}
 			break;
 			

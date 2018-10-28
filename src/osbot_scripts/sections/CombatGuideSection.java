@@ -14,7 +14,6 @@ import osbot_scripts.util.Sleep;
 
 public class CombatGuideSection extends TutorialSection {
 
-
 	public CombatGuideSection() {
 		super("Combat Instructor");
 		// TODO Auto-generated constructor stub
@@ -43,18 +42,20 @@ public class CombatGuideSection extends TutorialSection {
 			break;
 
 		case 400:
+			getTabs().open(Tab.EQUIPMENT);
 			RS2Widget statsWidget = getWidgets().get(387, 18);
 			if (statsWidget != null) {
 				if (statsWidget.interact()) {
 				}
-			} else {
-				getTabs().open(Tab.EQUIPMENT);
 			}
 			break;
 
 		case 405:
 			Item dagger = getInventory().getItem(1205);
 			if (dagger != null) {
+				if (dagger.interact()) {
+
+				}
 				if (equipmentInterfaceOpen() == null) {
 				} else {
 					if (closeEquipmentInterface() != null) {
@@ -91,7 +92,8 @@ public class CombatGuideSection extends TutorialSection {
 		case 450:
 			walkInto();
 			if (attackRat()) {
-				Sleep.sleepUntil(() -> !myPlayer().isUnderAttack() && myPlayer().isAttackable() && myPlayer().getAnimation() == -1, 25000, 8000);
+				Sleep.sleepUntil(() -> !myPlayer().isUnderAttack() && myPlayer().isAttackable()
+						&& myPlayer().getAnimation() == -1, 25000, 8000);
 			}
 			break;
 
@@ -113,7 +115,8 @@ public class CombatGuideSection extends TutorialSection {
 					wieldItem("Bronze arrow");
 				}
 				if (attackRat()) {
-					Sleep.sleepUntil(() -> !myPlayer().isUnderAttack() && myPlayer().isAttackable() && myPlayer().getAnimation() == -1, 25000, 8000);
+					Sleep.sleepUntil(() -> !myPlayer().isUnderAttack() && myPlayer().isAttackable()
+							&& myPlayer().getAnimation() == -1, 25000, 8000);
 				}
 			}
 			break;
@@ -156,7 +159,8 @@ public class CombatGuideSection extends TutorialSection {
 	 * @return
 	 */
 	private boolean attackRat() {
-		NPC rat = getNpcs().closest(npc -> npc.getName().equalsIgnoreCase("Giant rat") && npc.isAttackable());
+		NPC rat = getNpcs().closest(
+				npc -> npc.getName().equalsIgnoreCase("Giant rat") && npc.isAttackable());
 		if (rat != null) {
 			if (rat.interact()) {
 				Sleep.sleepUntil(() -> myPlayer().getInteracting() != null, 8000, 3000);

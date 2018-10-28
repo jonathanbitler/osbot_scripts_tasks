@@ -10,7 +10,9 @@ import org.osbot.rs07.api.model.NPC;
 import org.osbot.rs07.api.model.RS2Object;
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.script.MethodProvider;
+import org.osbot.rs07.script.Script;
 
+import osbot_scripts.events.LoginEvent;
 import osbot_scripts.framework.AccountStage;
 import osbot_scripts.sections.total.progress.MainState;
 import osbot_scripts.taskhandling.TaskHandler;
@@ -19,9 +21,14 @@ import osbot_scripts.util.Sleep;
 public abstract class QuestStep extends MethodProvider {
 
 	/**
-	 * 
+	 * The script
 	 */
-	private TaskHandler taskHandler = new TaskHandler((MethodProvider)this, (QuestStep)this);
+	private Script script;
+	
+	/**
+	 * The taskHandler
+	 */
+	private TaskHandler taskHandler;
 	
 	/**
 	 * The name of the instructor of the current stage
@@ -32,12 +39,16 @@ public abstract class QuestStep extends MethodProvider {
 	 * Config ID for quest
 	 */
 	private final int configQuestId;
-	
+
+	/**
+	 * 
+	 */
+	private LoginEvent event;
 	/**
 	 * 
 	 */
 	private int questStageStep;
-	
+
 	/**
 	 * 
 	 */
@@ -47,11 +58,14 @@ public abstract class QuestStep extends MethodProvider {
 	 * 
 	 * @param instructorName
 	 */
-	public QuestStep(int questStartNpc, int configQuestId, AccountStage stage) {
+	public QuestStep(int questStartNpc, int configQuestId, AccountStage stage, LoginEvent event, Script script) {
 		this.questStartNpc = questStartNpc;
 		this.configQuestId = configQuestId;
 		this.stage = stage;
 		this.questStageStep = 0;
+		this.setEvent(event);
+		this.script = script;
+		this.taskHandler = new TaskHandler((MethodProvider) this, (QuestStep) this, event, script);
 	}
 
 	/**
@@ -62,17 +76,18 @@ public abstract class QuestStep extends MethodProvider {
 	public final int getQuestProgress() {
 		return getConfigs().get(this.configQuestId);
 	}
-	
+
 	/**
 	 * Is in the qurdt cutscene?
+	 * 
 	 * @return
 	 */
 	public boolean isInQuestCutscene() {
-		 return 
-//				 getProv().getConfigs().get(1021) == 192 && 
-				 getMap().isMinimapLocked() ||
-				 getWidgets().get(548, 51) == null;
+		return
+		// getProv().getConfigs().get(1021) == 192 &&
+		getMap().isMinimapLocked() || getWidgets().get(548, 51) == null;
 	}
+
 	/**
 	 * 
 	 * @return
@@ -149,19 +164,19 @@ public abstract class QuestStep extends MethodProvider {
 	 * 
 	 * @return
 	 */
-//	public boolean talkWithNpc() {
-//		if (!getDialogues().inDialogue()) {
-//			talkToQuestNpc();
-//			return true;
-//		} else if (getDialogues().inDialogue()) {
-//			if (!getDialogues().selectOption(getDialogueClickOptions())) {
-//				selectContinue();
-//				return true;
-//			}
-//			return false;
-//		}
-//		return false;
-//	}
+	// public boolean talkWithNpc() {
+	// if (!getDialogues().inDialogue()) {
+	// talkToQuestNpc();
+	// return true;
+	// } else if (getDialogues().inDialogue()) {
+	// if (!getDialogues().selectOption(getDialogueClickOptions())) {
+	// selectContinue();
+	// return true;
+	// }
+	// return false;
+	// }
+	// return false;
+	// }
 
 	/**
 	 * Loops through the section
@@ -169,7 +184,7 @@ public abstract class QuestStep extends MethodProvider {
 	 * @throws InterruptedException
 	 */
 	public abstract void onLoop() throws InterruptedException;
-	
+
 	/**
 	 * On start
 	 */
@@ -282,11 +297,13 @@ public abstract class QuestStep extends MethodProvider {
 	}
 
 	/**
-	 * @param questStageStep the questStageStep to set
+	 * @param questStageStep
+	 *            the questStageStep to set
 	 */
 	public void setQuestStageStep(int questStageStep) {
 		this.questStageStep = questStageStep;
 	}
+
 	/**
 	 * @return the stage
 	 */
@@ -295,7 +312,8 @@ public abstract class QuestStep extends MethodProvider {
 	}
 
 	/**
-	 * @param stage the stage to set
+	 * @param stage
+	 *            the stage to set
 	 */
 	public void setStage(AccountStage stage) {
 		this.stage = stage;
@@ -309,10 +327,39 @@ public abstract class QuestStep extends MethodProvider {
 	}
 
 	/**
-	 * @param taskHandler the taskHandler to set
+	 * @param taskHandler
+	 *            the taskHandler to set
 	 */
 	public void setTaskHandler(TaskHandler taskHandler) {
 		this.taskHandler = taskHandler;
+	}
+
+	/**
+	 * @return the event
+	 */
+	public LoginEvent getEvent() {
+		return event;
+	}
+
+	/**
+	 * @param event the event to set
+	 */
+	public void setEvent(LoginEvent event) {
+		this.event = event;
+	}
+
+	/**
+	 * @return the script
+	 */
+	public Script getScript() {
+		return script;
+	}
+
+	/**
+	 * @param script the script to set
+	 */
+	public void setScript(Script script) {
+		this.script = script;
 	}
 
 }

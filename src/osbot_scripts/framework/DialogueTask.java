@@ -24,9 +24,9 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 	private int npcId;
 
 	private String[] dialogueSelection;
-	
+
 	private boolean spokenTo = false;
-	
+
 	private String waitForItem;
 
 	public DialogueTask(String scriptName, int questProgress, int questConfig, MethodProvider prov, Area area,
@@ -38,7 +38,7 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 		setDialogueSelection(selections);
 		setCurrentQuestProgress(questProgress);
 	}
-	
+
 	public DialogueTask(String scriptName, int questProgress, int questConfig, MethodProvider prov, Area area,
 			int npcId, String waitForItem, String... selections) {
 		setScriptName(scriptName);
@@ -55,9 +55,9 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 		// TODO Auto-generated method stub
 
 		// If player is not in the selected field, then walk to it
-//		if (getArea() != null && !getArea().contains(getProv().myPlayer())) {
-//			getProv().getWalking().walk(getArea());
-//		}
+		// if (getArea() != null && !getArea().contains(getProv().myPlayer())) {
+		// getProv().getWalking().walk(getArea());
+		// }
 		ranOnStart = true;
 	}
 
@@ -108,16 +108,30 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 		if (!ranOnStart()) {
 			onStart();
 		}
-		if (getArea() != null && !pendingContinue() && !getProv().getDialogues().isPendingOption()) {
-			// Waiting before player is in an area
-			Sleep.sleepUntil(() -> getArea().contains(getProv().myPlayer()), 10000);
+
+		// testing TODO: find out if cares
+
+		// if (getArea() != null && !pendingContinue() &&
+		// !getProv().getDialogues().isPendingOption()) {
+		// // Waiting before player is in an area
+		// Sleep.sleepUntil(() -> getArea().contains(getProv().myPlayer()), 10000);
+		// }
+
+		NPC npc = getProv().getNpcs().closest(this.getNPCId());
+
+		if (npc != null && !getProv().getMap().canReach(npc)) {
+			// If can't reach, then webwalk to it (is costly but has to, otherwise bot gets
+			// stuck)
+			if (!getProv().getWalking().webWalk(npc.getPosition())) {
+				if (getProv().getWalking().walk(npc.getPosition())) {
+					getProv().getDoorHandler().handleNextObstacle(npc.getPosition());
+				}
+			}
 		}
-		Optional<NPC> npc = getProv().getNpcs().getAll().stream().filter(Objects::nonNull)
-				.filter(findNpc -> findNpc.getId() == this.getNPCId()).findFirst();
-		
-		if (npc.isPresent() && !pendingContinue() && !getProv().getDialogues().isPendingOption()) {
-			npc.get().interact();
-			Sleep.sleepUntil(() -> pendingContinue(), 1000);
+
+		if (npc != null && !pendingContinue() && !getProv().getDialogues().isPendingOption()) {
+			npc.interact();
+			Sleep.sleepUntil(() -> pendingContinue(), 5000);
 			spokenTo = true;
 		} else if (pendingContinue()) {
 			selectContinue();
@@ -136,18 +150,18 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 		}
 		return !pendingContinue() && !getProv().getDialogues().isPendingOption() && spokenTo && !isInQuestCutscene();
 	}
-	
+
 	/**
 	 * Is in the qurdt cutscene?
+	 * 
 	 * @return
 	 */
 	public boolean isInQuestCutscene() {
-		 return 
-//				 getProv().getConfigs().get(1021) == 192 && 
-				 getProv().getMap().isMinimapLocked() ||
-				 getProv().getWidgets().get(548, 51) == null;
+		return
+		// getProv().getConfigs().get(1021) == 192 &&
+		getProv().getMap().isMinimapLocked() || getProv().getWidgets().get(548, 51) == null;
 	}
-	
+
 	public void setArea(Area area) {
 		this.area = area;
 	}
@@ -245,7 +259,8 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 	}
 
 	/**
-	 * @param waitForItem the waitForItem to set
+	 * @param waitForItem
+	 *            the waitForItem to set
 	 */
 	public void setWaitForItem(String waitForItem) {
 		this.waitForItem = waitForItem;

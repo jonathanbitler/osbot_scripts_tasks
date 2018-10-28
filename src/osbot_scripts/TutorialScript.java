@@ -7,15 +7,14 @@ import org.osbot.rs07.event.Event;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 
-import com.mysql.cj.protocol.Protocol.GetProfilerEventHandlerInstanceFunction;
-
+import osbot_scripts.bot.utils.BotCommands;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.DisableAudioEvent;
-import osbot_scripts.events.LoginEvent;
+import osbot_scripts.events.FixedModeEvent;
+import osbot_scripts.events.MandatoryEventsExecution;
 import osbot_scripts.events.ToggleRoofsHiddenEvent;
 import osbot_scripts.events.ToggleShiftDropEvent;
 import osbot_scripts.framework.AccountStage;
-import osbot_scripts.login.LoginHandler;
 import osbot_scripts.sections.BankGuideSection;
 import osbot_scripts.sections.CharacterCreationSection;
 import osbot_scripts.sections.ChurchGuideSection;
@@ -92,6 +91,18 @@ public class TutorialScript extends Script {
 	 * 
 	 */
 	private final TutorialSection wizardGuideSection = new WizardGuideSection();
+
+	/**
+	 * 
+	 */
+	private static final Area TUT_ISLAND_AREA = new Area(
+			new int[][] { { 3049, 3128 }, { 3032, 3090 }, { 3054, 3037 }, { 3146, 3048 }, { 3181, 3101 },
+					{ 3163, 3129 }, { 3137, 3137 }, { 3131, 3145 }, { 3103, 3140 }, { 3087, 3156 }, { 3054, 3138 } });
+	
+	private static final Area TUT_ISLAND_AREA_CAVE = new Area(new int[][] { { 3067, 9521 }, { 3096, 9540 },
+		{ 3128, 9540 }, { 3125, 9498 }, { 3085, 9482 }, { 3062, 9500 } });
+	
+	private MandatoryEventsExecution events = new MandatoryEventsExecution(this);
 	
 	/**
 	 * Loops
@@ -99,23 +110,26 @@ public class TutorialScript extends Script {
 	@Override
 	public int onLoop() throws InterruptedException {
 
-		if (!new Area(3030, 3148, 3170, 3040)
-				.contains(myPlayer().getPosition())) {
+		if (!TUT_ISLAND_AREA.contains(myPlayer()) && !TUT_ISLAND_AREA_CAVE.contains(myPlayer())) {
 			mainState = MainState.IN_LUMBRIDGE;
 			log("Succesfully completed!");
 			String username = null;
+			int pid = 0;
 			if (getParameters() != null) {
 				String[] params = getParameters().split("_"); // split the _ character!!!!!!
 				username = params[0];
+				pid = Integer.parseInt(params[2]);
 			}
 			DatabaseUtilities.updateStageProgress(this, AccountStage.QUEST_COOK_ASSISTANT.name(), 0, username);
-			stop();
-			return -1;
+			BotCommands.killProcess((Script)this);
+			return 1000;
 		}
 
-		
+		if (getClient().isLoggedIn()) {
+			events.fixedMode();
+		}
 		if (mainState != MainState.CREATE_CHARACTER_DESIGN && mainState != MainState.TALK_TO_GIELINOR_GUIDE_ONE) {
-			executeAllEvents();
+			events.executeAllEvents();
 		}
 
 		log(mainState);
@@ -142,17 +156,15 @@ public class TutorialScript extends Script {
 			wizardGuideSection.onLoop();
 		} else if (mainState == MainState.IN_LUMBRIDGE) {
 			while (getClient().isLoggedIn()) {
-				getLogoutTab().logOut();
+				// getLogoutTab().logOut();
 
-				Thread.sleep(5000);
+				// Thread.sleep(5000);
 				log("Trying to logout...");
 			}
-			stop();
 		}
 
 		return random(600, 1200);
 	}
-
 
 	@Override
 	public void onStart() throws InterruptedException {
@@ -184,20 +196,7 @@ public class TutorialScript extends Script {
 
 	}
 
-	/**
-	 * 
-	 */
-	private void executeAllEvents() {
-		if (!getSettings().areRoofsEnabled()) {
-			Event toggleRoofsHiddenEvent = new ToggleRoofsHiddenEvent();
-			execute(toggleRoofsHiddenEvent);
-		}
-		if (!isAudioDisabled) {
-			isAudioDisabled = disableAudio();
-		} else if (!getSettings().isShiftDropActive()) {
-			toggleShiftDrop();
-		}
-	}
+	
 
 	/**
 	 * @return the guilinorGuideSection
@@ -205,19 +204,6 @@ public class TutorialScript extends Script {
 	public TutorialSection getGuilinorGuideSection() {
 		return guilinorGuideSection;
 	}
-
-	private boolean disableAudio() {
-		Event disableAudioEvent = new DisableAudioEvent();
-		execute(disableAudioEvent);
-		return disableAudioEvent.hasFinished();
-	}
-
-	private boolean toggleShiftDrop() {
-		Event toggleShiftDrop = new ToggleShiftDropEvent();
-		execute(toggleShiftDrop);
-		return toggleShiftDrop.hasFinished();
-	}
-
 	/**
 	 * 
 	 * @return
