@@ -101,7 +101,9 @@ public class ClickOnWidgetTask extends TaskSkeleton implements Task {
 		if (!ranOnStart()) {
 			// here something only run once
 		}
-		if (getRS2WidgetInterface() == null) {
+		if (getRS2WidgetInterface() == null && getProv().myPlayer().getAnimation() == -1
+				&& !getProv().myPlayer().isAnimating()) {
+			
 			if (getObjectId() != -1) {
 				RS2Object rs2Obj = getProv().getObjects().closest(obj -> obj.getId() == getObjectId());
 
@@ -121,7 +123,7 @@ public class ClickOnWidgetTask extends TaskSkeleton implements Task {
 		if (getWaitOnItem() != null) {
 			Sleep.sleepUntil(() -> getWaitOnItemAmount() >= getProv().getInventory().getAmount(getWaitOnItem()), 10000);
 		}
-		
+
 		Sleep.sleepUntil(() -> getRS2WidgetInterface() == null, 10000);
 	}
 

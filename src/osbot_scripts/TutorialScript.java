@@ -8,6 +8,7 @@ import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 
 import osbot_scripts.bot.utils.BotCommands;
+import osbot_scripts.bot.utils.RandomUtil;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.DisableAudioEvent;
 import osbot_scripts.events.FixedModeEvent;
@@ -120,13 +121,14 @@ public class TutorialScript extends Script {
 				username = params[0];
 				pid = Integer.parseInt(params[2]);
 			}
-			DatabaseUtilities.updateStageProgress(this, AccountStage.QUEST_COOK_ASSISTANT.name(), 0, username);
+			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0, username);
 			BotCommands.killProcess((Script)this);
 			return 1000;
 		}
 
 		if (getClient().isLoggedIn()) {
 			events.fixedMode();
+			events.fixedMode2();
 		}
 		if (mainState != MainState.CREATE_CHARACTER_DESIGN && mainState != MainState.TALK_TO_GIELINOR_GUIDE_ONE) {
 			events.executeAllEvents();
@@ -155,15 +157,15 @@ public class TutorialScript extends Script {
 		} else if (mainState == MainState.WIZARD_GUIDE_SECTION) {
 			wizardGuideSection.onLoop();
 		} else if (mainState == MainState.IN_LUMBRIDGE) {
-			while (getClient().isLoggedIn()) {
+//			while (getClient().isLoggedIn()) {
 				// getLogoutTab().logOut();
-
+//				stop();
 				// Thread.sleep(5000);
 				log("Trying to logout...");
-			}
+//			}
 		}
 
-		return random(600, 1200);
+		return random(800, 1600);
 	}
 
 	@Override

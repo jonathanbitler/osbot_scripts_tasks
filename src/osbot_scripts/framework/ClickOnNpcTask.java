@@ -19,7 +19,7 @@ public class ClickOnNpcTask extends TaskSkeleton implements Task {
 	private String waitForItem;
 
 	private int requiredAmountTask;
-	
+
 	private Area area;
 
 	/**
@@ -78,20 +78,13 @@ public class ClickOnNpcTask extends TaskSkeleton implements Task {
 
 		NPC npc = getProv().getNpcs().closest(getNpcId());
 
-		// Optional<NPC> npcOptional =
-		// getProv().getNpcs().getAll().stream().filter(Objects::nonNull)
-		// .filter(npc -> npc.getId() == getNpcId() &&
-		// npc.getArea(20).contains(getProv().myPlayer())).findFirst();
-
-		// if (npcOptional.isPresent()) {
-		// NPC npc = npcOptional.get();
-
 		if (npc != null && getArea().contains(npc)) {
 			npc.interact(getInteractOption());
 			this.npc = npc;
 
 			if (getWaitForItem() != null && getWaitForItem().length() > 0) {
-				Sleep.sleepUntil(() -> getProv().getInventory().contains(getWaitForItem()), 10000, 2000);
+				Sleep.sleepUntil(() -> getProv().getInventory().contains(getWaitForItem())
+						&& npc.getArea(1).contains(getProv().myPlayer()), 10000, 2000);
 			} else {
 				Sleep.sleepUntil(() -> npc.getArea(2).contains(getProv().myPlayer()), 10000, 2000);
 			}
@@ -192,7 +185,8 @@ public class ClickOnNpcTask extends TaskSkeleton implements Task {
 	}
 
 	/**
-	 * @param area the area to set
+	 * @param area
+	 *            the area to set
 	 */
 	public void setArea(Area area) {
 		this.area = area;

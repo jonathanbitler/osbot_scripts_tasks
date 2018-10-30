@@ -80,6 +80,11 @@ public class CharacterCreationSection extends TutorialSection {
 				for (int i = 0; i < random; i++) {
 					sleep(rand.nextInt(TIME_BETWEEN_DESIGN_CHARACTER));
 					designCharacterWidgetHead.interact("Change head");
+					
+					RS2Widget recolor = getWidgets().get(DESIGN_CHARACTER_PARENT_ID, 121);
+					if (recolor != null) {
+						recolor.interact("Recolour hair");
+					}
 				}
 			}
 			progress = CharacterCreationSectionProgress.CHOOSING_JAW;
@@ -102,6 +107,11 @@ public class CharacterCreationSection extends TutorialSection {
 				for (int i = 0; i < random; i++) {
 					sleep(rand.nextInt(TIME_BETWEEN_DESIGN_CHARACTER));
 					designCharacterWidgetTorso.interact("Change torso");
+					
+					RS2Widget recolor = getWidgets().get(DESIGN_CHARACTER_PARENT_ID, 127);
+					if (recolor != null) {
+						recolor.interact("Recolour torso");
+					}
 				}
 			}
 			progress = CharacterCreationSectionProgress.CHOOSING_ARMS;
@@ -135,6 +145,11 @@ public class CharacterCreationSection extends TutorialSection {
 				for (int i = 0; i < random; i++) {
 					sleep(rand.nextInt(TIME_BETWEEN_DESIGN_CHARACTER));
 					designCharacterWidgetLegs.interact("Change legs");
+					
+					RS2Widget recolor = getWidgets().get(DESIGN_CHARACTER_PARENT_ID, 129);
+					if (recolor != null) {
+						recolor.interact("Recolour legs");
+					}
 				}
 			}
 			progress = CharacterCreationSectionProgress.CHOOSING_FEET;
@@ -146,6 +161,11 @@ public class CharacterCreationSection extends TutorialSection {
 				for (int i = 0; i < random; i++) {
 					sleep(rand.nextInt(TIME_BETWEEN_DESIGN_CHARACTER));
 					designCharacterWidgetFeet.interact("Change feet");
+					
+					RS2Widget recolor = getWidgets().get(DESIGN_CHARACTER_PARENT_ID, 130);
+					if (recolor != null) {
+						recolor.interact("Recolour feet");
+					}
 				}
 			}
 			progress = CharacterCreationSectionProgress.ACCEPT_CHARACTER;

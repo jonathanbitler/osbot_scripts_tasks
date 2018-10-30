@@ -29,6 +29,8 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 
 	private String waitForItem;
 
+	private int questPointsFinished;
+
 	public DialogueTask(String scriptName, int questProgress, int questConfig, MethodProvider prov, Area area,
 			int npcId, String... selections) {
 		setScriptName(scriptName);
@@ -40,6 +42,17 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 	}
 
 	public DialogueTask(String scriptName, int questProgress, int questConfig, MethodProvider prov, Area area,
+			int npcId, int questPointsFinished, String... selections) {
+		setScriptName(scriptName);
+		setProv(prov);
+		setArea(area);
+		setNpcId(npcId);
+		setDialogueSelection(selections);
+		setCurrentQuestProgress(questProgress);
+		setQuestPointsFinished(questPointsFinished);
+	}
+
+	public DialogueTask(String scriptName, int questProgress, int questConfig, MethodProvider prov, Area area,
 			int npcId, String waitForItem, String... selections) {
 		setScriptName(scriptName);
 		setProv(prov);
@@ -48,6 +61,18 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 		setDialogueSelection(selections);
 		setCurrentQuestProgress(questProgress);
 		setWaitForItem(waitForItem);
+	}
+
+	public DialogueTask(String scriptName, int questProgress, int questConfig, MethodProvider prov, Area area,
+			int npcId, String waitForItem, int questPointsFinished, String... selections) {
+		setScriptName(scriptName);
+		setProv(prov);
+		setArea(area);
+		setNpcId(npcId);
+		setDialogueSelection(selections);
+		setCurrentQuestProgress(questProgress);
+		setWaitForItem(waitForItem);
+		setQuestPointsFinished(questPointsFinished);
 	}
 
 	@Override
@@ -117,33 +142,42 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 		// Sleep.sleepUntil(() -> getArea().contains(getProv().myPlayer()), 10000);
 		// }
 
-		NPC npc = getProv().getNpcs().closest(this.getNPCId());
+		if (!isInQuestCutscene()) {
+			NPC npc = getProv().getNpcs().closest(this.getNPCId());
 
-		if (npc != null && !getProv().getMap().canReach(npc)) {
-			// If can't reach, then webwalk to it (is costly but has to, otherwise bot gets
-			// stuck)
-			if (!getProv().getWalking().webWalk(npc.getPosition())) {
-				if (getProv().getWalking().walk(npc.getPosition())) {
-					getProv().getDoorHandler().handleNextObstacle(npc.getPosition());
+			if (npc != null && !pendingContinue() && !getProv().getDialogues().isPendingOption()) {
+				npc.interact("Talk-to");
+				Sleep.sleepUntil(() -> pendingContinue(), 5000);
+				spokenTo = true;
+			} else if (pendingContinue()) {
+				selectContinue();
+			} else if (getProv().getDialogues().isPendingOption()) {
+				getProv().getDialogues().selectOption(getDialogueSelections());
+			}
+			// Wait till has a dialogue to prevent instant finishing
+
+			if (npc != null && !isInQuestCutscene()
+					&& (!getProv().getMap().canReach(npc) || !npc.getArea(3).contains(getProv().myPlayer()))) {
+				// If can't reach, then webwalk to it (is costly but has to, otherwise bot gets
+				// stuck)
+				if (!getProv().getWalking().webWalk(npc.getPosition())) {
+					if (getProv().getWalking().walk(npc.getPosition())) {
+						getProv().getDoorHandler().handleNextObstacle(npc.getPosition());
+					}
 				}
 			}
 		}
 
-		if (npc != null && !pendingContinue() && !getProv().getDialogues().isPendingOption()) {
-			npc.interact();
-			Sleep.sleepUntil(() -> pendingContinue(), 5000);
-			spokenTo = true;
-		} else if (pendingContinue()) {
-			selectContinue();
-		} else if (getProv().getDialogues().isPendingOption()) {
-			getProv().getDialogues().selectOption(getDialogueSelections());
-		}
-		// Wait till has a dialogue to prevent instant finishing
 	}
 
 	@Override
 	public boolean finished() {
 		// TODO Auto-generated method stub
+		if (getQuestPointsFinished() > 0 && getConfigQuestId() > 0) {
+			int step = getProv().getConfigs().get(getConfigQuestId());
+			return getQuestPointsFinished() == step && !pendingContinue() && !getProv().getDialogues().isPendingOption()
+					&& spokenTo && !isInQuestCutscene();
+		}
 		if (getWaitForItem() != null && getWaitForItem().length() > 0) {
 			return !pendingContinue() && !getProv().getDialogues().isPendingOption() && spokenTo && !isInQuestCutscene()
 					&& getProv().getInventory().contains(getWaitForItem());
@@ -264,6 +298,21 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 	 */
 	public void setWaitForItem(String waitForItem) {
 		this.waitForItem = waitForItem;
+	}
+
+	/**
+	 * @return the questPointsFinished
+	 */
+	public int getQuestPointsFinished() {
+		return questPointsFinished;
+	}
+
+	/**
+	 * @param questPointsFinished
+	 *            the questPointsFinished to set
+	 */
+	public void setQuestPointsFinished(int questPointsFinished) {
+		this.questPointsFinished = questPointsFinished;
 	}
 
 }

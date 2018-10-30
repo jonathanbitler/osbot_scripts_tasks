@@ -33,7 +33,7 @@ public class RomeoAndJulietQuest extends Script {
 				closeQuestCompleted.interact();
 			}
 			Thread.sleep(5000);
-			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage().name(), 0, login.getUsername());
+			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0, login.getUsername());
 			BotCommands.killProcess((Script) this);
 			return random(500, 600);
 		}

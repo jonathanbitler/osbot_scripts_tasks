@@ -36,33 +36,10 @@ public class TaskHandler {
 	private MethodProvider provider;
 
 	private LoginEvent event;
-	
+
 	private Script script;
 
 	private MandatoryEventsExecution events;
-
-	public void decideOnStartTask() {
-
-		if (getCurrentTask() != null) {
-			return;
-		}
-		// The task system
-		boolean found = false;
-		for (Entry<Integer, Task> entry : tasks.entrySet()) {
-			int key = entry.getKey();
-			Task task = entry.getValue();
-			if (getCurrentTask() == null && quest.getQuestStageStep() >= 0 && key == quest.getQuestStageStep()) {
-				setCurrentTask(task);
-				getProvider().log("set task to: " + getCurrentTask() + " with key: " + key);
-				found = true;
-			}
-
-		}
-		if (!found) {
-			setCurrentTask(tasks.get(0));
-			getProvider().log("Couldn't find a corresponding task, setting task to 0 (begin of quest)");
-		}
-	}
 
 	private long lastTask = System.currentTimeMillis();
 
@@ -90,17 +67,21 @@ public class TaskHandler {
 				}
 			}
 
-			// Checking if he account is on fixed mode (client)
+			// Checking if he account is not fixed mode (client)
 			getEvents().fixedMode();
+			getEvents().fixedMode2();
+			getEvents().executeAllEvents();
 		}
 
 		// Checking is the account is not logged in
 		if (!getProvider().getClient().isLoggedIn()) {
-			getEvent().execute();
+			DatabaseUtilities.updateAccountStatusInDatabase(getProvider(), "TIMEOUT", getEvent().getUsername());
+			BotCommands.killProcess(getScript());
 		}
 
 		// Is the account too long logged in without doing anything? Set it to
-		// stuck/timeout
+		// stuck/timeout, it will run the client again with WebWalking enabled to
+		// un-stuck the person
 		long currentTask = System.currentTimeMillis();
 
 		getProvider().log("Task time: " + (currentTask - lastTask));
@@ -114,34 +95,19 @@ public class TaskHandler {
 			System.exit(1);
 		}
 
-		// Actual task looping
+		// Has the task corresponding with the character been found or not?
 		boolean foundTask = false;
-		// Tasks romeo & juilet
-		for (Entry<Integer, Task> entry : getTasks().entrySet()) {
 
-//			getProvider().log("Account stage: " + getEvent().getAccountStage());
-//			if (getEvent().getAccountStage().equalsIgnoreCase("WALKING-STUCK")) {
-//				Position pos = new Position(3235, 3225, 0);
-//
-//				 getProvider().getWalking().webWalk(pos);
-////
-////				getProvider().getDoorHandler().handleNextObstacle(pos);
-////				getProvider().getWalking().walk(pos);
-//
-//				getProvider().log("Account stuck, trying to walk to lumbridge");
-//				if (LUMBRIDGE_AREA_START.contains(getProvider().myPlayer())) {
-//					DatabaseUtilities.updateAccountStatusInDatabase(getProvider(), "AVAILABLE",
-//							getEvent().getUsername());
-//					BotCommands.killProcess(getScript());
-//				}
-//				return;
-//			}
+		// Looping over all the tasks
+		for (Entry<Integer, Task> entry : getTasks().entrySet()) {
+			int taskAttempts = 0;
 
 			int questStepRequired = entry.getKey();
 			Task task = entry.getValue();
 
-			// Finding new task when starting
-			if (getCurrentTask() == null && questStepRequired == getQuest().getQuestStageStep()
+			// Finding new task out of the database (the number) when starting
+			if (getCurrentTask() == null
+					&& (questStepRequired == getQuest().getQuestStageStep() || (currentTask - lastTask) > 30000)
 					&& task.requiredConfigQuestStep() == getQuest().getQuestProgress()) {
 				setCurrentTask(task);
 				getProvider().log("On next task new: " + task.scriptName() + " " + task.requiredConfigQuestStep() + " "
@@ -159,45 +125,59 @@ public class TaskHandler {
 				// Not this task, next one
 				continue;
 			}
-			// for (Task task : getRomeoAndJuliet().getRomeoAndJulietTasks()) {
+
+			// Sometimes a task can't be found and will try to correct itself afterwards,
+			// but this means that he task could still be null, this way it won't break
 			if (getCurrentTask() == null) {
 				getProvider().log("System couldnt find a next action, logging out");
 				break;
 			}
 			if (task.requiredConfigQuestStep() == getQuest().getQuestProgress()
 					&& (questStepRequired == getQuest().getQuestStageStep()
-							|| questStepRequired == getQuest().getQuestStageStep() - 1)) {
+							|| questStepRequired == getQuest().getQuestStageStep() - 1
+							|| (currentTask - lastTask) > 30000)) {
 
 				// Waiting for task to finish
 				getProvider().log("finish: " + getCurrentTask().finished());
 
 				// Waiting on task to get finished
 				while (!getCurrentTask().finished()) {
-					// if (getDialogues().isPendingContinuation() &&
-					// getRomeoAndJuliet().isInQuestCutscene()) {
-					// getDialogues().clickContinue();
-					// } else
+
+					// Sometimes dialogue pops up without a dialoguetask and could get stuck because
+					// of this
 					if (getProvider().getDialogues().isPendingContinuation()) {
 						getProvider().getDialogues().clickContinue();
 					} else {
 						getCurrentTask().loop();
 					}
 
-					getProvider().log("performing task" + getCurrentTask().getClass().getSimpleName());
+					// Sometimes the script can't perform the task correctly and will get stuck
+					// performing the task over and over again without completing it
+					taskAttempts++;
+					if (taskAttempts > 50) {
+						DatabaseUtilities.updateAccountStatusInDatabase(getProvider(), "TASK_TIMEOUT",
+								getEvent().getUsername());
+						BotCommands.killProcess(getScript());
+					}
+
+					getProvider().log("performing task" + getCurrentTask().getClass().getSimpleName() + " attempt: "
+							+ taskAttempts);
 					Thread.sleep(1000, 1500);
 				}
 
-				// Task is finished
+				// Task is finished, go to the next one
 				getProvider().log("On next task: " + task.scriptName());
 				setCurrentTask(task);
 
-				// Fished the last task at...?
+				// Fished the last task at...? If the task doesnt want to complete, it will be
+				// set 'TIMEOUT' in the database, and you will have to manually fix this. The
+				// script will try to fix itself on the next run with the quest progress, but
+				// can't always do this
 				lastTask = System.currentTimeMillis();
 
 				// Updating stage in database
 				if (getEvent() != null && getEvent().getUsername() != null) {
 					DatabaseUtilities.updateStageProgress(getProvider(), getQuest().getStage().name(),
-							// getQuest().getQuestStageStep() - 1, getEvent().getUsername());
 							getQuest().getQuestStageStep(), getEvent().getUsername());
 				}
 
@@ -291,7 +271,8 @@ public class TaskHandler {
 	}
 
 	/**
-	 * @param script the script to set
+	 * @param script
+	 *            the script to set
 	 */
 	public void setScript(Script script) {
 		this.script = script;

@@ -159,22 +159,9 @@ public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface
 			Sleep.sleepUntil(() -> getArea().contains(getProv().myPlayer()), 10000);
 		}
 		RS2Object object = getProv().getObjects().closest(getObjectId());
-		// Optional<RS2Object> object =
-		// getProv().getObjects().getAll().stream().filter(Objects::nonNull)
-		// .filter(obj -> obj.getId() == getObjectId()).findFirst();
 
 		if (object != null) {
-			Area area = object.getArea(3);
-			getProv().getWalking().walk(area);
 
-			// When cannot reach object, then turn to webwalking to the position
-			if (!getProv().getMap().isWithinRange(object.getPosition(), getProv().myPlayer(), 2)) {
-				if (!getProv().getWalking().webWalk(area)) {
-					if (getProv().getWalking().walk(area)) {
-						getProv().getDoorHandler().handleNextObstacle(area);
-					}
-				}
-			}
 			if (getInteractOption() != null && getInteractOption().length() > 0) {
 				object.interact(getInteractOption());
 				setClickedObject(true);
@@ -194,6 +181,26 @@ public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface
 		if (getWaitForItemString() != null && getWaitForItemString().length() > 0) {
 			Sleep.sleepUntil(() -> getProv().getInventory().contains(getWaitForItemString()), 10000);
 		}
+
+		// if (object != null && !getProv().getMap().canReach(object.getPosition())) {
+		// //Can't reach? Open door & walk to it
+		// getProv().getDoorHandler().handleNextObstacle(object.getPosition());
+		// getProv().getWalking().walk(object.getPosition());
+		// }
+		if (object != null && getFinalDestinationArea() != null
+				&& !getFinalDestinationArea().contains(getProv().myPlayer())) {
+			
+			// Not in area? walking to the area of the object, extra backup
+			Sleep.sleepUntil(() -> getFinalDestinationArea().contains(getProv().myPlayer()), 3000);
+			getProv().getWalking().webWalk(object.getArea(2));
+		}
+//		if (object != null && getArea() != null
+//				&& !getArea().contains(getProv().myPlayer())) {
+//			
+//			// Not in area? walking to the area of the object, extra backup
+//			Sleep.sleepUntil(() -> getArea().contains(getProv().myPlayer()), 3000);
+//			getProv().getWalking().webWalk(object.getArea(2));
+//		}
 
 	}
 

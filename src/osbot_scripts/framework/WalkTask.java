@@ -23,9 +23,9 @@ public class WalkTask extends TaskSkeleton implements Task {
 	private boolean webWalking = false;
 
 	private Area finishArea;
-	
+
 	private Script script;
-	
+
 	private LoginEvent login;
 
 	public WalkTask(String scriptName, int questProgress, int questConfig, MethodProvider prov,
@@ -155,12 +155,13 @@ public class WalkTask extends TaskSkeleton implements Task {
 				getProv().log("send position set to: " + diffX + " " + diffY + " " + newPosition.getX() + " "
 						+ newPosition.getY());
 
-				if (getProv().getWalking().walk(newPosition)) {
-					getProv().getDoorHandler().handleNextObstacle(newPosition);
-					failToWalk = 0;
+				if (!getProv().getWalking().walk(newPosition)) {
+					failToWalk++;
+					// failToWalk = 0;
 				} else {
-					getProv().log("still failed to walk.. "+failToWalk);
+					getProv().log("still failed to walk.. " + failToWalk);
 				}
+				getProv().getDoorHandler().handleNextObstacle(newPosition);
 
 				if (failToWalk > 10 && getScript() != null && getLogin() != null) {
 					DatabaseUtilities.updateAccountStatusInDatabase(getProv(), "WALKING_STUCK", login.getUsername());
@@ -186,12 +187,12 @@ public class WalkTask extends TaskSkeleton implements Task {
 
 			for (int i = 0; i < getPathToWalk().size(); i++) {
 				// while (!getProv().myPlayer().getArea(20).contains(getPathToWalk().get(i))) {
-//				getProv().getDoorHandler().handleNextObstacle(getPathToWalk().get(i));
+				// getProv().getDoorHandler().handleNextObstacle(getPathToWalk().get(i));
 				if (!getProv().getWalking().walk(getPathToWalk().get(i))) {
 					failToWalk++;
 				}
 				getProv().getDoorHandler().handleNextObstacle(getPathToWalk().get(i));
-				
+
 				long endWalk = System.currentTimeMillis();
 				long took = (endWalk - lastWalk) / 3600;
 				getProv().log("taking next path.. (" + i + "/" + getPathToWalk().size() + ")" + " took: " + took
@@ -279,7 +280,8 @@ public class WalkTask extends TaskSkeleton implements Task {
 	}
 
 	/**
-	 * @param script the script to set
+	 * @param script
+	 *            the script to set
 	 */
 	public void setScript(Script script) {
 		this.script = script;
@@ -293,7 +295,8 @@ public class WalkTask extends TaskSkeleton implements Task {
 	}
 
 	/**
-	 * @param login the login to set
+	 * @param login
+	 *            the login to set
 	 */
 	public void setLogin(LoginEvent login) {
 		this.login = login;

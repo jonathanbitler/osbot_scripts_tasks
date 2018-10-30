@@ -116,7 +116,7 @@ public class RomeoAndJuliet extends QuestStep {
 
 			getTaskHandler().getTasks().put(1,
 					new DialogueTask("talk with romeo", 0, QUEST_CONFIG, getBot().getMethods(), VARROCK_SQUARE_AREA,
-							5037, new String[] { "Perhaps I could help to find her for you?",
+							5037, 10, new String[] { "Perhaps I could help to find her for you?",
 									"Yes, ok, I'll let her know.", "Ok, thanks." }));
 
 		}
@@ -135,7 +135,7 @@ public class RomeoAndJuliet extends QuestStep {
 					PATH_TO_JULIET_FLOOR_1, AT_JULIET, getScript(), getEvent(), false));
 
 			getTaskHandler().getTasks().put(5, new DialogueTask("talk with juliet", 10, QUEST_CONFIG,
-					getBot().getMethods(), AT_JULIET, 6268, new String[] { "I guess I could look for him for you.", }));
+					getBot().getMethods(), AT_JULIET, 6268, 20, new String[] { "I guess I could look for him for you.", }));
 		}
 
 		if (getQuestProgress() <= 20) {
@@ -154,7 +154,7 @@ public class RomeoAndJuliet extends QuestStep {
 					getBot().getMethods(), WALK_TO_ROMEO_FROM_JULIET, VARROCK_SQUARE_AREA, getScript(), getEvent(), false));
 
 			getTaskHandler().getTasks().put(9, new DialogueTask("talk with romeo", 20, QUEST_CONFIG,
-					getBot().getMethods(), VARROCK_SQUARE_AREA, 5037, new String[] { "Ok, thanks." }));
+					getBot().getMethods(), VARROCK_SQUARE_AREA, 5037, 30, new String[] { "Ok, thanks." }));
 		}
 
 		if (getQuestProgress() <= 30) {
@@ -162,7 +162,7 @@ public class RomeoAndJuliet extends QuestStep {
 					getBot().getMethods(), PATH_TO_FATHER_LAWRENCE, FATHER_LAWRENCE_AREA, getScript(), getEvent(), false));
 
 			getTaskHandler().getTasks().put(11, new DialogueTask("talk with father lawrence", 30, QUEST_CONFIG,
-					getBot().getMethods(), FATHER_LAWRENCE_AREA, 5038, new String[] { "Ok, thanks." }));
+					getBot().getMethods(), FATHER_LAWRENCE_AREA, 5038, 40, new String[] { "Ok, thanks." }));
 		}
 
 		if (getQuestProgress() <= 40) {
@@ -178,7 +178,7 @@ public class RomeoAndJuliet extends QuestStep {
 			getTaskHandler().getTasks().put(15,
 					new DialogueTask("talk with father lawrence", 40, QUEST_CONFIG, getBot().getMethods(),
 							APOTHECARY_AREA, 5036, "Cadava potion",
-							new String[] { "Talk about something else.", "Talk about Romeo & Juliet." }));
+							50, new String[] { "Talk about something else.", "Talk about Romeo & Juliet." }));
 		}
 
 		if (getQuestProgress() <= 50) {
@@ -195,7 +195,7 @@ public class RomeoAndJuliet extends QuestStep {
 					PATH_TO_JULIET_FLOOR_1, AT_JULIET, getScript(), getEvent(), false));
 
 			getTaskHandler().getTasks().put(19, new DialogueTask("talk with juliet", 50, QUEST_CONFIG,
-					getBot().getMethods(), AT_JULIET, 6268, new String[] { "I guess I could look for him for you.", }));
+					getBot().getMethods(), AT_JULIET, 6268, 60, new String[] { "I guess I could look for him for you.", }));
 		}
 
 		if (getQuestProgress() <= 60) {
@@ -214,7 +214,7 @@ public class RomeoAndJuliet extends QuestStep {
 					getBot().getMethods(), WALK_TO_ROMEO_FROM_JULIET, VARROCK_SQUARE_AREA, getScript(), getEvent(), false));
 
 			getTaskHandler().getTasks().put(23, new DialogueTask("talk with romeo", 60, QUEST_CONFIG,
-					getBot().getMethods(), VARROCK_SQUARE_AREA, 5037, new String[] { "Ok, thanks." }));
+					getBot().getMethods(), VARROCK_SQUARE_AREA, 5037, 100, new String[] { "Ok, thanks." }));
 		}
 	}
 

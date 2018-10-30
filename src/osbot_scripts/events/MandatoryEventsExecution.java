@@ -5,6 +5,8 @@ import org.osbot.rs07.api.ui.Tab;
 import org.osbot.rs07.event.Event;
 import org.osbot.rs07.script.MethodProvider;
 
+import osbot_scripts.util.Sleep;
+
 public class MandatoryEventsExecution {
 
 	public MandatoryEventsExecution(MethodProvider provider) {
@@ -31,11 +33,41 @@ public class MandatoryEventsExecution {
 
 	public void fixedMode() {
 		RS2Widget isResizable = getProvider().getWidgets().get(164, 32);
+		Sleep.sleepUntil(() -> isResizable != null, 1000);
 		if (isResizable != null) {
 			RS2Widget widget = getProvider().getWidgets().get(164, 38);
+			Sleep.sleepUntil(() -> widget != null, 5000);
 			if (widget != null) {
 				widget.interact("Options");
-				RS2Widget fixedMode = getProvider().getWidgets().get(261, 33, 9);
+				RS2Widget fixedMode = getProvider().getWidgets().get(261, 33, 4);
+				Sleep.sleepUntil(() -> fixedMode != null, 5000);
+				if (fixedMode != null) {
+					fixedMode.interact("Fixed mode");
+					isFixedMode = true;
+					getProvider().log("Set fixed to: " + isFixedMode);
+					getProvider().log("Restarting for resizable to take effect");
+					try {
+						Thread.sleep(5000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					System.exit(1);
+				}
+			}
+		}
+	}
+
+	public void fixedMode2() {
+		RS2Widget isResizable = getProvider().getWidgets().get(161, 34);
+		Sleep.sleepUntil(() -> isResizable != null, 1000);
+		if (isResizable != null) {
+			RS2Widget widget = getProvider().getWidgets().get(161, 39);
+			Sleep.sleepUntil(() -> widget != null, 5000);
+			if (widget != null) {
+				widget.interact("Options");
+				RS2Widget fixedMode = getProvider().getWidgets().get(261, 33, 4);
+				Sleep.sleepUntil(() -> fixedMode != null, 5000);
 				if (fixedMode != null) {
 					fixedMode.interact("Fixed mode");
 					isFixedMode = true;
@@ -54,35 +86,34 @@ public class MandatoryEventsExecution {
 	}
 
 	public boolean executeAllEvents() {
-		if (!disabled) {
-			getProvider().log("Executing all events roofs/auto/fixed mode");
-			if (!isFixedMode) {
-				RS2Widget widget = getProvider().getWidgets().get(164, 38);
-				if (widget != null) {
-					widget.interact("Options");
-					RS2Widget fixedMode = getProvider().getWidgets().get(261, 33, 9);
-					if (fixedMode != null) {
-						fixedMode.interact("Fixed mode");
-						isFixedMode = true;
-						getProvider().log("Set fixed to: " + isFixedMode);
-					}
-				}
-				// Event fixedModeEvent = new FixedModeEvent();
-				// getProvider().execute(fixedModeEvent);
-				// isFixedMode = fixedModeEvent.hasFinished();
-			}
-			if (!getProvider().getSettings().areRoofsEnabled()) {
-				Event toggleRoofsHiddenEvent = new ToggleRoofsHiddenEvent();
-				getProvider().execute(toggleRoofsHiddenEvent);
-			}
-			if (!isAudioDisabled) {
-				isAudioDisabled = disableAudio();
-			} else if (!getProvider().getSettings().isShiftDropActive()) {
-				toggleShiftDrop();
-			}
-			getProvider().getTabs().open(Tab.INVENTORY);
-			disabled = true;
+		// if (!disabled) {
+		// getProvider().log("Executing all events roofs/auto/fixed mode");
+		// if (!isFixedMode) {
+		// RS2Widget widget = getProvider().getWidgets().get(164, 38);
+		// if (widget != null) {
+		// widget.interact("Options");
+		// RS2Widget fixedMode = getProvider().getWidgets().get(261, 33, 9);
+		// if (fixedMode != null) {
+		// fixedMode.interact("Fixed mode");
+		// isFixedMode = true;
+		// getProvider().log("Set fixed to: " + isFixedMode);
+		// }
+		// }
+		// // Event fixedModeEvent = new FixedModeEvent();
+		// // getProvider().execute(fixedModeEvent);
+		// // isFixedMode = fixedModeEvent.hasFinished();
+		// }
+		if (!getProvider().getSettings().areRoofsEnabled()) {
+			Event toggleRoofsHiddenEvent = new ToggleRoofsHiddenEvent();
+			getProvider().execute(toggleRoofsHiddenEvent);
 		}
+		if (!isAudioDisabled) {
+			isAudioDisabled = disableAudio();
+			getProvider().getTabs().open(Tab.INVENTORY);
+		} else if (!getProvider().getSettings().isShiftDropActive()) {
+			toggleShiftDrop();
+		}
+		// }
 		return true;
 	}
 

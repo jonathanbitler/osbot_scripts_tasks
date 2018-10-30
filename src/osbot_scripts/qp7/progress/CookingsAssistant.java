@@ -117,7 +117,7 @@ public class CookingsAssistant extends QuestStep {
 
 		getTaskHandler().getTasks().put(1,
 				new DialogueTask("talk with cook", 0, QUEST_CONFIG, getBot().getMethods(), COOKS_AREA, 4626,
-						new String[] { "What's wrong?", "I'm always happy to help a cook in distress",
+						1, new String[] { "What's wrong?", "I'm always happy to help a cook in distress",
 								"I'll get right on it", "Actually, I know where to find this stuff." }));
 
 		if (!getInventory().contains("Bucket of milk")) {
@@ -178,7 +178,7 @@ public class CookingsAssistant extends QuestStep {
 				getBot().getMethods(), PATH_TO_COOK_FROM_MILL, COOKS_AREA, getScript(), getEvent(), false));
 
 		getTaskHandler().getTasks().put(17, new DialogueTask("talk with cook final", 1, QUEST_CONFIG,
-				getBot().getMethods(), COOKS_AREA, 4626, new String[] { "" }));
+				getBot().getMethods(), COOKS_AREA, 4626, 2, new String[] { "" }));
 
 	}
 

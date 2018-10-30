@@ -86,7 +86,7 @@ public class SheepShearerConfiguration extends QuestStep {
 
 			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 					new DialogueTask("talk with fred", 0, QUEST_CONFIG, getBot().getMethods(), PATH_TO_QUEST_START_AREA,
-							732, new String[] { "I'm looking for a quest", "Yes okay. I can do that", "Of course!",
+							732, 1, new String[] { "I'm looking for a quest", "Yes okay. I can do that", "Of course!",
 									"I'm something of an expert actually!" }));
 		}
 
@@ -102,7 +102,7 @@ public class SheepShearerConfiguration extends QuestStep {
 			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 					new DropItemTask("walk to quest guide", 1, QUEST_CONFIG, getBot().getMethods(), "Drop",
 							new String[] { "Shrimps", "Water rune", "Mind rune", "Air rune", "Body rune", "Earth rune",
-									"Bread", "Wooden shield", "Shortbow", "Bronze arrow", "Bronze dagger", "Grain" }));
+									"Bread", "Wooden shield", "Shortbow", "Bronze arrow", "Bronze dagger", "Grain", "Cadava berries" }));
 
 			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 					new ClickOnNpcTask("getting whool", 1, QUEST_CONFIG, getBot().getMethods(), "Shear",
@@ -153,7 +153,7 @@ public class SheepShearerConfiguration extends QuestStep {
 
 			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 					new DialogueTask("talk with fred quest end", 1, QUEST_CONFIG, getBot().getMethods(),
-							PATH_TO_QUEST_START_AREA, 732, new String[] { "" }));
+							PATH_TO_QUEST_START_AREA, 732, 21, new String[] { "" }));
 			// }
 		}
 		// public ClickOnWidgetTask(String scriptName, int questProgress, int

@@ -32,7 +32,7 @@ public class SheepShearer extends Script {
 			if (closeQuestCompleted != null) {
 				closeQuestCompleted.interact();
 			}
-			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage().name(), 0,
+			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0,
 					login.getUsername());
 			BotCommands.killProcess((Script) this);
 			return random(500, 600);
