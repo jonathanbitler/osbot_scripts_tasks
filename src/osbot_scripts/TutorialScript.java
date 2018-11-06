@@ -3,19 +3,15 @@ package osbot_scripts;
 import java.awt.Graphics2D;
 
 import org.osbot.rs07.api.map.Area;
-import org.osbot.rs07.event.Event;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 
 import osbot_scripts.bot.utils.BotCommands;
-import osbot_scripts.bot.utils.RandomUtil;
 import osbot_scripts.database.DatabaseUtilities;
-import osbot_scripts.events.DisableAudioEvent;
-import osbot_scripts.events.FixedModeEvent;
+import osbot_scripts.events.LoginEvent;
 import osbot_scripts.events.MandatoryEventsExecution;
-import osbot_scripts.events.ToggleRoofsHiddenEvent;
-import osbot_scripts.events.ToggleShiftDropEvent;
 import osbot_scripts.framework.AccountStage;
+import osbot_scripts.login.LoginHandler;
 import osbot_scripts.sections.BankGuideSection;
 import osbot_scripts.sections.CharacterCreationSection;
 import osbot_scripts.sections.ChurchGuideSection;
@@ -41,7 +37,7 @@ public class TutorialScript extends Script {
 	/**
 	 * The current mainstate
 	 */
-	public static MainState mainState = MainState.CREATE_CHARACTER_DESIGN;
+	public static MainState mainState = null;
 
 	/**
 	 * Creating a character with random outfit
@@ -99,39 +95,45 @@ public class TutorialScript extends Script {
 	private static final Area TUT_ISLAND_AREA = new Area(
 			new int[][] { { 3049, 3128 }, { 3032, 3090 }, { 3054, 3037 }, { 3146, 3048 }, { 3181, 3101 },
 					{ 3163, 3129 }, { 3137, 3137 }, { 3131, 3145 }, { 3103, 3140 }, { 3087, 3156 }, { 3054, 3138 } });
-	
+
 	private static final Area TUT_ISLAND_AREA_CAVE = new Area(new int[][] { { 3067, 9521 }, { 3096, 9540 },
-		{ 3128, 9540 }, { 3125, 9498 }, { 3085, 9482 }, { 3062, 9500 } });
-	
+			{ 3128, 9540 }, { 3125, 9498 }, { 3085, 9482 }, { 3062, 9500 } });
+
 	private MandatoryEventsExecution events = new MandatoryEventsExecution(this);
-	
+
+	private LoginEvent login;
+
 	/**
 	 * Loops
 	 */
 	@Override
 	public int onLoop() throws InterruptedException {
 
-		if (!TUT_ISLAND_AREA.contains(myPlayer()) && !TUT_ISLAND_AREA_CAVE.contains(myPlayer())) {
-			mainState = MainState.IN_LUMBRIDGE;
-			log("Succesfully completed!");
-			String username = null;
-			int pid = 0;
-			if (getParameters() != null) {
-				String[] params = getParameters().split("_"); // split the _ character!!!!!!
-				username = params[0];
-				pid = Integer.parseInt(params[2]);
-			}
-			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0, username);
-			BotCommands.killProcess((Script)this);
-			return 1000;
+		if (mainState == null) {
+			mainState = CheckInWhatArea.getState(this);
+		}
+		
+		if (!getClient().isLoggedIn() && getConfigs().get(281) > 0) {
+			BotCommands.killProcess((Script) this);
 		}
 
-		if (getClient().isLoggedIn()) {
-			events.fixedMode();
-			events.fixedMode2();
-		}
-		if (mainState != MainState.CREATE_CHARACTER_DESIGN && mainState != MainState.TALK_TO_GIELINOR_GUIDE_ONE) {
-			events.executeAllEvents();
+		// if (getDialogues().isPendingContinuation()) {
+		// getDialogues().clickContinue();
+		// }
+
+		if ((!TUT_ISLAND_AREA.contains(myPlayer()) && !TUT_ISLAND_AREA_CAVE.contains(myPlayer()))
+				|| (new Area(new int[][] { { 3221, 3228 }, { 3221, 3209 }, { 3246, 3210 }, { 3245, 3229 } })
+						.contains(myPlayer()))) {
+
+			// if (getDialogues().isPendingContinuation()) {
+			// getDialogues().selectOption("Im good, thanks.");
+			// getDialogues().clickContinue();
+			// }
+
+			log("Succesfully completed!");
+			DatabaseUtilities.updateStageProgress(this, AccountStage.QUEST_COOK_ASSISTANT.name(), 0,
+					getLogin().getUsername());
+			BotCommands.killProcess((Script) this);
 		}
 
 		log(mainState);
@@ -157,19 +159,36 @@ public class TutorialScript extends Script {
 		} else if (mainState == MainState.WIZARD_GUIDE_SECTION) {
 			wizardGuideSection.onLoop();
 		} else if (mainState == MainState.IN_LUMBRIDGE) {
-//			while (getClient().isLoggedIn()) {
-				// getLogoutTab().logOut();
-//				stop();
-				// Thread.sleep(5000);
-				log("Trying to logout...");
-//			}
+			// while (getClient().isLoggedIn()) {
+			// getLogoutTab().logOut();
+			// stop();
+			// Thread.sleep(5000);
+			log("Trying to logout...");
+			// }
 		}
 
-		return random(800, 1600);
+		if (getClient().isLoggedIn() && getConfigs().get(281) >= 3 && !getDialogues().isPendingContinuation()
+				&& !getDialogues().isPendingOption()) {
+			events.fixedMode();
+			events.fixedMode2();
+		}
+
+		if (mainState != MainState.CREATE_CHARACTER_DESIGN && mainState != MainState.TALK_TO_GIELINOR_GUIDE_ONE
+				&& mainState != MainState.IN_LUMBRIDGE && !TUT_ISLAND_AREA.contains(myPlayer())
+				&& !TUT_ISLAND_AREA_CAVE.contains(myPlayer())
+				&& (!new Area(new int[][] { { 3221, 3228 }, { 3221, 3209 }, { 3246, 3210 }, { 3245, 3229 } })
+						.contains(myPlayer()))) {
+
+			events.executeAllEvents();
+		}
+
+		return random(400, 800);
 	}
 
 	@Override
 	public void onStart() throws InterruptedException {
+		login = LoginHandler.login(this, getParameters());
+
 		getCharacterCreationSection().exchangeContext(getBot());
 		getGuilinorGuideSection().exchangeContext(getBot());
 		getSurvivalExpertSection().exchangeContext(getBot());
@@ -180,9 +199,6 @@ public class TutorialScript extends Script {
 		getBankingAreaSection().exchangeContext(getBot());
 		getChurchGuideSection().exchangeContext(getBot());
 		getWizardGuideSection().exchangeContext(getBot());
-
-		mainState = CheckInWhatArea.getState(this);
-		log("Set state to: " + mainState);
 
 		// prevents script from skipping character customization
 		sleep(4000);
@@ -195,10 +211,8 @@ public class TutorialScript extends Script {
 
 	@Override
 	public void onPaint(Graphics2D g) {
-
+		getMouse().setDefaultPaintEnabled(true);
 	}
-
-	
 
 	/**
 	 * @return the guilinorGuideSection
@@ -206,6 +220,7 @@ public class TutorialScript extends Script {
 	public TutorialSection getGuilinorGuideSection() {
 		return guilinorGuideSection;
 	}
+
 	/**
 	 * 
 	 * @return
@@ -262,6 +277,21 @@ public class TutorialScript extends Script {
 
 	public TutorialSection getWizardGuideSection() {
 		return wizardGuideSection;
+	}
+
+	/**
+	 * @return the login
+	 */
+	public LoginEvent getLogin() {
+		return login;
+	}
+
+	/**
+	 * @param login
+	 *            the login to set
+	 */
+	public void setLogin(LoginEvent login) {
+		this.login = login;
 	}
 
 }

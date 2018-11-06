@@ -25,7 +25,8 @@ public class ChurchGuideSection extends TutorialSection {
 					.contains(myPlayer().getPosition())) {
 				talkAndContinueWithInstructor();
 			} else {
-				clickObject(1521, "Open");
+				getWalking().webWalk(new Position(3123, 3106, 0));
+//				clickObject(1521, "Open");
 				talkAndContinueWithInstructor();
 			}
 			break;

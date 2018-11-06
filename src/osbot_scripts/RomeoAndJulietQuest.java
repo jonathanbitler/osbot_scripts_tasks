@@ -26,6 +26,14 @@ public class RomeoAndJulietQuest extends Script {
 	@Override
 	public int onLoop() throws InterruptedException {
 
+		if (getDialogues().isPendingContinuation()) {
+			getDialogues().clickContinue();
+		}
+
+		getRomeoAndJuliet().getTaskHandler().getEvents().fixedMode();
+		getRomeoAndJuliet().getTaskHandler().getEvents().fixedMode2();
+		getRomeoAndJuliet().getTaskHandler().getEvents().executeAllEvents();
+		
 		RS2Widget closeQuestCompleted = getWidgets().get(277, 15);
 		if (getRomeoAndJuliet().getQuestProgress() == 100 || closeQuestCompleted != null) {
 			log("Successfully completed quest romeo & juliet");
@@ -34,6 +42,8 @@ public class RomeoAndJulietQuest extends Script {
 			}
 			Thread.sleep(5000);
 			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0, login.getUsername());
+			DatabaseUtilities.updateAccountBreakTill(this, getRomeoAndJuliet().getEvent().getUsername(), 60);
+			
 			BotCommands.killProcess((Script) this);
 			return random(500, 600);
 		}
@@ -45,8 +55,10 @@ public class RomeoAndJulietQuest extends Script {
 
 	@Override
 	public void onPaint(Graphics2D g) {
-		g.drawString("Name Task:" + getRomeoAndJuliet().getTaskHandler().getCurrentTask().getClass().getSimpleName()
-				+ " " + "Quest Progress: " + getRomeoAndJuliet().getQuestProgress(), 58, 400);
+//		g.drawString("Name Task:" + getRomeoAndJuliet().getTaskHandler().getCurrentTask().getClass().getSimpleName()
+//				+ " " + "Quest Progress: " + getRomeoAndJuliet().getQuestProgress(), 58, 400);
+//		getRomeoAndJuliet().getTrailMouse().draw(g);
+		getMouse().setDefaultPaintEnabled(true);
 	}
 
 	@Override

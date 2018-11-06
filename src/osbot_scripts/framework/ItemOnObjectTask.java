@@ -51,7 +51,7 @@ public class ItemOnObjectTask extends TaskSkeleton implements Task, AreaInterfac
 		// TODO Auto-generated method stub
 
 		// If player is not in the selected field, then walk to it
-		if (getArea() != null && !getProv().myPlayer().getArea(10).contains(getArea().getRandomPosition())) {
+		if (getArea() != null && !getApi().myPlayer().getArea(10).contains(getArea().getRandomPosition())) {
 			// getProv().getWalking().webWalk(getArea());
 		}
 		ranOnStart = true;
@@ -71,13 +71,13 @@ public class ItemOnObjectTask extends TaskSkeleton implements Task, AreaInterfac
 
 	@Override
 	public boolean startCondition() {
-		Optional<RS2Object> object = getProv().getObjects().getAll().stream().filter(Objects::nonNull)
+		Optional<RS2Object> object = getApi().getObjects().getAll().stream().filter(Objects::nonNull)
 				.filter(obj -> obj.getId() == getObjectId()).findFirst();
 
 		if (!object.isPresent()) {
 			return false;
 		}
-		if (getProv().myPlayer().getArea(20).contains(object.get()) && correctStepInQuest()) {
+		if (getApi().myPlayer().getArea(20).contains(object.get()) && correctStepInQuest()) {
 			return true;
 		}
 		return false;
@@ -90,16 +90,16 @@ public class ItemOnObjectTask extends TaskSkeleton implements Task, AreaInterfac
 		}
 		if (getArea() != null) {
 			// Waiting before player is in an area
-			Sleep.sleepUntil(() -> getArea().contains(getProv().myPlayer()), 10000);
+			Sleep.sleepUntil(() -> getArea().contains(getApi().myPlayer()), 10000);
 		}
-		RS2Object object = getProv().getObjects().closest(getObjectId());
-		long amountBefore = getProv().getInventory().getAmount(getItemName());
+		RS2Object object = getApi().getObjects().closest(getObjectId());
+		long amountBefore = getApi().getInventory().getAmount(getItemName());
 		// Optional<RS2Object> object =
 		// getProv().getObjects().getAll().stream().filter(Objects::nonNull)
 		// .filter(obj -> obj.getId() == getObjectId()).findFirst();
 
 		if (object != null) {
-			Item item = getProv().getInventory().getItem(getItemName());
+			Item item = getApi().getInventory().getItem(getItemName());
 			// while (item != null && !getProv().getInventory().isItemSelected()) {
 			if (item != null) {
 				item.interact("Use");
@@ -107,16 +107,16 @@ public class ItemOnObjectTask extends TaskSkeleton implements Task, AreaInterfac
 			// }
 			object.interact("Use");
 			
-			Sleep.sleepUntil(() -> amountBefore != getProv().getInventory().getAmount(getItemName()), 10000);
+			Sleep.sleepUntil(() -> amountBefore != getApi().getInventory().getAmount(getItemName()), 10000);
 
-			if (amountBefore != getProv().getInventory().getAmount(getItemName())) {
+			if (amountBefore != getApi().getInventory().getAmount(getItemName())) {
 				setClickedObject(true);
-				getProv().log(isClickedObject());
+				getApi().log(isClickedObject());
 			}
 		}
 
 		if (getWaitForItemString() != null && getWaitForItemString().length() > 0) {
-			Sleep.sleepUntil(() -> getProv().getInventory().contains(getWaitForItemString()), 60000);
+			Sleep.sleepUntil(() -> getApi().getInventory().contains(getWaitForItemString()), 60000);
 		}
 
 	}
@@ -124,10 +124,10 @@ public class ItemOnObjectTask extends TaskSkeleton implements Task, AreaInterfac
 	@Override
 	public boolean finished() {
 		if (getWaitForItemString() != null && getWaitForItemString().length() > 0) {
-			return isClickedObject() && getProv().getInventory().contains(getWaitForItemString());
+			return isClickedObject() && getApi().getInventory().contains(getWaitForItemString());
 		}
 		if (getArea() != null) {
-			return getArea().contains(getProv().myPlayer()) && isClickedObject();
+			return getArea().contains(getApi().myPlayer()) && isClickedObject();
 		}
 		return isClickedObject();
 	}

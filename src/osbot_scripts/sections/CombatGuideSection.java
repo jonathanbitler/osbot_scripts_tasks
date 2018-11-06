@@ -89,11 +89,12 @@ public class CombatGuideSection extends TutorialSection {
 			walkInto();
 			break;
 
+		case 460:
 		case 450:
 			walkInto();
 			if (attackRat()) {
 				Sleep.sleepUntil(() -> !myPlayer().isUnderAttack() && myPlayer().isAttackable()
-						&& myPlayer().getAnimation() == -1, 25000, 8000);
+						&& myPlayer().getAnimation() == -1, 5000);
 			}
 			break;
 
@@ -163,7 +164,7 @@ public class CombatGuideSection extends TutorialSection {
 				npc -> npc.getName().equalsIgnoreCase("Giant rat") && npc.isAttackable());
 		if (rat != null) {
 			if (rat.interact()) {
-				Sleep.sleepUntil(() -> myPlayer().getInteracting() != null, 8000, 3000);
+				Sleep.sleepUntil(() -> myPlayer().getInteracting() != null, 15000);
 				return true;
 			}
 		}

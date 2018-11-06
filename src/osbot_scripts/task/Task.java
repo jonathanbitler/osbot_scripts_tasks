@@ -33,8 +33,9 @@ public interface Task {
 	
 	/**
 	 * When it is running, the loop
+	 * @throws InterruptedException 
 	 */
-	public void loop();
+	public void loop() throws InterruptedException;
 	
 	/**
 	 * When is it finished and can continue to the next task?

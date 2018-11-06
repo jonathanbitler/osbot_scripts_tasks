@@ -15,7 +15,7 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 
 	private final String username, password;
 
-	private String accountStage;
+	private String accountStage, tradeWith;
 
 	private int pid;
 
@@ -31,7 +31,7 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 	public final int execute() throws InterruptedException {
 		if (!getBot().isLoaded()) {
 			return 1000;
-		} else if (getClient().isLoggedIn() && getLobbyButton() == null) {
+		} else if ((getClient().isLoggedIn() && getLobbyButton() == null)) {
 			getBot().getScriptExecutor().resume();
 			setFinished();
 		} else if (getClient().isLoggedIn() && getLobbyButton() != null) {
@@ -126,7 +126,7 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 			DatabaseUtilities.updateAccountStatusInDatabase(this, "BANNED", this.username);
 			System.exit(1);
 		}
-		
+
 		if (isAlreadyLoggedInLocked()) {
 			log("Account is already logged in.. waiting 30 seconds to restart");
 			try {
@@ -141,7 +141,9 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 		if (!getClient().isLoggedIn()) {
 			setFailed();
 		} else {
-			DatabaseUtilities.updateAccountStatusInDatabase(this, "AVAILABLE", this.username);
+			if (!getAccountStage().equalsIgnoreCase("UNKNOWN")) {
+				DatabaseUtilities.updateAccountStatusInDatabase(this, "AVAILABLE", this.username);
+			}
 
 		}
 	}
@@ -204,7 +206,7 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 
 		if (ResponseCode.isConnectionError(responseCode)) {
 			log("Connection error, attempts exceeded");
-			DatabaseUtilities.updateAccountStatusInDatabase(this, "TIMEOUT", this.username);
+			DatabaseUtilities.updateAccountStatusInDatabase(this, "AVAILABLE", this.username);
 			setFailed();
 			System.exit(1);
 			return;
@@ -240,7 +242,7 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 	public String getAccountStage() {
 		return accountStage;
 	}
-	
+
 	/**
 	 * Sets an account stage
 	 * 
@@ -249,5 +251,16 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 	public void setAccountStage(String accountStage) {
 		this.accountStage = accountStage;
 	}
-	
+
+	/**
+	 * @return the tradeWith
+	 */
+	public String getTradeWith() {
+		return tradeWith;
+	}
+
+	public void setTradeWith(String tradeWith) {
+		this.tradeWith = tradeWith;
+	}
+
 }

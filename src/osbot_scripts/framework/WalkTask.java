@@ -24,25 +24,50 @@ public class WalkTask extends TaskSkeleton implements Task {
 
 	private Area finishArea;
 
+	private Area beginArea;
+
 	private Script script;
 
 	private LoginEvent login;
 
+	private boolean walkPathWithoutSteps;
+
 	public WalkTask(String scriptName, int questProgress, int questConfig, MethodProvider prov,
-			List<Position> pathToWalk, Area finishArea, Script script, LoginEvent login, boolean webWalk) {
+			List<Position> pathToWalk, Area finishArea, Script script, LoginEvent login, boolean webWalk,
+			boolean walkPathWithoutSteps) {
+		setScriptName(scriptName);
+		setProv(prov);
+		setCurrentQuestProgress(questProgress);
+		setPathToWalk(pathToWalk);
+		setPathToWalkCopy(pathToWalk);
+		setConfigQuestId(configQuestId);
+		setFinishArea(finishArea);
+		setScript(script);
+		setLogin(login);
+		setWebWalking(webWalk);
+		setWalkPathWithoutSteps(walkPathWithoutSteps);
+	}
+
+	public WalkTask(String scriptName, int questProgress, int questConfig, MethodProvider prov,
+			List<Position> pathToWalk, Area beginArea, Area finishArea, Script script, LoginEvent login,
+			boolean webWalk, boolean walkPathWithoutSteps) {
 		setScriptName(scriptName);
 		setProv(prov);
 		setCurrentQuestProgress(questProgress);
 		setPathToWalk(pathToWalk);
 		setConfigQuestId(configQuestId);
 		setFinishArea(finishArea);
+		setPathToWalkCopy(pathToWalk);
 		setScript(script);
 		setLogin(login);
 		setWebWalking(webWalk);
+		setWalkPathWithoutSteps(walkPathWithoutSteps);
+		setBeginArea(beginArea);
 	}
 
 	public WalkTask(String scriptName, int questProgress, int questConfig, MethodProvider prov, Position pathToWalk,
-			boolean deleteAlreadyFound, Area finishArea, Script script, LoginEvent login, boolean webWalk) {
+			boolean deleteAlreadyFound, Area finishArea, Script script, LoginEvent login, boolean webWalk,
+			boolean walkPathWithoutSteps) {
 		setScriptName(scriptName);
 		setProv(prov);
 		setCurrentQuestProgress(questProgress);
@@ -53,9 +78,12 @@ public class WalkTask extends TaskSkeleton implements Task {
 		setScript(script);
 		setLogin(login);
 		setWebWalking(webWalk);
+		setWalkPathWithoutSteps(walkPathWithoutSteps);
 	}
 
 	private List<Position> pathToWalk;
+
+	private List<Position> pathToWalkCopy;
 
 	@Override
 	public String scriptName() {
@@ -75,7 +103,7 @@ public class WalkTask extends TaskSkeleton implements Task {
 		// TODO Auto-generated method stub
 		if (!isWebWalking()) {
 			for (int i = 0; i < getPathToWalk().size(); i++) {
-				if (getProv().myPlayer().getArea(20).contains(getPathToWalk().get(i))) {
+				if (getApi().myPlayer().getArea(20).contains(getPathToWalk().get(i))) {
 					delete = (i - 1);
 					// getProv().log("set delete to: "+delete);
 				}
@@ -118,107 +146,129 @@ public class WalkTask extends TaskSkeleton implements Task {
 	@Override
 	public void loop() {
 		// if (!ranOnStart) {
-		onStart();
-		// }
 
-		if (COOKING_ASSISTANT_WRONG_PLACE.contains(getProv().myPlayer())) {
-			getProv().log("Got stuck my cooking place door, trying to get out!");
-			ArrayList<Position> pos = new ArrayList<Position>(Arrays.asList(new Position(3208, 3213, 0),
-					new Position(3211, 3209, 0), new Position(3214, 3218, 0), new Position(3224, 3218, 0),
-					new Position(3226, 3218, 0), new Position(3234, 3224, 0), new Position(3236, 3225, 0)));
-
-			for (int i = 0; i < pos.size(); i++) {
-				getProv().getDoorHandler().handleNextObstacle(getPathToWalk().get(i));
-				if (!getProv().getWalking().walk(getPathToWalk().get(i))) {
-					failToWalk++;
-				}
-			}
+		if (getPathToWalk().size() == 0) {
+			getApi().log("Size of path went to 0, setting a copy of the path back");
+			setPathToWalk(getPathToWalkCopy());
+		}
+		
+		// Not in begin area? Then walk to it by itself with webwalking
+		if (getBeginArea() != null && !getBeginArea().contains(getApi().myPlayer())) {
+			getApi().getWalking().webWalk(getPathToWalk().get(getPathToWalk().size() - 1));
 		}
 
-		if (ranOnStart) {
-			if (failToWalk > 3) {
-				// for (int i = 0; i < getPathToWalk().size(); i++) {
-				int i = 0;
-				int posX = getPathToWalk().get(i).getX();
-				int posY = getPathToWalk().get(i).getY();
-				int plusOne = i + 1;
+		if (!isWalkPathWithoutSteps()) {
+			onStart();
 
-				if ((plusOne) > (getPathToWalk().size() - 1)) {
-					return;
+			// }
+
+			if (COOKING_ASSISTANT_WRONG_PLACE.contains(getApi().myPlayer())) {
+				getApi().log("Got stuck my cooking place door, trying to get out!");
+				ArrayList<Position> pos = new ArrayList<Position>(Arrays.asList(new Position(3208, 3213, 0),
+						new Position(3211, 3209, 0), new Position(3214, 3218, 0), new Position(3224, 3218, 0),
+						new Position(3226, 3218, 0), new Position(3234, 3224, 0), new Position(3236, 3225, 0)));
+
+				for (int i = 0; i < pos.size(); i++) {
+					getApi().getDoorHandler().handleNextObstacle(getPathToWalk().get(i));
+					if (!getApi().getWalking().walk(getPathToWalk().get(i))) {
+						failToWalk++;
+					}
 				}
-				int posX2 = getPathToWalk().get(plusOne).getX();
-				int posY2 = getPathToWalk().get(plusOne).getY();
-				int diffX = (posX2 - posX) / 2;
-				int diffY = (posY2 - posY) / 2;
-				Position newPosition = getPathToWalk().get(i).translate(diffX, diffY);
-
-				getProv().log("send position set to: " + diffX + " " + diffY + " " + newPosition.getX() + " "
-						+ newPosition.getY());
-
-				if (!getProv().getWalking().walk(newPosition)) {
-					failToWalk++;
-					// failToWalk = 0;
-				} else {
-					getProv().log("still failed to walk.. " + failToWalk);
-				}
-				getProv().getDoorHandler().handleNextObstacle(newPosition);
-
-				if (failToWalk > 10 && getScript() != null && getLogin() != null) {
-					DatabaseUtilities.updateAccountStatusInDatabase(getProv(), "WALKING_STUCK", login.getUsername());
-					BotCommands.killProcess(getScript());
-				}
-				// }
 			}
-		}
 
-		if (getLogin().getAccountStage().equalsIgnoreCase("WALKING-STUCK")) {
-			getProv().getWalking().webWalk(getPathToWalk().get(getPathToWalk().size() - 1));
-			getProv().log("Account stuck, trying to walk with webwalking");
-			getLogin().setAccountStage("AVAILABLE");
-		} else if (isWebWalking()) {
-			getProv().log("Webwalking to the last of the positions");
-			if (!getProv().getWalking().webWalk(getPathToWalk().get(getPathToWalk().size() - 1))) {
-				setWebWalking(false);
+			if (ranOnStart) {
+				if (failToWalk > 3) {
+					// for (int i = 0; i < getPathToWalk().size(); i++) {
+					int i = 0;
+					int posX = getPathToWalk().get(i).getX();
+					int posY = getPathToWalk().get(i).getY();
+					int plusOne = i + 1;
+
+					if ((plusOne) > (getPathToWalk().size() - 1)) {
+						return;
+					}
+					int posX2 = getPathToWalk().get(plusOne).getX();
+					int posY2 = getPathToWalk().get(plusOne).getY();
+					int diffX = (posX2 - posX) / 2;
+					int diffY = (posY2 - posY) / 2;
+					Position newPosition = getPathToWalk().get(i).translate(diffX, diffY);
+
+					getApi().log("send position set to: " + diffX + " " + diffY + " " + newPosition.getX() + " "
+							+ newPosition.getY());
+
+					getApi().getDoorHandler().handleNextObstacle(newPosition);
+					if (!getApi().getWalking().walk(newPosition)) {
+						failToWalk++;
+						// failToWalk = 0;
+					} else {
+						getApi().log("still failed to walk.. " + failToWalk);
+					}
+
+					if (failToWalk > 10 && getScript() != null && getLogin() != null) {
+						DatabaseUtilities.updateAccountStatusInDatabase(getApi(), "WALKING_STUCK", login.getUsername());
+						BotCommands.killProcess(getScript());
+					}
+					// }
+				}
+			}
+
+			if (getLogin().getAccountStage().equalsIgnoreCase("WALKING-STUCK")) {
+				getApi().getWalking().webWalk(getPathToWalk().get(getPathToWalk().size() - 1));
+				getApi().log("Account stuck, trying to walk with webwalking");
+
+				if (!getLogin().getAccountStage().equalsIgnoreCase("UNKNOWN")) {
+					getLogin().setAccountStage("AVAILABLE");
+				}
+			} else if (isWebWalking()) {
+				getApi().log("Webwalking to the last of the positions");
+				if (!getApi().getWalking().webWalk(getPathToWalk().get(getPathToWalk().size() - 1))) {
+					setWebWalking(false);
+				}
+			} else {
+
+				getApi().log("size to walk: " + getPathToWalk().size());
+				long lastWalk = System.currentTimeMillis();
+
+				for (int i = 0; i < getPathToWalk().size(); i++) {
+					// while (!getProv().myPlayer().getArea(20).contains(getPathToWalk().get(i))) {
+					// getProv().getDoorHandler().handleNextObstacle(getPathToWalk().get(i));
+					getApi().getDoorHandler().handleNextObstacle(getPathToWalk().get(i));
+					if (!getApi().getWalking().walk(getPathToWalk().get(i))) {
+						failToWalk++;
+					}
+
+					long endWalk = System.currentTimeMillis();
+					long took = (endWalk - lastWalk) / 3600;
+					getApi().log("taking next path.. (" + i + "/" + getPathToWalk().size() + ")" + " took: " + took
+							+ " seconds");
+					// getProv().log("waiting for walking sleep..");
+					// try {
+					// Thread.sleep(1000);
+					// } catch (InterruptedException e) {
+					// // TODO Auto-generated catch block
+					// e.printStackTrace();
+					// }
+					// }
+				}
 			}
 		} else {
-
-			getProv().log("size to walk: " + getPathToWalk().size());
-			long lastWalk = System.currentTimeMillis();
-
-			for (int i = 0; i < getPathToWalk().size(); i++) {
-				// while (!getProv().myPlayer().getArea(20).contains(getPathToWalk().get(i))) {
-				// getProv().getDoorHandler().handleNextObstacle(getPathToWalk().get(i));
-				if (!getProv().getWalking().walk(getPathToWalk().get(i))) {
-					failToWalk++;
-				}
-				getProv().getDoorHandler().handleNextObstacle(getPathToWalk().get(i));
-
-				long endWalk = System.currentTimeMillis();
-				long took = (endWalk - lastWalk) / 3600;
-				getProv().log("taking next path.. (" + i + "/" + getPathToWalk().size() + ")" + " took: " + took
-						+ " seconds");
-				// getProv().log("waiting for walking sleep..");
-				// try {
-				// Thread.sleep(1000);
-				// } catch (InterruptedException e) {
-				// // TODO Auto-generated catch block
-				// e.printStackTrace();
-				// }
-				// }
-			}
+			getApi().getWalking().walkPath(getPathToWalk());
 		}
 	}
 
 	@Override
 	public boolean finished() {
 		// TODO Auto-generated method stub
-		int pos = getProv().myPlayer().getPosition().getZ();
+		int pos = getApi().myPlayer().getPosition().getZ();
 		int pos2 = getPathToWalk().get(getPathToWalk().size() - 1).getZ();
 
-		if (getProv().myPlayer().getPosition().getZ() > 0) {
-			return getPathToWalk().size() == 0 || (pos == pos2 && getFinishArea().contains(getProv().myPlayer()));
+		if (isWalkPathWithoutSteps()) {
+			return getFinishArea().contains(getApi().myPlayer());
 		}
-		return getPathToWalk().size() == 0 || pos == pos2 && getFinishArea().contains(getProv().myPlayer());
+		if (getApi().myPlayer().getPosition().getZ() > 0) {
+			return getPathToWalk().size() == 0 || (pos == pos2 && getFinishArea().contains(getApi().myPlayer()));
+		}
+		return getPathToWalk().size() == 0 || pos == pos2 && getFinishArea().contains(getApi().myPlayer());
 	}
 
 	/**
@@ -300,6 +350,50 @@ public class WalkTask extends TaskSkeleton implements Task {
 	 */
 	public void setLogin(LoginEvent login) {
 		this.login = login;
+	}
+
+	/**
+	 * @return the walkPathWithoutSteps
+	 */
+	public boolean isWalkPathWithoutSteps() {
+		return walkPathWithoutSteps;
+	}
+
+	/**
+	 * @param walkPathWithoutSteps
+	 *            the walkPathWithoutSteps to set
+	 */
+	public void setWalkPathWithoutSteps(boolean walkPathWithoutSteps) {
+		this.walkPathWithoutSteps = walkPathWithoutSteps;
+	}
+
+	/**
+	 * @return the beginArea
+	 */
+	public Area getBeginArea() {
+		return beginArea;
+	}
+
+	/**
+	 * @param beginArea
+	 *            the beginArea to set
+	 */
+	public void setBeginArea(Area beginArea) {
+		this.beginArea = beginArea;
+	}
+
+	/**
+	 * @return the pathToWalkCopy
+	 */
+	public List<Position> getPathToWalkCopy() {
+		return pathToWalkCopy;
+	}
+
+	/**
+	 * @param pathToWalkCopy the pathToWalkCopy to set
+	 */
+	public void setPathToWalkCopy(List<Position> pathToWalkCopy) {
+		this.pathToWalkCopy = pathToWalkCopy;
 	}
 
 }

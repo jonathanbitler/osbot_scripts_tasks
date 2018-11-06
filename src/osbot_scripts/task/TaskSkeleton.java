@@ -34,7 +34,7 @@ public class TaskSkeleton {
 	 * @return
 	 */
 	public final int getQuestProgress() {
-		return getProv().getConfigs().get(this.configQuestId);
+		return getApi().getConfigs().get(this.configQuestId);
 	}
 
 	/**
@@ -55,7 +55,7 @@ public class TaskSkeleton {
 	/**
 	 * @return the prov
 	 */
-	public MethodProvider getProv() {
+	public MethodProvider getApi() {
 		return prov;
 	}
 

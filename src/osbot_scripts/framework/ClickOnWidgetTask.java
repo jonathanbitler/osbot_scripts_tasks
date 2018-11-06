@@ -59,22 +59,22 @@ public class ClickOnWidgetTask extends TaskSkeleton implements Task {
 	public void onStart() {
 		// TODO Auto-generated method stub
 		if (getWidgetIds().length == 2) {// 2 and higher
-			setWidget(getProv().getWidgets().get(getWidgetIds()[0], getWidgetIds()[1]));
+			setWidget(getApi().getWidgets().get(getWidgetIds()[0], getWidgetIds()[1]));
 		} else if (getWidgetIds().length == 3) {
-			setWidget(getProv().getWidgets().get(getWidgetIds()[0], getWidgetIds()[1], getWidgetIds()[2]));
+			setWidget(getApi().getWidgets().get(getWidgetIds()[0], getWidgetIds()[1], getWidgetIds()[2]));
 		}
-		getProv().log("set widget to: " + getWidget());
+		getApi().log("set widget to: " + getWidget());
 		ranOnStart = true;
 	}
 
 	public RS2Widget getRS2WidgetInterface() {
 		RS2Widget widget = null;
 		if (getWidgetIds().length == 2) {// 2 and higher
-			widget = getProv().getWidgets().get(getWidgetIds()[0], getWidgetIds()[1]);
+			widget = getApi().getWidgets().get(getWidgetIds()[0], getWidgetIds()[1]);
 		} else if (getWidgetIds().length == 3) {
-			widget = getProv().getWidgets().get(getWidgetIds()[0], getWidgetIds()[1], getWidgetIds()[2]);
+			widget = getApi().getWidgets().get(getWidgetIds()[0], getWidgetIds()[1], getWidgetIds()[2]);
 		}
-		getProv().log("set widget to: " + widget);
+		getApi().log("set widget to: " + widget);
 		return widget;
 	}
 
@@ -96,23 +96,30 @@ public class ClickOnWidgetTask extends TaskSkeleton implements Task {
 		return false;
 	}
 
+	private long lastClick = 0;
+
 	@Override
 	public void loop() {
 		if (!ranOnStart()) {
 			// here something only run once
 		}
-		if (getRS2WidgetInterface() == null && getProv().myPlayer().getAnimation() == -1
-				&& !getProv().myPlayer().isAnimating()) {
-			
+		if (getRS2WidgetInterface() == null && getApi().myPlayer().getAnimation() == -1
+				&& !getApi().myPlayer().isAnimating() && (System.currentTimeMillis() - lastClick > 20000)) {
+
 			if (getObjectId() != -1) {
-				RS2Object rs2Obj = getProv().getObjects().closest(obj -> obj.getId() == getObjectId());
+				RS2Object rs2Obj = getApi().getObjects().closest(obj -> obj.getId() == getObjectId());
 
 				if (rs2Obj != null) {
-					if (!getProv().getMap().canReach(getProv().myPlayer())) {
-						getProv().getWalking().webWalk(rs2Obj.getPosition());
+					if (!getApi().getMap().canReach(getApi().myPlayer())) {
+						getApi().getWalking().webWalk(rs2Obj.getPosition());
 					} else if (getRS2WidgetInterface() == null) {
-						rs2Obj.interact();
-						// Interacting with object
+
+						if (rs2Obj.hasAction("Spin")) {
+							rs2Obj.interact("Spin");
+						} else {
+							rs2Obj.interact();
+						}
+						lastClick = System.currentTimeMillis();
 					}
 				}
 			}
@@ -121,7 +128,7 @@ public class ClickOnWidgetTask extends TaskSkeleton implements Task {
 			getRS2WidgetInterface().interact(getInteractOption());
 		}
 		if (getWaitOnItem() != null) {
-			Sleep.sleepUntil(() -> getWaitOnItemAmount() >= getProv().getInventory().getAmount(getWaitOnItem()), 10000);
+			Sleep.sleepUntil(() -> getWaitOnItemAmount() >= getApi().getInventory().getAmount(getWaitOnItem()), 10000);
 		}
 
 		Sleep.sleepUntil(() -> getRS2WidgetInterface() == null, 10000);
@@ -129,13 +136,13 @@ public class ClickOnWidgetTask extends TaskSkeleton implements Task {
 
 	@Override
 	public boolean finished() {
-		getProv().log("widget: " + getRS2WidgetInterface());
+		getApi().log("widget: " + getRS2WidgetInterface());
 
 		if (getWaitOnItem() != null && getWaitOnItem().length() > 0) {
-			if (getProv().getInventory().getAmount(getWaitOnItem()) >= getWaitOnItemAmount()) {
+			if (getApi().getInventory().getAmount(getWaitOnItem()) >= getWaitOnItemAmount()) {
 				return true;
 			}
-			return getProv().getInventory().getAmount(getWaitOnItem()) >= getWaitOnItemAmount()
+			return getApi().getInventory().getAmount(getWaitOnItem()) >= getWaitOnItemAmount()
 					&& getRS2WidgetInterface() == null;
 		}
 		return getRS2WidgetInterface() == null;

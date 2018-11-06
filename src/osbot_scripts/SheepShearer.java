@@ -1,5 +1,7 @@
 package osbot_scripts;
 
+import java.awt.Graphics2D;
+
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.script.Script;
@@ -23,6 +25,15 @@ public class SheepShearer extends Script {
 	@Override
 	public int onLoop() throws InterruptedException {
 
+		if (getDialogues().isPendingContinuation()) {
+			getDialogues().clickContinue();
+		}
+		
+
+		getSheepShearer().getTaskHandler().getEvents().fixedMode();
+		getSheepShearer().getTaskHandler().getEvents().fixedMode2();
+		getSheepShearer().getTaskHandler().getEvents().executeAllEvents();
+		
 		// TODO Auto-generated method stub
 		RS2Widget closeQuestCompleted = getWidgets().get(277, 15);
 		log(getSheepShearer().getQuestProgress());
@@ -34,6 +45,7 @@ public class SheepShearer extends Script {
 			}
 			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0,
 					login.getUsername());
+			DatabaseUtilities.updateAccountBreakTill(this, getSheepShearer().getEvent().getUsername(), 60);
 			BotCommands.killProcess((Script) this);
 			return random(500, 600);
 		}
@@ -43,6 +55,12 @@ public class SheepShearer extends Script {
 		return random(500, 600);
 	}
 
+	@Override
+	public void onPaint(Graphics2D g) {
+//		getSheepShearer().getTrailMouse().draw(g);
+		getMouse().setDefaultPaintEnabled(true);
+	}
+	
 	@Override
 	public void onStart() throws InterruptedException {
 		login = LoginHandler.login(this, getParameters());

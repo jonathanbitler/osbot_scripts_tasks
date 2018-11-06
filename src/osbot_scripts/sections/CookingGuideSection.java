@@ -119,6 +119,7 @@ public class CookingGuideSection extends TutorialSection {
 			if (!INSIDE_COOKING.contains(myPlayer())) {
 				openDoor();
 			} else {
+				getWalking().walk(new Position(3073, 3090, 0));
 				clickObject(9710, "Open", new Position(3073, 3090, 0));
 			}
 			// if (getTabs().open(Tab.MUSIC)) {

@@ -67,8 +67,8 @@ public class PickupItemTask extends TaskSkeleton implements Task, AreaInterface 
 		// TODO Auto-generated method stub
 
 		// If player is not in the selected field, then walk to it
-		if (getArea() != null && !getProv().myPlayer().getArea(10).contains(getArea().getRandomPosition())) {
-			getProv().getWalking().walk(getArea());
+		if (getArea() != null && !getApi().myPlayer().getArea(10).contains(getArea().getRandomPosition())) {
+			getApi().getWalking().walk(getArea());
 		}
 		ranOnStart = true;
 	}
@@ -87,12 +87,12 @@ public class PickupItemTask extends TaskSkeleton implements Task, AreaInterface 
 
 	@Override
 	public boolean startCondition() {
-		Optional<GroundItem> object = getProv().getGroundItems().getAll().stream().filter(Objects::nonNull)
+		Optional<GroundItem> object = getApi().getGroundItems().getAll().stream().filter(Objects::nonNull)
 				.filter(obj -> obj.getName().equalsIgnoreCase(getWaitForItemString())).findFirst();
 		if (object.isPresent()) {
 			return false;
 		}
-		if (getProv().myPlayer().getArea(20).contains(object.get()) && correctStepInQuest()) {
+		if (getApi().myPlayer().getArea(20).contains(object.get()) && correctStepInQuest()) {
 			return true;
 		}
 		return false;
@@ -105,10 +105,10 @@ public class PickupItemTask extends TaskSkeleton implements Task, AreaInterface 
 		}
 		if (getArea() != null) {
 			// Waiting before player is in an area
-			Sleep.sleepUntil(() -> getArea().contains(getProv().myPlayer()), 10000);
+			Sleep.sleepUntil(() -> getArea().contains(getApi().myPlayer()), 10000);
 		}
 
-		Optional<GroundItem> object = getProv().getGroundItems().getAll().stream().filter(Objects::nonNull)
+		Optional<GroundItem> object = getApi().getGroundItems().getAll().stream().filter(Objects::nonNull)
 				.filter(obj -> obj.getName().equalsIgnoreCase(getWaitForItemString())).findFirst();
 		if (object.isPresent()) {
 			if (getInteractOption() != null && getInteractOption().length() > 0) {
@@ -121,10 +121,10 @@ public class PickupItemTask extends TaskSkeleton implements Task, AreaInterface 
 		}
 
 		if (getWaitForItemString() != null && getWaitForItemString().length() > 0) {
-			Sleep.sleepUntil(() -> getProv().getInventory().contains(getWaitForItemString()), 10000);
+			Sleep.sleepUntil(() -> getApi().getInventory().contains(getWaitForItemString()), 10000);
 
 			if (getWaitForItemString() != null && getWaitForItemString().length() > 0
-					&& !getProv().getInventory().contains(getWaitForItemString())) {
+					&& !getApi().getInventory().contains(getWaitForItemString())) {
 				setPickedUp(false);
 			}
 		}
@@ -134,7 +134,7 @@ public class PickupItemTask extends TaskSkeleton implements Task, AreaInterface 
 	@Override
 	public boolean finished() {
 		if (getWaitForItemString() != null && getWaitForItemString().length() > 0) {
-			return isPickedUp() && getProv().getInventory().contains(getWaitForItemString());
+			return isPickedUp() && getApi().getInventory().contains(getWaitForItemString());
 		}
 		return isPickedUp();
 	}

@@ -107,6 +107,9 @@ public class SurvivalExpertSection extends TutorialSection {
 	 * Fish a fish
 	 */
 	private void fish() {
+		if (getInventory().isItemSelected()) {
+			getInventory().deselectItem();
+		}
 		NPC fishingSpot = getNpcs().closest("Fishing spot");
 		log("fishspot" + fishingSpot);
 		if (fishingSpot != null) {
@@ -120,6 +123,9 @@ public class SurvivalExpertSection extends TutorialSection {
 	 * Chops a tree
 	 */
 	private void chopTree() {
+		if (getInventory().isItemSelected()) {
+			getInventory().deselectItem();
+		}
 		RS2Object tree = getObjects().closest(9730);
 		if (tree != null) {
 			tree.interact("Chop down");

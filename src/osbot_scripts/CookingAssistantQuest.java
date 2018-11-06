@@ -1,5 +1,7 @@
 package osbot_scripts;
 
+import java.awt.Graphics2D;
+
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
@@ -8,11 +10,8 @@ import osbot_scripts.bot.utils.BotCommands;
 import osbot_scripts.bot.utils.RandomUtil;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
-import osbot_scripts.events.MandatoryEventsExecution;
-import osbot_scripts.framework.AccountStage;
 import osbot_scripts.login.LoginHandler;
 import osbot_scripts.qp7.progress.CookingsAssistant;
-import osbot_scripts.task.Task;
 
 @ScriptManifest(author = "pim97", info = "CookingAssistantQuest", logo = "", name = "QUEST_COOK_ASSISTANT", version = 1.0)
 public class CookingAssistantQuest extends Script {
@@ -24,6 +23,13 @@ public class CookingAssistantQuest extends Script {
 	@Override
 	public int onLoop() throws InterruptedException {
 
+		if (getDialogues().isPendingContinuation()) {
+			getDialogues().clickContinue();
+		}
+		getCooksAssistant().getTaskHandler().getEvents().fixedMode();
+		getCooksAssistant().getTaskHandler().getEvents().fixedMode2();
+		getCooksAssistant().getTaskHandler().getEvents().executeAllEvents();
+		
 		// TODO Auto-generated method stub
 		RS2Widget closeQuestCompleted = getWidgets().get(277, 15);
 		log(getCooksAssistant().getQuestProgress());
@@ -35,6 +41,7 @@ public class CookingAssistantQuest extends Script {
 			
 			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0,
 					login.getUsername());
+			DatabaseUtilities.updateAccountBreakTill(this, getCooksAssistant().getEvent().getUsername(), 60);
 			BotCommands.killProcess((Script)this);
 			return random(500, 600);
 		}
@@ -60,6 +67,16 @@ public class CookingAssistantQuest extends Script {
 		getCooksAssistant().exchangeContext(getBot());
 		getCooksAssistant().onStart();
 //		getCooksAssistant().getTaskHandler().decideOnStartTask();
+	}
+	
+	/**
+	 * 
+	 * @param g
+	 */
+	@Override
+	public void onPaint(Graphics2D g) {
+//		getCooksAssistant().getTrailMouse().draw(g);
+		getMouse().setDefaultPaintEnabled(true);
 	}
 
 	/**

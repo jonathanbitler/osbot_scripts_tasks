@@ -7,10 +7,12 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.Calendar;
+import java.util.Date;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.osbot.rs07.script.MethodProvider;
+
+import osbot_scripts.config.Config;
 
 public class DatabaseUtilities {
 
@@ -45,6 +47,62 @@ public class DatabaseUtilities {
 	}
 
 	/**
+	 * Updates the account value of an account
+	 * 
+	 * @param prov
+	 * @param email
+	 * @param value
+	 * @return
+	 */
+	public static boolean updateAccountValue(MethodProvider prov, String email, int value) {
+		try {
+			String urlParameters = "?email=" + URLEncoder.encode(email, "UTF-8") + "&value="
+					+ URLEncoder.encode(Integer.toString(value), "UTF-8");
+
+			prov.log(LINK + "" + urlParameters);
+			sendGet(LINK + "" + urlParameters);
+
+			return true;
+
+		} catch (Exception e) {
+			prov.log(e);
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	public static boolean updateAccountBreakTill(MethodProvider prov, String email, int minutesBreak) {
+		try {
+			if (!Config.NO_BREAK) {
+				Calendar calendar = Calendar.getInstance();
+				calendar.setTime(new Date());
+
+				calendar.add(Calendar.MINUTE, minutesBreak);
+
+				java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+				String dateTime = sdf.format(calendar.getTime());
+
+				String urlParameters = "?email=" + URLEncoder.encode(email, "UTF-8") + "&breaktill="
+						+ URLEncoder.encode(dateTime, "UTF-8");
+
+				if (prov == null) {
+					System.out.println(LINK + "" + urlParameters);
+				} else {
+					prov.log(LINK + "" + urlParameters);
+				}
+				sendGet(LINK + "" + urlParameters);
+				return true;
+			}
+			return false;
+
+		} catch (Exception e) {
+			prov.log(e);
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	/**
 	 * Updates stage progress for quests etc.
 	 * 
 	 * @param prov
@@ -55,9 +113,6 @@ public class DatabaseUtilities {
 	 */
 	public static boolean updateStageProgress(MethodProvider prov, String accountStatus, int number, String email) {
 		try {
-			if (prov.getQuests().getQuestPoints() >= 7) {
-				accountStatus = "UNKNOWN";
-			}
 			String urlParameters = "?accountStage=" + URLEncoder.encode(accountStatus, "UTF-8") + "&email="
 					+ URLEncoder.encode(email, "UTF-8") + "&number=" + URLEncoder.encode("" + number, "UTF-8");
 

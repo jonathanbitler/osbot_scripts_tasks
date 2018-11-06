@@ -37,6 +37,7 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 		setProv(prov);
 		setArea(area);
 		setNpcId(npcId);
+		setConfigQuestId(questConfig);
 		setDialogueSelection(selections);
 		setCurrentQuestProgress(questProgress);
 	}
@@ -50,6 +51,7 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 		setDialogueSelection(selections);
 		setCurrentQuestProgress(questProgress);
 		setQuestPointsFinished(questPointsFinished);
+		setConfigQuestId(questConfig);
 	}
 
 	public DialogueTask(String scriptName, int questProgress, int questConfig, MethodProvider prov, Area area,
@@ -61,6 +63,7 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 		setDialogueSelection(selections);
 		setCurrentQuestProgress(questProgress);
 		setWaitForItem(waitForItem);
+		setConfigQuestId(questConfig);
 	}
 
 	public DialogueTask(String scriptName, int questProgress, int questConfig, MethodProvider prov, Area area,
@@ -73,6 +76,7 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 		setCurrentQuestProgress(questProgress);
 		setWaitForItem(waitForItem);
 		setQuestPointsFinished(questPointsFinished);
+		setConfigQuestId(questConfig);
 	}
 
 	@Override
@@ -112,15 +116,15 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 
 	@Override
 	public boolean startCondition() {
-		Optional<NPC> npc = getProv().getNpcs().getAll().stream().filter(Objects::nonNull)
+		Optional<NPC> npc = getApi().getNpcs().getAll().stream().filter(Objects::nonNull)
 				.filter(findNpc -> findNpc.getId() == this.getNPCId()).findFirst();
 		if (!npc.isPresent()) {
 			return false;
 		}
 		// Player must be in reach 20 tiles from npc
-		if (getProv().myPlayer().getArea(20).contains(npc.get()) && correctStepInQuest()) {
+		if (getApi().myPlayer().getArea(20).contains(npc.get()) && correctStepInQuest()) {
 			// Area must contain player
-			if (getArea() != null && !getArea().contains(getProv().myPlayer())) {
+			if (getArea() != null && !getArea().contains(getApi().myPlayer())) {
 				return false;
 			}
 			return true;
@@ -141,28 +145,37 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 		// // Waiting before player is in an area
 		// Sleep.sleepUntil(() -> getArea().contains(getProv().myPlayer()), 10000);
 		// }
+		if (pendingContinue()) {
+			selectContinue();
+		} else if (getApi().getDialogues().isPendingOption()) {
+			getApi().getDialogues().selectOption(getDialogueSelections());
+		}
 
 		if (!isInQuestCutscene()) {
-			NPC npc = getProv().getNpcs().closest(this.getNPCId());
+			NPC npc = getApi().getNpcs().closest(this.getNPCId());
 
-			if (npc != null && !pendingContinue() && !getProv().getDialogues().isPendingOption()) {
+			if (npc != null && !pendingContinue() && !getApi().getDialogues().isPendingOption()) {
+				Sleep.sleepUntil(() -> !pendingContinue(), 5000);
 				npc.interact("Talk-to");
 				Sleep.sleepUntil(() -> pendingContinue(), 5000);
 				spokenTo = true;
-			} else if (pendingContinue()) {
-				selectContinue();
-			} else if (getProv().getDialogues().isPendingOption()) {
-				getProv().getDialogues().selectOption(getDialogueSelections());
 			}
+
+			// else if (pendingContinue()) {
+			// selectContinue();
+			// } else if (getApi().getDialogues().isPendingOption()) {
+			// getApi().getDialogues().selectOption(getDialogueSelections());
+			// }
+
 			// Wait till has a dialogue to prevent instant finishing
 
-			if (npc != null && !isInQuestCutscene()
-					&& (!getProv().getMap().canReach(npc) || !npc.getArea(3).contains(getProv().myPlayer()))) {
+			if (npc != null && !isInQuestCutscene() && !pendingContinue() && !getApi().getDialogues().isPendingOption()
+					&& (!getApi().getMap().canReach(npc) || !npc.getArea(3).contains(getApi().myPlayer()))) {
 				// If can't reach, then webwalk to it (is costly but has to, otherwise bot gets
 				// stuck)
-				if (!getProv().getWalking().webWalk(npc.getPosition())) {
-					if (getProv().getWalking().walk(npc.getPosition())) {
-						getProv().getDoorHandler().handleNextObstacle(npc.getPosition());
+				if (!getApi().getWalking().webWalk(npc.getPosition())) {
+					if (getApi().getWalking().walk(npc.getPosition())) {
+						getApi().getDoorHandler().handleNextObstacle(npc.getPosition());
 					}
 				}
 			}
@@ -173,16 +186,17 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 	@Override
 	public boolean finished() {
 		// TODO Auto-generated method stub
+		if (getWaitForItem() != null && getWaitForItem().length() > 0) {
+			return !pendingContinue() && !getApi().getDialogues().isPendingOption() && spokenTo && !isInQuestCutscene()
+					&& getApi().getInventory().contains(getWaitForItem())
+					&& getApi().getInventory().getAmount(getWaitForItem()) > 0;
+		}
 		if (getQuestPointsFinished() > 0 && getConfigQuestId() > 0) {
-			int step = getProv().getConfigs().get(getConfigQuestId());
-			return getQuestPointsFinished() == step && !pendingContinue() && !getProv().getDialogues().isPendingOption()
+			int step = getQuestProgress();
+			return getQuestPointsFinished() == step && !pendingContinue() && !getApi().getDialogues().isPendingOption()
 					&& spokenTo && !isInQuestCutscene();
 		}
-		if (getWaitForItem() != null && getWaitForItem().length() > 0) {
-			return !pendingContinue() && !getProv().getDialogues().isPendingOption() && spokenTo && !isInQuestCutscene()
-					&& getProv().getInventory().contains(getWaitForItem());
-		}
-		return !pendingContinue() && !getProv().getDialogues().isPendingOption() && spokenTo && !isInQuestCutscene();
+		return !pendingContinue() && !getApi().getDialogues().isPendingOption() && spokenTo && !isInQuestCutscene();
 	}
 
 	/**
@@ -193,7 +207,9 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 	public boolean isInQuestCutscene() {
 		return
 		// getProv().getConfigs().get(1021) == 192 &&
-		getProv().getMap().isMinimapLocked() || getProv().getWidgets().get(548, 51) == null;
+		getApi().getMap().isMinimapLocked() || getApi().getWidgets().get(548, 51) == null
+				|| getApi().getWidgets().get(231, 1) != null
+				|| (getApi().getCamera().getPitchAngle() == 22 && getApi().getCamera().getYawAngle() == 191);
 	}
 
 	public void setArea(Area area) {
@@ -244,7 +260,7 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 			return false;
 		}
 		if (continueWidget.getMessage().contains("Click here to continue")) {
-			this.getProv().getKeyboard().pressKey(KeyEvent.VK_SPACE);
+			this.getApi().getKeyboard().pressKey(KeyEvent.VK_SPACE);
 			Sleep.sleepUntil(() -> !continueWidget.isVisible(), 1000, 500);
 			return true;
 		} else if (continueWidget.interact()) {
@@ -260,7 +276,7 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 	 * @return
 	 */
 	private RS2Widget getContinueWidget() {
-		return this.getProv().getWidgets().singleFilter(this.getProv().getWidgets().getAll(),
+		return this.getApi().getWidgets().singleFilter(this.getApi().getWidgets().getAll(),
 				widget -> widget.isVisible() && (widget.getMessage().contains("Click here to continue")
 						|| widget.getMessage().contains("Click to continue")));
 	}

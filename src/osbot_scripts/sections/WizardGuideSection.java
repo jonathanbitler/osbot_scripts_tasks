@@ -42,13 +42,12 @@ public class WizardGuideSection extends TutorialSection {
 			break;
 
 		case 650:
-			Area wizard = new Area(new int[][] { { 3137, 3092 }, { 3140, 3088 }, { 3140, 3086 }, { 3144, 3086 },
-					{ 3144, 3089 }, { 3141, 3092 } });
+			Area wizard = new Area(
+					new int[][] { { 3139, 3090 }, { 3141, 3088 }, { 3143, 3089 }, { 3141, 3091 }, { 3138, 3091 } });
 			if (!wizard.contains(myPlayer())) {
-				getWalking().walk(new Position(3140, 3091, 0));
+				getWalking().walk(new Position(3140, 3089, 0));
 			}
-			if (attackChicken()) {
-			}
+			attackChicken();
 			break;
 
 		case 670:
@@ -60,12 +59,13 @@ public class WizardGuideSection extends TutorialSection {
 			}
 			break;
 		}
+
 	}
 
 	private boolean attackChicken() {
 		NPC chicken = getNpcs().closest("Chicken");
 		if (chicken != null && getMagic().castSpellOnEntity(Spells.NormalSpells.WIND_STRIKE, chicken)) {
-			Sleep.sleepUntil(() -> getProgress() != 650, 3000, 500);
+			Sleep.sleepUntil(() -> getProgress() != 670, 6000);
 			return true;
 		}
 		return false;

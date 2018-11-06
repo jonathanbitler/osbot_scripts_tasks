@@ -19,7 +19,7 @@ public class MiningGuideSection extends TutorialSection {
 	@Override
 	public void onLoop() throws InterruptedException {
 		log(getProgress());
-		
+
 		switch (getProgress()) {
 		case 260:
 			Position miningInstructorPosition = new Position(3080, 9506, 0);
@@ -31,33 +31,37 @@ public class MiningGuideSection extends TutorialSection {
 				talkAndContinueWithInstructor();
 			}
 			break;
-			
+
 		case 270:
 			clickObject(10080, "Prospect", new Position(3076, 9502, 0));
 			Thread.sleep(2000);
 			break;
-			
+
 		case 280:
 			clickObject(10079, "Prospect", new Position(3084, 9502, 0));
 			Thread.sleep(2000);
 			break;
-			
+
 		case 290:
 			talkAndContinueWithInstructor();
 
 			if (getTabs().open(Tab.INVENTORY)) {
 			}
 			break;
-			
+
 		case 300:
 			mineTin();
 			break;
-			
+
 		case 310:
 			mineCopper();
 			break;
-			
+
 		case 320:
+			if (getInventory().isItemSelected()) {
+				getInventory().deselectItem();
+			}
+			
 			Item tinOre = getInventory().getItem(438);
 			if (tinOre != null) {
 				Item copperOre = getInventory().getItem(436);
@@ -72,30 +76,29 @@ public class MiningGuideSection extends TutorialSection {
 				mineTin();
 			}
 			break;
-			
+
 		case 330:
 			talkAndContinueWithInstructor();
 			break;
-			
+
 		case 340:
 			clickObject(2097, "Smith", new Position(3082, 9499, 0));
 			Sleep.sleepUntil(() -> myPlayer().getAnimation() == -1, 5000, 1000);
 			break;
-			
+
 		case 350:
-			if (!myPlayer().getArea(3).contains(new Position(3082, 9499, 0))) {
-				getWalking().walk(new Position(3082, 9499, 0));
-				clickObject(2097, "Smith", new Position(3082, 9499, 0));
-				Sleep.sleepUntil(() -> myPlayer().getAnimation() == -1, 5000, 1000);
-			}
+			clickObject(2097, "Smith", new Position(3082, 9499, 0));
+			Thread.sleep(2000);
+
 			RS2Widget daggerWidget = getWidgets().get(312, 2, 2);
 			if (daggerWidget != null) {
 				if (daggerWidget.interact()) {
 					Sleep.sleepUntil(() -> getInventory().contains(1205), 5000, 1000);
 				}
 			}
+			Sleep.sleepUntil(() -> myPlayer().getAnimation() == -1, 5000, 1000);
 			break;
-			
+
 		case 360:
 			Position gatePosition = new Position(3093, 9503, 0);
 			if (!myPlayer().getArea(2).contains(gatePosition)) {
@@ -104,7 +107,6 @@ public class MiningGuideSection extends TutorialSection {
 				clickObject(9718, "Open");
 			}
 			break;
-			
 
 		case 370:
 			TutorialScript.mainState = getNextMainState();
@@ -115,8 +117,8 @@ public class MiningGuideSection extends TutorialSection {
 			selectContinue();
 		}
 
-	
 	}
+
 	/**
 	 * 
 	 */

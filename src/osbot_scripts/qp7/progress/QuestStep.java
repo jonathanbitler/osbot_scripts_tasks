@@ -12,8 +12,10 @@ import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 
+import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.framework.AccountStage;
+import osbot_scripts.mouse.MouseTrailApi;
 import osbot_scripts.sections.total.progress.MainState;
 import osbot_scripts.taskhandling.TaskHandler;
 import osbot_scripts.util.Sleep;
@@ -21,15 +23,20 @@ import osbot_scripts.util.Sleep;
 public abstract class QuestStep extends MethodProvider {
 
 	/**
+	 * The mouse's trial
+	 */
+	private MouseTrailApi mouse;
+
+	/**
 	 * The script
 	 */
 	private Script script;
-	
+
 	/**
 	 * The taskHandler
 	 */
 	private TaskHandler taskHandler;
-	
+
 	/**
 	 * The name of the instructor of the current stage
 	 */
@@ -55,10 +62,21 @@ public abstract class QuestStep extends MethodProvider {
 	private AccountStage stage;
 
 	/**
+	 * Is the script a quest or not?
+	 */
+	private boolean isQuest;
+
+	/**
+	 * 
+	 */
+	private int doneLaps;
+	
+	/**
 	 * 
 	 * @param instructorName
 	 */
-	public QuestStep(int questStartNpc, int configQuestId, AccountStage stage, LoginEvent event, Script script) {
+	public QuestStep(int questStartNpc, int configQuestId, AccountStage stage, LoginEvent event, Script script,
+			boolean isQuest) {
 		this.questStartNpc = questStartNpc;
 		this.configQuestId = configQuestId;
 		this.stage = stage;
@@ -66,6 +84,23 @@ public abstract class QuestStep extends MethodProvider {
 		this.setEvent(event);
 		this.script = script;
 		this.taskHandler = new TaskHandler((MethodProvider) this, (QuestStep) this, event, script);
+		this.setMouse(new MouseTrailApi((MethodProvider) this));
+		this.setQuest(isQuest);
+	}
+
+	/**
+	 * Resetting the stages
+	 */
+	public void resetStage(String taskName) {
+		if (getEvent() != null && getEvent().getUsername() != null && taskName != null) {
+			DatabaseUtilities.updateStageProgress(this, taskName, 0, getEvent().getUsername());
+		}
+		setDoneLaps(getDoneLaps() + 1);
+		setQuestStageStep(0);
+		getTaskHandler().setCurrentTask(null);
+		getTaskHandler().getTasks().clear();
+		onStart();
+		log("[TASKHANDLER] Clearing & restarting all tasks");
 	}
 
 	/**
@@ -74,7 +109,10 @@ public abstract class QuestStep extends MethodProvider {
 	 * @return
 	 */
 	public final int getQuestProgress() {
-		return getConfigs().get(this.configQuestId);
+		if (this.configQuestId > 0) {
+			return getConfigs().get(this.configQuestId);
+		}
+		return -1;
 	}
 
 	/**
@@ -342,7 +380,8 @@ public abstract class QuestStep extends MethodProvider {
 	}
 
 	/**
-	 * @param event the event to set
+	 * @param event
+	 *            the event to set
 	 */
 	public void setEvent(LoginEvent event) {
 		this.event = event;
@@ -356,10 +395,56 @@ public abstract class QuestStep extends MethodProvider {
 	}
 
 	/**
-	 * @param script the script to set
+	 * @param script
+	 *            the script to set
 	 */
 	public void setScript(Script script) {
 		this.script = script;
+	}
+
+	/**
+	 * @param mouse
+	 *            the mouse to set
+	 */
+	public void setMouse(MouseTrailApi mouse) {
+		this.mouse = mouse;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public MouseTrailApi getTrailMouse() {
+		return this.mouse;
+	}
+
+	/**
+	 * @return the isQuest
+	 */
+	public boolean isQuest() {
+		return isQuest;
+	}
+
+	/**
+	 * @param isQuest
+	 *            the isQuest to set
+	 */
+	public void setQuest(boolean isQuest) {
+		this.isQuest = isQuest;
+	}
+
+	/**
+	 * @return the doneLaps
+	 */
+	public int getDoneLaps() {
+		return doneLaps;
+	}
+
+	/**
+	 * @param doneLaps the doneLaps to set
+	 */
+	public void setDoneLaps(int doneLaps) {
+		this.doneLaps = doneLaps;
 	}
 
 }

@@ -25,7 +25,7 @@ public abstract class TutorialSection extends MethodProvider {
 	public TutorialSection(final String instructorName) {
 		this.instructorName = instructorName;
 	}
-	
+
 	/**
 	 * Clicking an object
 	 * 
@@ -41,15 +41,16 @@ public abstract class TutorialSection extends MethodProvider {
 			getWalking().walk(rs2Object.getPosition());
 		}
 	}
-	
+
 	/**
 	 * Gets current progress
+	 * 
 	 * @return
 	 */
 	protected final int getProgress() {
-        return getConfigs().get(281);
-    }
-	
+		return getConfigs().get(281);
+	}
+
 	/**
 	 * Clicking an object
 	 * 
@@ -57,21 +58,23 @@ public abstract class TutorialSection extends MethodProvider {
 	 * @param interactName
 	 */
 	public void clickObject(int objectId, String interactName, Position walkTo) {
-		getWalking().walk(walkTo);
-		
 		RS2Object rs2Object = getObjects().closest(objectId);
+		if (rs2Object != null && !rs2Object.isVisible()) {
+			getWalking().walk(walkTo);
+			getCamera().toEntity(rs2Object);
+		}
 		if (rs2Object != null) {
 			rs2Object.interact(interactName);
 			Sleep.sleepUntil(() -> myPlayer().getArea(2).contains(rs2Object.getPosition()), 5000, 2000);
 		}
 	}
-	
+
 	/**
 	 * 
 	 */
 	public void talkAndContinueWithInstructor() {
 		enableRunning();
-		
+
 		if (!pendingContinue()) {
 			talkToConstructor();
 			// Select to continue if can continue
@@ -162,7 +165,7 @@ public abstract class TutorialSection extends MethodProvider {
 			Sleep.sleepUntil(() -> pendingContinue(), 5000, 3000);
 		}
 	}
-	
+
 	/**
 	 * 
 	 */

@@ -76,17 +76,17 @@ public class ClickOnNpcTask extends TaskSkeleton implements Task {
 			onStart();
 		}
 
-		NPC npc = getProv().getNpcs().closest(getNpcId());
+		NPC npc = getApi().getNpcs().closest(getNpcId());
 
 		if (npc != null && getArea().contains(npc)) {
 			npc.interact(getInteractOption());
 			this.npc = npc;
 
 			if (getWaitForItem() != null && getWaitForItem().length() > 0) {
-				Sleep.sleepUntil(() -> getProv().getInventory().contains(getWaitForItem())
-						&& npc.getArea(1).contains(getProv().myPlayer()), 10000, 2000);
+				Sleep.sleepUntil(() -> getApi().getInventory().contains(getWaitForItem())
+						&& npc.getArea(1).contains(getApi().myPlayer()), 10000, 2000);
 			} else {
-				Sleep.sleepUntil(() -> npc.getArea(2).contains(getProv().myPlayer()), 10000, 2000);
+				Sleep.sleepUntil(() -> npc.getArea(2).contains(getApi().myPlayer()), 10000, 2000);
 			}
 		}
 
@@ -96,10 +96,10 @@ public class ClickOnNpcTask extends TaskSkeleton implements Task {
 	public boolean finished() {
 		if (npc != null) {
 			if (getWaitForItem() != null && getWaitForItem().length() > 0) {
-				return getProv().getInventory().contains(getWaitForItem())
-						&& getProv().getInventory().getAmount(getWaitForItem()) >= getRequiredAmountTask();
+				return getApi().getInventory().contains(getWaitForItem())
+						&& getApi().getInventory().getAmount(getWaitForItem()) >= getRequiredAmountTask();
 			}
-			return npc.getArea(2).contains(getProv().myPlayer());
+			return npc.getArea(2).contains(getApi().myPlayer());
 		}
 		return false;
 	}

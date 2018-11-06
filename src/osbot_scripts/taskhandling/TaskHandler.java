@@ -68,10 +68,11 @@ public class TaskHandler {
 			}
 
 			// Checking if he account is not fixed mode (client)
-			getEvents().fixedMode();
-			getEvents().fixedMode2();
-			getEvents().executeAllEvents();
 		}
+		
+		// Checking if at task is resizable or no
+		getEvents().fixedMode();
+		getEvents().fixedMode2();
 
 		// Checking is the account is not logged in
 		if (!getProvider().getClient().isLoggedIn()) {
@@ -85,6 +86,15 @@ public class TaskHandler {
 		long currentTask = System.currentTimeMillis();
 
 		getProvider().log("Task time: " + (currentTask - lastTask));
+
+		// So doesn't timeout when at grand exchange buying stuff
+		if (!getQuest().isQuest()
+				&& new Area(new int[][] { { 3153, 3505 }, { 3153, 3478 }, { 3178, 3478 }, { 3178, 3505 } })
+						.contains(getProvider().myPlayer())) {
+			lastTask = System.currentTimeMillis();
+		}
+
+		// When taking too long to do a task, then set the timeout status
 		if (lastTask != 0 && currentTask - lastTask > 60000) {
 			getProvider().log("Took too much time, proably stuck!");
 			if (getEvent() != null && getEvent().getUsername() != null) {
@@ -108,7 +118,7 @@ public class TaskHandler {
 			// Finding new task out of the database (the number) when starting
 			if (getCurrentTask() == null
 					&& (questStepRequired == getQuest().getQuestStageStep() || (currentTask - lastTask) > 30000)
-					&& task.requiredConfigQuestStep() == getQuest().getQuestProgress()) {
+					&& (task.requiredConfigQuestStep() == getQuest().getQuestProgress() || !getQuest().isQuest())) {
 				setCurrentTask(task);
 				getProvider().log("On next task new: " + task.scriptName() + " " + task.requiredConfigQuestStep() + " "
 						+ getQuest().getQuestProgress() + " " + getQuest().getQuestStageStep() + " "
@@ -132,7 +142,7 @@ public class TaskHandler {
 				getProvider().log("System couldnt find a next action, logging out");
 				break;
 			}
-			if (task.requiredConfigQuestStep() == getQuest().getQuestProgress()
+			if ((task.requiredConfigQuestStep() == getQuest().getQuestProgress() || !getQuest().isQuest())
 					&& (questStepRequired == getQuest().getQuestStageStep()
 							|| questStepRequired == getQuest().getQuestStageStep() - 1
 							|| (currentTask - lastTask) > 30000)) {
@@ -143,23 +153,38 @@ public class TaskHandler {
 				// Waiting on task to get finished
 				while (!getCurrentTask().finished()) {
 
+					// Checking if at task is resizable or no
+					getEvents().fixedMode();
+					getEvents().fixedMode2();
+					getEvents().executeAllEvents();
+
+					// If null current task, then continue
+					if (getCurrentTask() == null) {
+						continue;
+					}
+
 					// Sometimes dialogue pops up without a dialoguetask and could get stuck because
 					// of this
 					if (getProvider().getDialogues().isPendingContinuation()) {
 						getProvider().getDialogues().clickContinue();
 					} else {
+						// Task loop
 						getCurrentTask().loop();
 					}
 
 					// Sometimes the script can't perform the task correctly and will get stuck
 					// performing the task over and over again without completing it
 					taskAttempts++;
-					if (taskAttempts > 50) {
+					if (taskAttempts > 50 && getQuest().isQuest()) {
 						DatabaseUtilities.updateAccountStatusInDatabase(getProvider(), "TASK_TIMEOUT",
 								getEvent().getUsername());
 						BotCommands.killProcess(getScript());
 					}
 
+					// If null current task, then continue
+					if (getCurrentTask() == null) {
+						continue;
+					}
 					getProvider().log("performing task" + getCurrentTask().getClass().getSimpleName() + " attempt: "
 							+ taskAttempts);
 					Thread.sleep(1000, 1500);
@@ -184,6 +209,14 @@ public class TaskHandler {
 				// Step increased with 1 in database
 				getQuest().setQuestStageStep(questStepRequired + 1);
 			}
+		}
+		// When all the tasks are complete, start with a new one with fresh variables
+		if (!getQuest().isQuest()
+				&& getQuest().getQuestStageStep() >= (getQuest().getTaskHandler().getTasks().size() - 1)) {
+			getQuest().resetStage(null);
+			getProvider().log("[TASKHANDLER] Clearing & restarting all tasks");
+		} else {
+			// getProvider().log("[TASKHANDLER] Couldn't clear tasks");
 		}
 	}
 

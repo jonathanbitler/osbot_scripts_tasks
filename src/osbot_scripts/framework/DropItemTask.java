@@ -22,6 +22,8 @@ public class DropItemTask extends TaskSkeleton implements Task {
 
 	private String interactOption;
 
+	private boolean dropAllExcept;
+
 	/**
 	 * 
 	 * @param scriptName
@@ -32,7 +34,7 @@ public class DropItemTask extends TaskSkeleton implements Task {
 	 * @param objectId
 	 */
 	public DropItemTask(String scriptName, int questProgress, int questConfig, MethodProvider prov,
-			 String interactOption, String... itemName) {
+			String interactOption, String... itemName) {
 		setScriptName(scriptName);
 		setProv(prov);
 		setItemName(itemName);
@@ -40,6 +42,15 @@ public class DropItemTask extends TaskSkeleton implements Task {
 		setCurrentQuestProgress(questProgress);
 	}
 
+	public DropItemTask(String scriptName, int questProgress, int questConfig, MethodProvider prov,
+			String interactOption, boolean dropAllExcept, String... itemName) {
+		setScriptName(scriptName);
+		setProv(prov);
+		setItemName(itemName);
+		setInteractOption(interactOption);
+		setDropAllExcept(dropAllExcept);
+		setCurrentQuestProgress(questProgress);
+	}
 
 	@Override
 	public void onStart() {
@@ -47,7 +58,7 @@ public class DropItemTask extends TaskSkeleton implements Task {
 
 		ranOnStart = true;
 	}
-	
+
 	@Override
 	public String scriptName() {
 		// TODO Auto-generated method stub
@@ -56,11 +67,13 @@ public class DropItemTask extends TaskSkeleton implements Task {
 
 	@Override
 	public boolean startCondition() {
-//		Optional<GroundItem> object = getProv().getGroundItems().getAll().stream().filter(Objects::nonNull)
-//				.filter(obj -> obj.getName().equalsIgnoreCase(getWaitForItemString())).findFirst();
-//		if (object.isPresent()) {
-//			return false;
-//		}
+		// Optional<GroundItem> object =
+		// getProv().getGroundItems().getAll().stream().filter(Objects::nonNull)
+		// .filter(obj ->
+		// obj.getName().equalsIgnoreCase(getWaitForItemString())).findFirst();
+		// if (object.isPresent()) {
+		// return false;
+		// }
 		return false;
 	}
 
@@ -69,19 +82,23 @@ public class DropItemTask extends TaskSkeleton implements Task {
 		if (!ranOnStart()) {
 			onStart();
 		}
-		
-		for (int i = 0; i < getItemName().length; i++) {
-			String item = getItemName()[i];
-			if (getProv().getInventory().contains(item)) {
-				if (getProv().getInventory().drop(item)) {
-					getProv().log("Dropped item");
+
+		if (isDropAllExcept()) {
+			getApi().getInventory().dropAllExcept(getItemName()[0]);
+		} else {
+			for (int i = 0; i < getItemName().length; i++) {
+				String item = getItemName()[i];
+				if (getApi().getInventory().contains(item)) {
+					if (getApi().getInventory().drop(item)) {
+						getApi().log("Dropped item");
+					}
 				}
+
 			}
-			
 		}
 
 	}
-	
+
 	/**
 	 * Have all the items been dropped?
 	 * 
@@ -91,7 +108,7 @@ public class DropItemTask extends TaskSkeleton implements Task {
 		boolean success = true;
 		for (int i = 0; i < getItemName().length; i++) {
 			String item = getItemName()[i];
-			if (getProv().getInventory().contains(item)) {
+			if (getApi().getInventory().contains(item)) {
 				success = false;
 			}
 		}
@@ -100,9 +117,11 @@ public class DropItemTask extends TaskSkeleton implements Task {
 
 	@Override
 	public boolean finished() {
+		if (isDropAllExcept()) {
+			return !getApi().getInventory().contains(getItemName()[0]);
+		}
 		return droppedAllItems();
 	}
-
 
 	@Override
 	public int requiredConfigQuestStep() {
@@ -139,15 +158,27 @@ public class DropItemTask extends TaskSkeleton implements Task {
 		this.interactOption = interactOption;
 	}
 
-
 	public String[] getItemName() {
 		return itemName;
 	}
-
 
 	public void setItemName(String[] itemName2) {
 		this.itemName = itemName2;
 	}
 
+	/**
+	 * @return the dropAllExcept
+	 */
+	public boolean isDropAllExcept() {
+		return dropAllExcept;
+	}
+
+	/**
+	 * @param dropAllExcept
+	 *            the dropAllExcept to set
+	 */
+	public void setDropAllExcept(boolean dropAllExcept) {
+		this.dropAllExcept = dropAllExcept;
+	}
 
 }
