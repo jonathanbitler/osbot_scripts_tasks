@@ -137,7 +137,7 @@ public class BankTask extends TaskSkeleton implements Task {
 						withdraw.setName("Adamant pickaxe");
 					} else if (getApi().getSkills().getStatic(Skill.MINING) >= 41
 							&& getApi().getBank().contains("Rune pickaxe")) {
-						withdraw.setName("pickaxe pickaxe");
+						withdraw.setName("Rune pickaxe");
 					}
 					
 					//If couldn't find it, then take the best pickaxe it has

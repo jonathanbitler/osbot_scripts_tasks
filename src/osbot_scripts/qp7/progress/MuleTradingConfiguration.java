@@ -37,6 +37,9 @@ public class MuleTradingConfiguration extends QuestStep {
 
 	@Override
 	public void onLoop() throws InterruptedException {
+		if (!getClient().isLoggedIn()) {
+			return;
+		}
 		log("Running the side loop..");
 
 		// Not the mule

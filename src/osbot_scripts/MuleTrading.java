@@ -25,6 +25,10 @@ public class MuleTrading extends Script {
 		if (getDialogues().isPendingContinuation()) {
 			getDialogues().clickContinue();
 		}
+		
+		if (login.hasFinished() && !getClient().isLoggedIn()) {
+			System.exit(1);
+		}
 
 		getMuleTrading().getTaskHandler().getEvents().fixedMode();
 		getMuleTrading().getTaskHandler().getEvents().fixedMode2();

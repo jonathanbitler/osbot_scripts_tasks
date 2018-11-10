@@ -31,13 +31,14 @@ public class MiningLevelTo15 extends Script {
 		getGoldfarmMining().getTaskHandler().getEvents().fixedMode2();
 		getGoldfarmMining().getTaskHandler().getEvents().executeAllEvents();
 		
+		
 		// Account must have atleast 7 quest points, otherwise set it back to quesiton
 		if (getQuests().getQuestPoints() < 7) {
 			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0,
 					login.getUsername());
 			BotCommands.killProcess((Script) this);
 		}
-
+		
 		// If mining is equals or bigger than 15, then it can proceed to mining iron
 		if (getSkills().getStatic(Skill.MINING) >= 15) {
 			Thread.sleep(5000);
@@ -63,7 +64,7 @@ public class MiningLevelTo15 extends Script {
 			getGoldfarmMining().getTaskHandler().taskLoop();
 		}
 
-		return random(0, 300);
+		return random(0, 1);
 	}
 
 	@Override

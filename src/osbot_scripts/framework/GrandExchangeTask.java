@@ -304,6 +304,9 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 
 			} else if (!sell.isCompletedTask() && !sellItem) {
 				getApi().log("Couldn't sell item, will try next time with a new task");
+//				if (sell.isCompletedTask()) {
+//					sell.setCompletedTask(false);
+//				}
 				// sell.setCompletedTask(true);
 			}
 		}

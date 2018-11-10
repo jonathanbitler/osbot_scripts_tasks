@@ -76,7 +76,7 @@ public class TaskHandler {
 
 		// Checking is the account is not logged in
 		if (!getProvider().getClient().isLoggedIn()) {
-			DatabaseUtilities.updateAccountStatusInDatabase(getProvider(), "TIMEOUT", getEvent().getUsername());
+//			DatabaseUtilities.updateAccountStatusInDatabase(getProvider(), "TIMEOUT", getEvent().getUsername());
 			BotCommands.killProcess(getScript());
 		}
 
@@ -152,12 +152,6 @@ public class TaskHandler {
 
 				// Waiting on task to get finished
 				while (!getCurrentTask().finished()) {
-
-					// Checking if at task is resizable or no
-					getEvents().fixedMode();
-					getEvents().fixedMode2();
-					getEvents().executeAllEvents();
-
 					// If null current task, then continue
 					if (getCurrentTask() == null) {
 						continue;
@@ -170,12 +164,19 @@ public class TaskHandler {
 					} else {
 						// Task loop
 						getCurrentTask().loop();
+						
+						//Side loop for other events
+						getQuest().onLoop();
 					}
 
 					// Sometimes the script can't perform the task correctly and will get stuck
 					// performing the task over and over again without completing it
 					taskAttempts++;
-					if (taskAttempts > 50 && getQuest().isQuest()) {
+					if (taskAttempts > 150 && (getQuest().isQuest() || taskAttempts > 800)) {
+						if (getCurrentTask().scriptName().equalsIgnoreCase("getting whool")) {
+							getProvider().log("Not timing out when getting whool");
+							return;
+						}
 						DatabaseUtilities.updateAccountStatusInDatabase(getProvider(), "TASK_TIMEOUT",
 								getEvent().getUsername());
 						BotCommands.killProcess(getScript());
@@ -187,6 +188,17 @@ public class TaskHandler {
 					}
 					getProvider().log("performing task" + getCurrentTask().getClass().getSimpleName() + " attempt: "
 							+ taskAttempts);
+					
+
+					// Checking if at task is resizable or no
+					getEvents().fixedMode();
+					getEvents().fixedMode2();
+					getEvents().executeAllEvents();
+					
+					if (getEvent().hasFinished() && !getProvider().getClient().isLoggedIn()) {
+						System.exit(1);
+					}
+					
 					Thread.sleep(1000, 1500);
 				}
 

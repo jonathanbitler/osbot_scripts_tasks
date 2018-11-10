@@ -141,11 +141,11 @@ public class CookingsAssistant extends QuestStep {
 			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new WalkTask("path to wheat field", 1, QUEST_CONFIG,
 					getBot().getMethods(), PATH_TO_WHEAT_FIELD, WHEAT_AREA, getScript(), getEvent(), true, false));
 
-			if (!getInventory().contains("Grain")) {
+//			if (!getInventory().contains("Grain")) {
 
 				getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new ClickObjectTask("take wheat", 1, QUEST_CONFIG,
 						getBot().getMethods(), WHEAT_AREA, 15506, "Pick", "Grain"));
-			}
+//			}
 			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 					new WalkTask("path to wind mill", 1, QUEST_CONFIG, getBot().getMethods(),
 							new ArrayList<Position>(Arrays.asList(new Position(3165, 3308, 2))), WHEAT_FLOOR_2,

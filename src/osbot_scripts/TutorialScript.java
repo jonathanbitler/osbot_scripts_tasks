@@ -8,6 +8,7 @@ import org.osbot.rs07.script.ScriptManifest;
 
 import osbot_scripts.bot.utils.BotCommands;
 import osbot_scripts.database.DatabaseUtilities;
+import osbot_scripts.events.EnableFixedModeEvent;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.events.MandatoryEventsExecution;
 import osbot_scripts.framework.AccountStage;
@@ -113,23 +114,25 @@ public class TutorialScript extends Script {
 			mainState = CheckInWhatArea.getState(this);
 		}
 		
+		if (getClient().isLoggedIn() && getConfigs().get(281) >= 3 && getConfigs().get(281) < 650) {
+			events.fixedMode();
+			events.fixedMode2();
+			events.executeAllEvents();
+			if (!EnableFixedModeEvent.isFixedModeEnabled(this)) {
+				if (execute(new EnableFixedModeEvent()).hasFinished()) {
+					System.out.println("Set client to fixed mode, finished");
+					System.exit(1);
+				}
+			}
+		}
+
 		if (!getClient().isLoggedIn() && getConfigs().get(281) > 0) {
 			BotCommands.killProcess((Script) this);
 		}
 
-		// if (getDialogues().isPendingContinuation()) {
-		// getDialogues().clickContinue();
-		// }
-
 		if ((!TUT_ISLAND_AREA.contains(myPlayer()) && !TUT_ISLAND_AREA_CAVE.contains(myPlayer()))
 				|| (new Area(new int[][] { { 3221, 3228 }, { 3221, 3209 }, { 3246, 3210 }, { 3245, 3229 } })
 						.contains(myPlayer()))) {
-
-			// if (getDialogues().isPendingContinuation()) {
-			// getDialogues().selectOption("Im good, thanks.");
-			// getDialogues().clickContinue();
-			// }
-
 			log("Succesfully completed!");
 			DatabaseUtilities.updateStageProgress(this, AccountStage.QUEST_COOK_ASSISTANT.name(), 0,
 					getLogin().getUsername());
@@ -165,21 +168,6 @@ public class TutorialScript extends Script {
 			// Thread.sleep(5000);
 			log("Trying to logout...");
 			// }
-		}
-
-		if (getClient().isLoggedIn() && getConfigs().get(281) >= 3 && !getDialogues().isPendingContinuation()
-				&& !getDialogues().isPendingOption()) {
-			events.fixedMode();
-			events.fixedMode2();
-		}
-
-		if (mainState != MainState.CREATE_CHARACTER_DESIGN && mainState != MainState.TALK_TO_GIELINOR_GUIDE_ONE
-				&& mainState != MainState.IN_LUMBRIDGE && !TUT_ISLAND_AREA.contains(myPlayer())
-				&& !TUT_ISLAND_AREA_CAVE.contains(myPlayer())
-				&& (!new Area(new int[][] { { 3221, 3228 }, { 3221, 3209 }, { 3246, 3210 }, { 3245, 3229 } })
-						.contains(myPlayer()))) {
-
-			events.executeAllEvents();
 		}
 
 		return random(400, 800);

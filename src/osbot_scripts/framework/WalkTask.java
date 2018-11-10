@@ -151,7 +151,7 @@ public class WalkTask extends TaskSkeleton implements Task {
 			getApi().log("Size of path went to 0, setting a copy of the path back");
 			setPathToWalk(getPathToWalkCopy());
 		}
-		
+
 		// Not in begin area? Then walk to it by itself with webwalking
 		if (getBeginArea() != null && !getBeginArea().contains(getApi().myPlayer())) {
 			getApi().getWalking().webWalk(getPathToWalk().get(getPathToWalk().size() - 1));
@@ -252,7 +252,9 @@ public class WalkTask extends TaskSkeleton implements Task {
 				}
 			}
 		} else {
-			getApi().getWalking().walkPath(getPathToWalk());
+			if (!getApi().getWalking().walkPath(getPathToWalk())) {
+				getApi().getWalking().webWalk(getPathToWalk().get(getPathToWalk().size() - 1));
+			}
 		}
 	}
 
@@ -390,7 +392,8 @@ public class WalkTask extends TaskSkeleton implements Task {
 	}
 
 	/**
-	 * @param pathToWalkCopy the pathToWalkCopy to set
+	 * @param pathToWalkCopy
+	 *            the pathToWalkCopy to set
 	 */
 	public void setPathToWalkCopy(List<Position> pathToWalkCopy) {
 		this.pathToWalkCopy = pathToWalkCopy;

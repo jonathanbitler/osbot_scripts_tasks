@@ -208,12 +208,15 @@ public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface
 		}
 		if (getArea() != null) {
 			// Waiting before player is in an area
+			if (!getArea().contains(getApi().myPlayer())) {
+				getApi().getWalking().webWalk(getArea());
+			}
 			Sleep.sleepUntil(() -> getArea().contains(getApi().myPlayer()), 10000);
 		}
 
 		RS2Object object = getApi().getObjects()
 				.closest(obj -> (getArea().contains(obj) && obj.getId() == getObjectId() || (getRock() != null
-						&& getRock().hasOre(obj, getApi()) && getApi().myPlayer().getArea(2).contains(obj))));
+						&& getRock().hasOre(obj, getApi()) && getApi().myPlayer().getArea(1).contains(obj))));
 
 		if (object != null) {
 			if (getQuest() != null) {

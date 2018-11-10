@@ -4,12 +4,12 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.model.GroundDecoration;
 import org.osbot.rs07.api.model.Item;
 import org.osbot.rs07.api.model.NPC;
 import org.osbot.rs07.api.model.RS2Object;
-import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.api.ui.Tab;
 import org.osbot.rs07.event.WalkingEvent;
 
@@ -40,7 +40,15 @@ public class SurvivalExpertSection extends TutorialSection {
 
 		switch (getProgress()) {
 		case 20:
-			talkAndContinueWithInstructor();
+			if (!new Area(new int[][] { { 3097, 3103 }, { 3097, 3099 }, { 3088, 3098 }, { 3091, 3092 }, { 3097, 3088 },
+					{ 3104, 3089 }, { 3106, 3094 }, { 3107, 3099 }, { 3102, 3104 }, { 3103, 3107 }, { 3099, 3107 } })
+							.contains(myPlayer())) {
+				getWalking().webWalk(new Position(3103, 3096, 0));
+				log("Trying to webwalk to correct position");
+			} else {
+				talkAndContinueWithInstructor();
+				log("In correct position");
+			}
 			break;
 		case 30:
 			talkAndContinueWithInstructor();
@@ -48,22 +56,22 @@ public class SurvivalExpertSection extends TutorialSection {
 			break;
 		case 40:
 			fish();
-//			chopTree();
+			// chopTree();
 			break;
 		case 50:
 			Sleep.sleepUntil(() -> getTabs().open(Tab.SKILLS), 10000, 1000);
-//			lightFire();
+			// lightFire();
 			break;
 		case 60:
-//			Sleep.sleepUntil(() -> getTabs().open(Tab.SKILLS), 10000, 1000);
+			// Sleep.sleepUntil(() -> getTabs().open(Tab.SKILLS), 10000, 1000);
 			talkAndContinueWithInstructor();
 			break;
 		case 70:
-//			talkAndContinueWithInstructor();
+			// talkAndContinueWithInstructor();
 			chopTree();
 			break;
 		case 80:
-//			fish();
+			// fish();
 			lightFire();
 			break;
 		case 90:
@@ -88,7 +96,7 @@ public class SurvivalExpertSection extends TutorialSection {
 		case 120:
 			walkThroughGate();
 			break;
-			
+
 		case 130:
 			TutorialScript.mainState = getNextMainState();
 			break;
@@ -161,8 +169,7 @@ public class SurvivalExpertSection extends TutorialSection {
 		List<Position> allPositions = myPlayer().getArea(10).getPositions();
 
 		for (RS2Object object : getObjects().getAll()) {
-			if (allPositions.contains(object.getPosition())
-					&& object.getId() == FIRE_OBJECT_ID) {
+			if (allPositions.contains(object.getPosition()) && object.getId() == FIRE_OBJECT_ID) {
 				return true;
 			}
 		}

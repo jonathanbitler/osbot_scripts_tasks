@@ -16,7 +16,7 @@ public class RandomUtil {
 	 * @param max
 	 * @return
 	 */
-	private static int getRandomNumberInRange(int min, int max) {
+	public static int getRandomNumberInRange(int min, int max) {
 
 		// if (min >= max) {
 		// throw new IllegalArgumentException("max must be greater than min");
@@ -33,17 +33,17 @@ public class RandomUtil {
 	public static AccountStage gextNextAccountStage(MethodProvider prov) {
 		ArrayList<AccountStage> stagesToDo = new ArrayList<AccountStage>();
 
-		//When quest cooks assistant isn't completed yet
+		// When quest cooks assistant isn't completed yet
 		if (prov.getConfigs().get(29) < 2) {
 			stagesToDo.add(AccountStage.QUEST_COOK_ASSISTANT);
 		}
-		
-		//When quest romeon and juliet isn't completed yet
+
+		// When quest romeon and juliet isn't completed yet
 		if (prov.getConfigs().get(144) < 100) {
 			stagesToDo.add(AccountStage.QUEST_ROMEO_AND_JULIET);
 		}
-		
-		//When quest sheep shearer isn't completed yet
+
+		// When quest sheep shearer isn't completed yet
 		if (prov.getConfigs().get(179) < 21) {
 			stagesToDo.add(AccountStage.QUEST_SHEEP_SHEARER);
 		}
@@ -52,9 +52,15 @@ public class RandomUtil {
 			stagesToDo.add(AccountStage.MINING_LEVEL_TO_15);
 		}
 
-		//When everything is completed
+		// When everything is completed
 		if (stagesToDo.size() == 0) {
-			stagesToDo.add(AccountStage.MINING_IRON_ORE);
+			int randomNum = getRandomNumberInRange(0, 1);
+			if (randomNum == 0) {
+				stagesToDo.add(AccountStage.MINING_IRON_ORE);
+			} else {
+				stagesToDo.add(AccountStage.RIMMINGTON_IRON_ORE);
+			}
+
 		}
 
 		// Cant be negative

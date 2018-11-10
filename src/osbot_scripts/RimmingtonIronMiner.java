@@ -12,11 +12,12 @@ import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.login.LoginHandler;
 import osbot_scripts.qp7.progress.IronMinerConfiguration;
+import osbot_scripts.qp7.progress.RimmingTonIronConfig;
 
-@ScriptManifest(author = "pim97", info = "MINING_IRON_ORE", logo = "", name = "MINING_IRON_ORE", version = 1.0)
-public class IronMiner extends Script {
+@ScriptManifest(author = "pim97", info = "RIMMINGTON_IRON_ORE", logo = "", name = "RIMMINGTON_IRON_ORE", version = 1.0)
+public class RimmingtonIronMiner extends Script {
 
-	private IronMinerConfiguration goldfarmMining;
+	private RimmingTonIronConfig goldfarmMining;
 
 	private LoginEvent login;
 
@@ -29,7 +30,7 @@ public class IronMiner extends Script {
 		getGoldfarmMining().getTaskHandler().getEvents().fixedMode();
 		getGoldfarmMining().getTaskHandler().getEvents().fixedMode2();
 		getGoldfarmMining().getTaskHandler().getEvents().executeAllEvents();
-		
+
 		// Account must have atleast 7 quest points, otherwise set it back to quesiton
 		if (getQuests().getQuestPoints() < 7) {
 			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0,
@@ -66,13 +67,13 @@ public class IronMiner extends Script {
 
 	@Override
 	public void onPaint(Graphics2D g) {
-		getGoldfarmMining().onPaint(g);
+		getMouse().setDefaultPaintEnabled(true);
 	}
 
 	@Override
 	public void onStart() throws InterruptedException {
 		login = LoginHandler.login(this, getParameters());
-		goldfarmMining = new IronMinerConfiguration(login, (Script) this);
+		goldfarmMining = new RimmingTonIronConfig(login, (Script) this);
 
 		if (login != null && login.getUsername() != null) {
 			getGoldfarmMining()
@@ -86,7 +87,7 @@ public class IronMiner extends Script {
 	/**
 	 * @return the goldfarmMining
 	 */
-	public IronMinerConfiguration getGoldfarmMining() {
+	public RimmingTonIronConfig getGoldfarmMining() {
 		return goldfarmMining;
 	}
 
@@ -94,7 +95,7 @@ public class IronMiner extends Script {
 	 * @param goldfarmMining
 	 *            the goldfarmMining to set
 	 */
-	public void setGoldfarmMining(IronMinerConfiguration goldfarmMining) {
+	public void setGoldfarmMining(RimmingTonIronConfig goldfarmMining) {
 		this.goldfarmMining = goldfarmMining;
 	}
 

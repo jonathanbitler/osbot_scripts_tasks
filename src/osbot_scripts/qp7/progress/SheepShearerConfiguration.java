@@ -75,56 +75,56 @@ public class SheepShearerConfiguration extends QuestStep {
 
 		log(getQuestProgress());
 
-//		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-//				new WalkTask("walk to quest guide", 0, QUEST_CONFIG, getBot().getMethods(), PATH_TO_QUEST_START,
-//						PATH_TO_QUEST_START_AREA, getScript(), getEvent(), true, false));
-//
-//		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-//				new DialogueTask("talk with fred", 0, QUEST_CONFIG, getBot().getMethods(), PATH_TO_QUEST_START_AREA,
-//						732, 1, new String[] { "I'm looking for a quest", "Yes okay. I can do that", "Of course!",
-//								"I'm something of an expert actually!" }));
-//
-//		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new PickupItemTask("pickup shears", 1,
-//				QUEST_CONFIG, getBot().getMethods(), PATH_TO_QUEST_START_AREA, "Take", "Shears"));
-//
-//		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-//				new WalkTask("walk to sheeps", 1, QUEST_CONFIG, getBot().getMethods(), PATH_TO_SHEEPS,
-//						PATH_TO_SHEEPS_AREA, getScript(), getEvent(), false, false));
-//
-//		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-//				new DropItemTask("drop items", 1, QUEST_CONFIG, getBot().getMethods(), "Drop",
-//						new String[] { "Shrimps", "Water rune", "Mind rune", "Air rune", "Body rune", "Earth rune",
-//								"Bread", "Wooden shield", "Shortbow", "Bronze arrow", "Bronze dagger", "Grain",
-//								"Cadava berries" }));
-//
-//		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-//				new ClickOnNpcTask("getting whool", 1, QUEST_CONFIG, getBot().getMethods(), "Shear",
-//						new int[] { 2801, 2795, 2800, 2794, 2796, 2802 }, "Wool", 20, PATH_TO_SHEEPS_AREA));
-//
-//		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-//				new WalkTask("walk to spinning wheel", 1, QUEST_CONFIG, getBot().getMethods(),
-//						PATH_TO_LUMRBDIGE_CASTLE_FLOOR_ONE_SPINNING,
-//						PATH_TO_LUMBRIDGE_CASTLE_AREA_FLOOR_ONE_SPINNING_AREA, getScript(), getEvent(), true, false));
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+				new WalkTask("walk to quest guide", 0, QUEST_CONFIG, getBot().getMethods(), PATH_TO_QUEST_START,
+						PATH_TO_QUEST_START_AREA, getScript(), getEvent(), true, false));
 
-//		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new ClickObjectTask("click spinning wheel",
-//				1, QUEST_CONFIG, getBot().getMethods(), PATH_TO_LUMBRIDGE_CASTLE_AREA_FLOOR_ONE_SPINNING_AREA, 14889));
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+				new DialogueTask("talk with fred", 0, QUEST_CONFIG, getBot().getMethods(), PATH_TO_QUEST_START_AREA,
+						732, 1, new String[] { "I'm looking for a quest", "Yes okay. I can do that", "Of course!",
+								"I'm something of an expert actually!" }));
+
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new PickupItemTask("pickup shears", 1,
+				QUEST_CONFIG, getBot().getMethods(), PATH_TO_QUEST_START_AREA, "Take", "Shears"));
+
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+				new WalkTask("walk to sheeps", 1, QUEST_CONFIG, getBot().getMethods(), PATH_TO_SHEEPS,
+						PATH_TO_SHEEPS_AREA, getScript(), getEvent(), false, false));
+
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+				new DropItemTask("drop items", 1, QUEST_CONFIG, getBot().getMethods(), "Drop",
+						new String[] { "Shrimps", "Water rune", "Mind rune", "Air rune", "Body rune", "Earth rune",
+								"Bread", "Wooden shield", "Shortbow", "Bronze arrow", "Bronze dagger", "Grain",
+								"Cadava berries" }));
+
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+				new ClickOnNpcTask("getting whool", 1, QUEST_CONFIG, getBot().getMethods(), "Shear",
+						new int[] { 2801, 2795, 2800, 2794, 2796, 2802 }, "Wool", 20, PATH_TO_SHEEPS_AREA));
+
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+				new WalkTask("walk to spinning wheel", 1, QUEST_CONFIG, getBot().getMethods(),
+						PATH_TO_LUMRBDIGE_CASTLE_FLOOR_ONE_SPINNING,
+						PATH_TO_LUMBRIDGE_CASTLE_AREA_FLOOR_ONE_SPINNING_AREA, getScript(), getEvent(), true, false));
+
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new ClickObjectTask("click spinning wheel",
+				1, QUEST_CONFIG, getBot().getMethods(), PATH_TO_LUMBRIDGE_CASTLE_AREA_FLOOR_ONE_SPINNING_AREA, 14889));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new ClickOnWidgetTask("click on interface",
 				1, QUEST_CONFIG, getBot().getMethods(), "Spin", "Ball of Wool", 20, 14889, new int[] { 270, 14, 38 }));
 
-//		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-//				new WalkTask("walk to quest giver", 1, QUEST_CONFIG, getBot().getMethods(),
-//						new ArrayList<Position>(Arrays.asList(new Position(3208, 3210, 0), new Position(3214, 3210, 0),
-//								new Position(3214, 3218, 0), new Position(3224, 3218, 0), new Position(3234, 3218, 0),
-//								new Position(3235, 3219, 0), new Position(3230, 3228, 0), new Position(3225, 3237, 0),
-//								new Position(3220, 3246, 0), new Position(3217, 3253, 0), new Position(3215, 3263, 0),
-//								new Position(3213, 3273, 0), new Position(3213, 3279, 0), new Position(3203, 3280, 0),
-//								new Position(3193, 3281, 0), new Position(3188, 3282, 0), new Position(3189, 3272, 0),
-//								new Position(3189, 3272, 0))),
-//						PATH_TO_QUEST_START_AREA, getScript(), getEvent(), true, false));
-//
-//		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new DialogueTask("talk with fred quest end",
-//				1, QUEST_CONFIG, getBot().getMethods(), PATH_TO_QUEST_START_AREA, 732, 21, new String[] { "" }));
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+				new WalkTask("walk to quest giver", 1, QUEST_CONFIG, getBot().getMethods(),
+						new ArrayList<Position>(Arrays.asList(new Position(3208, 3210, 0), new Position(3214, 3210, 0),
+								new Position(3214, 3218, 0), new Position(3224, 3218, 0), new Position(3234, 3218, 0),
+								new Position(3235, 3219, 0), new Position(3230, 3228, 0), new Position(3225, 3237, 0),
+								new Position(3220, 3246, 0), new Position(3217, 3253, 0), new Position(3215, 3263, 0),
+								new Position(3213, 3273, 0), new Position(3213, 3279, 0), new Position(3203, 3280, 0),
+								new Position(3193, 3281, 0), new Position(3188, 3282, 0), new Position(3189, 3272, 0),
+								new Position(3189, 3272, 0))),
+						PATH_TO_QUEST_START_AREA, getScript(), getEvent(), true, false));
+
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new DialogueTask("talk with fred quest end",
+				1, QUEST_CONFIG, getBot().getMethods(), PATH_TO_QUEST_START_AREA, 732, 21, new String[] { "" }));
 
 	}
 

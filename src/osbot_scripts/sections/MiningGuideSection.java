@@ -58,9 +58,12 @@ public class MiningGuideSection extends TutorialSection {
 			break;
 
 		case 320:
-			if (getInventory().isItemSelected()) {
-				getInventory().deselectItem();
-			}
+			//Walking to its own positon to prevent it getting stuck
+			getWalking().walk(myPlayer());
+			
+//			if (getInventory().isItemSelected()) {
+//				getInventory().deselectItem();
+//			}
 			
 			Item tinOre = getInventory().getItem(438);
 			if (tinOre != null) {
@@ -100,12 +103,7 @@ public class MiningGuideSection extends TutorialSection {
 			break;
 
 		case 360:
-			Position gatePosition = new Position(3093, 9503, 0);
-			if (!myPlayer().getArea(2).contains(gatePosition)) {
-				getWalking().walk(gatePosition);
-			} else {
-				clickObject(9718, "Open");
-			}
+			clickObject(9718, "Open");
 			break;
 
 		case 370:

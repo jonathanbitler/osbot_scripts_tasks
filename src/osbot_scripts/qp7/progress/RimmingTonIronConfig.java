@@ -1,6 +1,5 @@
 package osbot_scripts.qp7.progress;
 
-import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -21,90 +20,71 @@ import osbot_scripts.framework.parts.BankItem;
 import osbot_scripts.qp7.progress.entities.Rock;
 import osbot_scripts.sections.total.progress.MainState;
 
-public class IronMinerConfiguration extends QuestStep {
+public class RimmingTonIronConfig extends QuestStep {
 
-	public IronMinerConfiguration(LoginEvent event, Script script) {
-		super(-1, -1, AccountStage.MINING_IRON_ORE, event, script, false);
+	public RimmingTonIronConfig(LoginEvent event, Script script) {
+		super(-1, -1, AccountStage.RIMMINGTON_IRON_ORE, event, script, false);
 		// TODO Auto-generated constructor stub
 	}
 
-	private static final ArrayList<Position> BANK_POSITION_VARROCK_EAST = new ArrayList<Position>(
-			Arrays.asList(new Position(3184, 3436, 0)));
+	private static final ArrayList<Position> IRON_ORE_MINE_POSITION = new ArrayList<Position>(
+			Arrays.asList(new Position(2973, 3245, 0)));
+
+	private static final ArrayList<Position> BANK_POSITION = new ArrayList<Position>(
+			Arrays.asList(new Position(3013, 3356, 0)));
 
 	private static final ArrayList<Position> BANK_PATH_TO_MINING_AREA = new ArrayList<Position>(
-			Arrays.asList(new Position(3182, 3435, 0), new Position(3181, 3429, 0), new Position(3172, 3424, 0),
-					new Position(3170, 3423, 0), new Position(3171, 3413, 0), new Position(3172, 3403, 0),
-					new Position(3171, 3393, 0), new Position(3172, 3390, 0), new Position(3177, 3381, 0),
-					new Position(3182, 3372, 0), new Position(3180, 3371, 0), new Position(3175, 3367, 0)));
+			Arrays.asList(new Position(3013, 3356, 0), new Position(3006, 3353, 0), new Position(3006, 3343, 0),
+					new Position(3006, 3333, 0), new Position(3006, 3323, 0), new Position(3006, 3313, 0),
+					new Position(3006, 3303, 0), new Position(3006, 3293, 0), new Position(3006, 3283, 0),
+					new Position(3004, 3277, 0), new Position(2997, 3270, 0), new Position(2990, 3263, 0),
+					new Position(2983, 3256, 0), new Position(2976, 3249, 0), new Position(2974, 3245, 0),
+					new Position(2969, 3241, 0)));
 
 	private static final ArrayList<Position> MINING_AREA_TO_BANK = new ArrayList<Position>(
-			Arrays.asList(new Position(3183, 3371, 0), new Position(3178, 3380, 0), new Position(3173, 3389, 0),
-					new Position(3168, 3398, 0), new Position(3168, 3399, 0), new Position(3169, 3409, 0),
-					new Position(3170, 3419, 0), new Position(3172, 3428, 0), new Position(3182, 3431, 0),
-					new Position(3183, 3431, 0), new Position(3184, 3436, 0)));
+			Arrays.asList(new Position(2975, 3246, 0), new Position(2982, 3253, 0), new Position(2989, 3260, 0),
+					new Position(2996, 3267, 0), new Position(3003, 3274, 0), new Position(3007, 3278, 0),
+					new Position(3007, 3288, 0), new Position(3007, 3298, 0), new Position(3007, 3308, 0),
+					new Position(3007, 3318, 0), new Position(3007, 3328, 0), new Position(3007, 3338, 0),
+					new Position(3007, 3348, 0), new Position(3005, 3356, 0), new Position(3013, 3356, 0)));
 
 	private static final ArrayList<Position> MINING_POSITION = new ArrayList<Position>(
-			Arrays.asList(new Position(3175, 3367, 0)));
+			Arrays.asList(new Position(2969, 3241, 0)));
 
 	private static final Area BANK_VARROCK_EAST_AREA = new Area(new int[][] { { 3180, 3447 }, { 3180, 3433 },
 			{ 3186, 3433 }, { 3186, 3436 }, { 3189, 3436 }, { 3189, 3448 }, { 3180, 3448 } });
 
-	private static final Area MINING_AREA = new Area(new int[][] { { 3179, 3379 }, { 3170, 3366 }, { 3175, 3363 },
-			{ 3180, 3365 }, { 3184, 3373 }, { 3186, 3380 }, { 3182, 3381 } });
+	private static final Area FALADOR_BANK_AREA = new Area(
+			new int[][] { { 3007, 3360 }, { 3007, 3352 }, { 3024, 3352 }, { 3024, 3361 }, { 3007, 3361 } });
 
-	private static final Area NOT_IN_CORRECT_ZONE = new Area(
-			new int[][] { { 3187, 3449 }, { 3163, 3447 }, { 3145, 3415 }, { 3149, 3380 }, { 3173, 3344 },
-					{ 3210, 3358 }, { 3232, 3387 }, { 3230, 3438 }, { 3227, 3456 } });
+	private static final Area IN_CORRECT_ZONE = new Area(
+			new int[][] { { 3007, 3366 }, { 2985, 3343 }, { 2989, 3282 }, { 2955, 3249 }, { 2971, 3215 },
+					{ 2997, 3227 }, { 2999, 3260 }, { 3014, 3266 }, { 3023, 3304 }, { 3023, 3363 } });
+
+	private static final Area RIMMINGTON_MINING_AREA = new Area(
+			new int[][] { { 2966, 3240 }, { 2968, 3236 }, { 2973, 3240 }, { 2971, 3245 }, { 2967, 3243 } });
 
 	private String pickaxe;
 
-	private int beginAmount = -1, soldAmount = -1, currentAmount = -1;
-
-	private long beginTime;
-
-	public final String formatTime(final long ms) {
-		long s = ms / 1000, m = s / 60, h = m / 60;
-		s %= 60;
-		m %= 60;
-		h %= 24;
-		return String.format("%02d:%02d:%02d", h, m, s);
-	}
-
-	public void onPaint(Graphics2D g) {
-		int profit = (currentAmount - beginAmount + soldAmount) * 140;
-		g.drawString("Sold ores " + soldAmount, 60, 370);
-		g.drawString("Begin ores" + beginAmount, 60, 395);
-		g.drawString("Current ores" + currentAmount, 60, 420);
-		g.drawString("Money per hour " + (long) (profit * (3600000.0 / (System.currentTimeMillis() - beginTime))), 60,
-				445);
-		g.drawString("Time taken: " + (formatTime((System.currentTimeMillis() - beginTime))), 60, 470);
-	}
-
 	@Override
 	public void onStart() {
-		beginTime = System.currentTimeMillis();
+
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new WalkTask("walk to falador bank", -1, -1,
+				getBot().getMethods(), BANK_POSITION, FALADOR_BANK_AREA, getScript(), getEvent(), true, false));//
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-				new WalkTask("walk to varrock west bank", -1, -1, getBot().getMethods(), BANK_POSITION_VARROCK_EAST,
-						new Area(new int[][] { { 3180, 3441 }, { 3186, 3441 }, { 3186, 3433 }, { 3180, 3433 } }),
-						getScript(), getEvent(), true, false));
-
-		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new BankTask("withdraw pickaxe", 0,
-				getBot().getMethods(), true, new BankItem[] { new BankItem("pickaxe", 1, false) },
-				new Area(
-						new int[][] { { 3180, 3439 }, { 3180, 3433 }, { 3186, 3433 }, { 3186, 3440 }, { 3180, 3440 } }),
-				this));
+				new BankTask("withdraw pickaxe", 0, getBot().getMethods(), true,
+						new BankItem[] { new BankItem("pickaxe", 1, false) }, FALADOR_BANK_AREA, this));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("walk to mining area", -1, -1, getBot().getMethods(), BANK_PATH_TO_MINING_AREA,
-						BANK_VARROCK_EAST_AREA, MINING_AREA, getScript(), getEvent(), false, true));
+						FALADOR_BANK_AREA, RIMMINGTON_MINING_AREA, getScript(), getEvent(), false, true));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new WalkTask("walk to mining spot", -1, -1,
-				getBot().getMethods(), MINING_POSITION, MINING_AREA, getScript(), getEvent(), false, true));
+				getBot().getMethods(), MINING_POSITION, RIMMINGTON_MINING_AREA, getScript(), getEvent(), false, true));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-				new ClickObjectTask("click mining", -1, -1, getBot().getMethods(),
-						new Area(new int[][] { { 3174, 3370 }, { 3180, 3370 }, { 3180, 3365 }, { 3174, 3365 } }), 7488,
+				new ClickObjectTask("click mining", -1, -1, getBot().getMethods(), RIMMINGTON_MINING_AREA, 7488,
 						new BankItem("Iron ore", 1, false), true, this, Rock.IRON));
 
 		// String name, int itemId, int amount, int sellPrice, boolean withdrawNoted
@@ -114,8 +94,8 @@ public class IronMinerConfiguration extends QuestStep {
 		// getBot().getMethods(), "Drop", true, new String[] { "Clay" }));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-				new WalkTask("walk to varrock west bank 2", -1, -1, getBot().getMethods(), MINING_AREA_TO_BANK,
-						BANK_VARROCK_EAST_AREA, getScript(), getEvent(), false, true));
+				new WalkTask("walk to falador bank 2", -1, -1, getBot().getMethods(), MINING_AREA_TO_BANK,
+						FALADOR_BANK_AREA, getScript(), getEvent(), false, true));
 
 	}
 
@@ -135,35 +115,32 @@ public class IronMinerConfiguration extends QuestStep {
 		if (getEvent().hasFinished() && !getClient().isLoggedIn()) {
 			System.exit(1);
 		}
-
 		// If the player is fighting or under combat, then reset the stage to prevent
 		// going dead
 		if (getCombat().isFighting() || myPlayer().isUnderAttack()) {
 			log("Under attack! Resetting stage for now and going to bank");
-			getWalking().walkPath(
-					new ArrayList<Position>(Arrays.asList(new Position(3182, 3371, 0), new Position(3181, 3365, 0),
-							new Position(3173, 3361, 0), new Position(3169, 3368, 0), new Position(3173, 3377, 0),
-							new Position(3183, 3379, 0), new Position(3185, 3379, 0), new Position(3181, 3371, 0))));
-			resetStage(AccountStage.MINING_IRON_ORE.name());
+			resetStage(AccountStage.RIMMINGTON_IRON_ORE.name());
 		}
 
-		if (MINING_AREA.contains(myPlayer()) && !getInventory().contains("Bronze pickaxe")
+		if (RIMMINGTON_MINING_AREA.contains(myPlayer()) && !getInventory().contains("Bronze pickaxe")
 				&& !getInventory().contains("Iron pickaxe") && !getInventory().contains("Steel pickaxe")
 				&& !getInventory().contains("Mithril pickaxe") && !getInventory().contains("Adamant pickaxe")
 				&& !getInventory().contains("Rune pickaxe")) {
 			log("Is at mining area wihout a pickaxe, restarting tasks!");
-			resetStage(AccountStage.MINING_IRON_ORE.name());
+			resetStage(AccountStage.RIMMINGTON_IRON_ORE.name());
 		}
 
-		if (!MiningLevelTo15Configuration.MINING_ZONE.contains(myPlayer())) {
-			resetStage(AccountStage.MINING_IRON_ORE.name());
+		if (!IN_CORRECT_ZONE.contains(myPlayer())) {
+			resetStage(AccountStage.RIMMINGTON_IRON_ORE.name());
 		}
 
-		// When having more than 200 clay, then go to the g.e. and sell it
-		if (getBank().isOpen() && getBank().getAmount("Iron ore") > 200) {
+		// When having more than 200 iron ore, then go to the g.e. and sell it
+		if (getBank().isOpen() && getBank().getAmount("Iron ore") > 700) {
 			int amount = (int) (getBank().getAmount("Iron ore"));
+			int inventory = (int) (getInventory().getAmount("Iron ore"));
 			setGrandExchangeTask(new GrandExchangeTask(this, new BankItem[] {},
-					new BankItem[] { new BankItem("Iron ore", 440, amount, 100, true) }, null, getScript()));
+					new BankItem[] { new BankItem("Iron ore", 440, amount + inventory, 100, true) }, null,
+					getScript()));
 		}
 
 		int ironAmount = -1;
@@ -185,16 +162,6 @@ public class IronMinerConfiguration extends QuestStep {
 			}
 
 			totalAccountValue += (ironAmount * 120);
-
-			int bankedAmount = (int) getBank().getAmount("Iron ore");
-			if (beginAmount == -1) {
-				beginAmount = bankedAmount;
-			}
-			if (bankedAmount < currentAmount) {
-				soldAmount += (currentAmount - bankedAmount);
-			}
-			currentAmount = bankedAmount;
-			// beginAmount,soldAmount, currentAmount;
 		}
 		log("[ESTIMATED] account value is: " + totalAccountValue);
 		if (getEvent() != null && getEvent().getUsername() != null && totalAccountValue > 0) {
@@ -214,16 +181,21 @@ public class IronMinerConfiguration extends QuestStep {
 							new BankItem[] { new BankItem("Iron ore", 440, 1000, 100, true),
 									new BankItem("Clay", 434, 1000, 100, true) },
 							null, getScript()));
-		} else if (totalAccountValue > 5000 && getBank().isOpen() && getSkills().getStatic(Skill.MINING) > 3
-				&& getSkills().getStatic(Skill.MINING) < 6
-				&& ((!getInventory().contains("Iron pickaxe") && !getBank().contains("Iron pickaxe")))) {
-
-			setGrandExchangeTask(
-					new GrandExchangeTask(this, new BankItem[] { new BankItem("Iron pickaxe", 1267, 1, 1400, false) },
-							new BankItem[] { new BankItem("Iron ore", 440, 1000, 100, true),
-									new BankItem("Clay", 434, 1000, 100, true) },
-							null, getScript()));
-		} else if (totalAccountValue > 8000 && getBank().isOpen() && getSkills().getStatic(Skill.MINING) >= 6
+		}
+		// else if (totalAccountValue > 5000 && getBank().isOpen() &&
+		// getSkills().getStatic(Skill.MINING) > 3
+		// && getSkills().getStatic(Skill.MINING) < 6
+		// && ((!getInventory().contains("Iron pickaxe") && !getBank().contains("Iron
+		// pickaxe")))) {
+		//
+		// setGrandExchangeTask(
+		// new GrandExchangeTask(this, new BankItem[] { new BankItem("Iron pickaxe",
+		// 1267, 1, 1400, false) },
+		// new BankItem[] { new BankItem("Iron ore", 440, 1000, 100, true),
+		// new BankItem("Clay", 434, 1000, 100, true) },
+		// null, getScript()));
+		// }
+		else if (totalAccountValue > 8000 && getBank().isOpen() && getSkills().getStatic(Skill.MINING) >= 6
 				&& getSkills().getStatic(Skill.MINING) < 21
 				&& ((!getInventory().contains("Steel pickaxe") && !getBank().contains("Steel pickaxe")))) {
 
@@ -232,16 +204,22 @@ public class IronMinerConfiguration extends QuestStep {
 							new BankItem[] { new BankItem("Iron ore", 440, 1000, 100, true),
 									new BankItem("Clay", 434, 1000, 100, true) },
 							null, getScript()));
-		} else if (totalAccountValue > 15000 && getBank().isOpen() && getSkills().getStatic(Skill.MINING) >= 21
-				&& getSkills().getStatic(Skill.MINING) < 31
-				&& ((!getInventory().contains("Mithril pickaxe") && !getBank().contains("Mithril pickaxe")))) {
+		}
 
-			setGrandExchangeTask(new GrandExchangeTask(this,
-					new BankItem[] { new BankItem("Mithril pickaxe", 1273, 1, 10000, false) },
-					new BankItem[] { new BankItem("Iron ore", 440, 1000, 100, true),
-							new BankItem("Clay", 434, 1000, 100, true) },
-					null, getScript()));
-		} else if (totalAccountValue > 30000 && getBank().isOpen() && getSkills().getStatic(Skill.MINING) >= 31
+		// else if (totalAccountValue > 15000 && getBank().isOpen() &&
+		// getSkills().getStatic(Skill.MINING) >= 21
+		// && getSkills().getStatic(Skill.MINING) < 31
+		// && ((!getInventory().contains("Mithril pickaxe") &&
+		// !getBank().contains("Mithril pickaxe")))) {
+		//
+		// setGrandExchangeTask(new GrandExchangeTask(this,
+		// new BankItem[] { new BankItem("Mithril pickaxe", 1273, 1, 10000, false) },
+		// new BankItem[] { new BankItem("Iron ore", 440, 1000, 100, true),
+		// new BankItem("Clay", 434, 1000, 100, true) },
+		// null, getScript()));
+		// }
+
+		else if (totalAccountValue > 30000 && getBank().isOpen() && getSkills().getStatic(Skill.MINING) >= 31
 				&& getSkills().getStatic(Skill.MINING) < 41
 				&& ((!getInventory().contains("Adamant pickaxe") && !getBank().contains("Adamant pickaxe")))) {
 
@@ -266,7 +244,7 @@ public class IronMinerConfiguration extends QuestStep {
 
 			// Resetting stage, walking back to the bank to deposit everything and setting
 			// the current grand exchange task to null
-			resetStage(AccountStage.MINING_IRON_ORE.name());
+			resetStage(AccountStage.RIMMINGTON_IRON_ORE.name());
 			setGrandExchangeTask(null);
 			log("Finished G.E. task, walking back to varrock bank");
 		}
@@ -275,7 +253,7 @@ public class IronMinerConfiguration extends QuestStep {
 			getGrandExchangeTask().loop();
 
 			if (getQuestStageStep() != 0) {
-				resetStage(AccountStage.MINING_IRON_ORE.name());
+				resetStage(AccountStage.RIMMINGTON_IRON_ORE.name());
 			}
 
 		}

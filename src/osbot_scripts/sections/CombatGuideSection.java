@@ -163,7 +163,7 @@ public class CombatGuideSection extends TutorialSection {
 		NPC rat = getNpcs().closest(
 				npc -> npc.getName().equalsIgnoreCase("Giant rat") && npc.isAttackable());
 		if (rat != null) {
-			if (rat.interact()) {
+			if (rat.interact("Attack")) {
 				Sleep.sleepUntil(() -> myPlayer().getInteracting() != null, 15000);
 				return true;
 			}

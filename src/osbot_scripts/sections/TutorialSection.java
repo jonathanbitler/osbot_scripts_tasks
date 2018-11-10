@@ -8,6 +8,7 @@ import org.osbot.rs07.api.model.RS2Object;
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.script.MethodProvider;
 
+import osbot_scripts.bot.utils.RandomUtil;
 import osbot_scripts.sections.total.progress.MainState;
 import osbot_scripts.util.Sleep;
 
@@ -33,12 +34,12 @@ public abstract class TutorialSection extends MethodProvider {
 	 * @param interactName
 	 */
 	public void clickObject(int objectId, String interactName) {
+		getCamera().movePitch(67);
+		getCamera().moveYaw(RandomUtil.getRandomNumberInRange(0, 360));
 		RS2Object rs2Object = getObjects().closest(objectId);
-		if (rs2Object != null && rs2Object.getArea(10).contains(myPlayer().getPosition())) {
+		if (rs2Object != null) {
 			rs2Object.interact(interactName);
-			Sleep.sleepUntil(() -> myPlayer().getArea(2).contains(rs2Object.getPosition()), 10000, 2000);
-		} else if (rs2Object != null) {
-			getWalking().walk(rs2Object.getPosition());
+			Sleep.sleepUntil(() -> myPlayer().getArea(1).contains(rs2Object.getPosition()), 10000, 2000);
 		}
 	}
 
@@ -58,15 +59,18 @@ public abstract class TutorialSection extends MethodProvider {
 	 * @param interactName
 	 */
 	public void clickObject(int objectId, String interactName, Position walkTo) {
+		getCamera().movePitch(67);
+		getCamera().moveYaw(RandomUtil.getRandomNumberInRange(0, 360));
 		RS2Object rs2Object = getObjects().closest(objectId);
-		if (rs2Object != null && !rs2Object.isVisible()) {
-			getWalking().walk(walkTo);
-			getCamera().toEntity(rs2Object);
-		}
 		if (rs2Object != null) {
-			rs2Object.interact(interactName);
+			rs2Object.interact();
 			Sleep.sleepUntil(() -> myPlayer().getArea(2).contains(rs2Object.getPosition()), 5000, 2000);
 		}
+
+		if (rs2Object != null && (!rs2Object.isVisible() || !rs2Object.getArea(1).contains(myPlayer()))) {
+			getWalking().walk(rs2Object);
+		}
+
 	}
 
 	/**

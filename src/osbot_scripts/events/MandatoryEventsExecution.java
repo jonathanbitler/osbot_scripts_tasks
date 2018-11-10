@@ -2,12 +2,11 @@ package osbot_scripts.events;
 
 import java.awt.event.KeyEvent;
 
+import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.api.ui.Tab;
 import org.osbot.rs07.event.Event;
 import org.osbot.rs07.script.MethodProvider;
-
-import com.sun.javafx.geom.transform.GeneralTransform3D;
 
 import osbot_scripts.util.Sleep;
 
@@ -35,145 +34,172 @@ public class MandatoryEventsExecution {
 		return toggleShiftDrop.hasFinished();
 	}
 
+	private int failed = 0;
+
 	public void fixedMode() throws InterruptedException {
+		boolean loop = true;
 		RS2Widget isResizable = getProvider().getWidgets().get(164, 32);
 
 		// Has the resizable screen active
-		if (isResizable != null && isResizable.isVisible()) {
-			getProvider().log("In resizable mode!");
-
-			RS2Widget inSettingsTab = getProvider().getWidgets().get(261, 33);
-			// In settings tab or not
-
-			RS2Widget computerTan = getProvider().getWidgets().get(261, 1, 0);
-			if (computerTan != null && computerTan.isVisible()) {
-				computerTan.interact("Display");
+		while (loop) {
+			if ((isResizable != null && !isResizable.isVisible()) || (isResizable == null)) {
+				loop = false;
 			}
+			if (isResizable != null && isResizable.isVisible()) {
+				getProvider().log("In resizable mode!");
 
-			if (inSettingsTab != null && inSettingsTab.isVisible()) {
-				RS2Widget fixedMode = getProvider().getWidgets().get(261, 33);
-				Sleep.sleepUntil(() -> fixedMode != null && fixedMode.isVisible(), 5000);
-				// Click on fixed mode
-				if (fixedMode != null && fixedMode.isVisible()) {
-					fixedMode.interact("Fixed mode");
+				RS2Widget inSettingsTab = getProvider().getWidgets().get(261, 33);
+				// In settings tab or not
 
+				RS2Widget settingsTab = getProvider().getWidgets().get(164, 38);
+				if (settingsTab != null) {
+					settingsTab.interact("Options");
+				}
+
+				if (failed > 5) {
+
+					getProvider().log("Couldn't fix itself, restarting");
 					Thread.sleep(5000);
-					getProvider().log("Restarting for the resizable to take effect");
 					System.exit(1);
 				}
-			} else {
-				RS2Widget settingsTab = getProvider().getWidgets().get(164, 38);
-				settingsTab.interact("Options");
+				failed++;
+
+				RS2Widget computerTan = getProvider().getWidgets().get(261, 1, 0);
+				if (computerTan != null && computerTan.isVisible()) {
+					computerTan.interact("Display");
+				}
+
+				if (inSettingsTab != null && inSettingsTab.isVisible()) {
+					RS2Widget fixedMode = getProvider().getWidgets().get(261, 33);
+					Sleep.sleepUntil(() -> fixedMode != null && fixedMode.isVisible(), 5000);
+					// Click on fixed mode
+					if (fixedMode != null && fixedMode.isVisible()) {
+						fixedMode.interact("Fixed mode");
+
+						getProvider().log("Restarting for the resizable to take effect");
+						getProvider().log("test: "
+								+ ((isResizable != null && !isResizable.isVisible()) || (isResizable == null)));
+						Sleep.sleepUntil(
+								() -> (isResizable != null && !isResizable.isVisible()) || (isResizable == null), 5000);
+						if ((isResizable != null && !isResizable.isVisible()) || (isResizable == null)) {
+							getProvider().log("Successfully resized");
+							loop = false;
+							Thread.sleep(5000);
+							System.exit(1);
+						}
+
+					}
+				}
 			}
 		}
 	}
 
 	public void fixedMode2() throws InterruptedException {
+
+		if (!EnableFixedModeEvent.isFixedModeEnabled(getProvider())) {
+			if (getProvider().execute(new EnableFixedModeEvent()).hasFinished()) {
+				System.out.println("Set client to fixed mode, finished");
+				System.exit(1);
+			}
+		}
+
+		boolean loop = true;
 		RS2Widget isResizable = getProvider().getWidgets().get(164, 34);
 
 		// Has the resizable screen active
-		if (isResizable != null && isResizable.isVisible()) {
-			getProvider().log("In resizable mode!");
-
-			RS2Widget inSettingsTab = getProvider().getWidgets().get(261, 33);
-			// In settings tab or not
-
-			RS2Widget computerTan = getProvider().getWidgets().get(261, 1, 0);
-			if (computerTan != null && computerTan.isVisible()) {
-				computerTan.interact("Display");
+		while (loop) {
+			if ((isResizable != null && !isResizable.isVisible()) || (isResizable == null)) {
+				loop = false;
 			}
+			// Has the resizable screen active
+			while (isResizable != null && isResizable.isVisible()) {
+				getProvider().log("In resizable mode!");
 
-			if (inSettingsTab != null && inSettingsTab.isVisible()) {
-				RS2Widget fixedMode = getProvider().getWidgets().get(261, 33);
-				Sleep.sleepUntil(() -> fixedMode != null && fixedMode.isVisible(), 5000);
+				RS2Widget inSettingsTab = getProvider().getWidgets().get(261, 33);
+				// In settings tab or not
 
-				// Click on fixed mode
-				if (fixedMode != null && fixedMode.isVisible()) {
-					fixedMode.interact("Fixed mode");
+				RS2Widget settingsTab = getProvider().getWidgets().get(164, 38);
+				if (settingsTab != null) {
+					settingsTab.interact("Options");
+				}
 
+				if (failed > 5) {
+					getProvider().log("Couldn't fix itself, restarting");
 					Thread.sleep(5000);
-					getProvider().log("Restarting for the resizable to take effect");
 					System.exit(1);
 				}
-			} else {
-				RS2Widget settingsTab = getProvider().getWidgets().get(164, 38);
-				settingsTab.interact("Options");
+				failed++;
+
+				RS2Widget computerTan = getProvider().getWidgets().get(261, 1, 0);
+				if (computerTan != null && computerTan.isVisible()) {
+					computerTan.interact("Display");
+				}
+
+				if (inSettingsTab != null && inSettingsTab.isVisible()) {
+					RS2Widget fixedMode = getProvider().getWidgets().get(261, 33);
+					Sleep.sleepUntil(() -> fixedMode != null && fixedMode.isVisible(), 5000);
+
+					// Click on fixed mode
+					if (fixedMode != null && fixedMode.isVisible()) {
+						fixedMode.interact("Fixed mode");
+
+						getProvider().log("Restarting for the resizable to take effect");
+						getProvider().log("test: "
+								+ ((isResizable != null && !isResizable.isVisible()) || (isResizable == null)));
+						Sleep.sleepUntil(
+								() -> (isResizable != null && !isResizable.isVisible()) || (isResizable == null), 5000);
+						if ((isResizable != null && !isResizable.isVisible()) || (isResizable == null)) {
+							getProvider().log("Successfully resized");
+							loop = false;
+							Thread.sleep(5000);
+							System.exit(1);
+						}
+
+					}
+				}
 			}
 		}
 	}
 
-	public boolean executeAllEvents() {
-		// if (!disabled) {
-		// getProvider().log("Executing all events roofs/auto/fixed mode");
-		// if (!isFixedMode) {
-		// RS2Widget widget = getProvider().getWidgets().get(164, 38);
-		// if (widget != null) {
-		// widget.interact("Options");
-		// RS2Widget fixedMode = getProvider().getWidgets().get(261, 33, 9);
-		// if (fixedMode != null) {
-		// fixedMode.interact("Fixed mode");
-		// isFixedMode = true;
-		// getProvider().log("Set fixed to: " + isFixedMode);
-		// }
-		// }
-		// // Event fixedModeEvent = new FixedModeEvent();
-		// // getProvider().execute(fixedModeEvent);
-		// // isFixedMode = fixedModeEvent.hasFinished();
-		// }
-		// getProvider().log("roofs currently:
-		// "+getProvider().getSettings().areRoofsEnabled());
-		// if ((!getProvider().getSettings().areRoofsEnabled() || !isAudioDisabled
-		// || !getProvider().getSettings().isShiftDropActive())) {
+	private static final Area LUMRBDIGE = new Area(
+			new int[][] { { 3220, 3236 }, { 3247, 3236 }, { 3246, 3211 }, { 3203, 3204 }, { 3200, 3234 } });
 
-		// getProvider().log("ello1");
-		// getProvider().log("continue widget: "+getContinueWidget());
-
-		if (getProvider().getWidgets().getWidgetContainingText("try talking to the Lumbridge Guide") != null
-				&& getProvider().getWidgets().getWidgetContainingText("try talking to the Lumbridge Guide")
-						.isVisible()) {
+	public void executeAllEvents() {
+		// Continueing when has a dialogue to prevent getting stuck
+		if (pendingContinue()) {
 			selectContinue();
+			getProvider().getWalking().walk(getProvider().myPlayer().getArea(2));
 		}
 
-		if ((getContinueWidget() != null && !getContinueWidget().isVisible()) || (getContinueWidget() == null)) {
-
-			// To disable the interfaces
-			getProvider().getWalking().walk(getProvider().myPlayer());
-			// getProvider().log("ello2");
-			if (!isAudioDisabled) {
-				isAudioDisabled = disableAudio();
-				getProvider().getTabs().open(Tab.INVENTORY);
-				if (getProvider().getTabs().getOpen() != Tab.INVENTORY) {
-					getProvider().getTabs().open(Tab.INVENTORY);
-				}
-				// getProvider().log("ello4");
-			}
-
-			getProvider().log("ello5");
-			if (!getProvider().getSettings().isShiftDropActive()) {
-				toggleShiftDrop();
-				// getProvider().log("ello6");
-				if (getProvider().getTabs().getOpen() != Tab.INVENTORY) {
-					getProvider().getTabs().open(Tab.INVENTORY);
-				}
-			}
-
+		if (!LUMRBDIGE.contains(getProvider().myPlayer())) {
 			if (!getProvider().getSettings().areRoofsEnabled()) {
 				Event toggleRoofsHiddenEvent = new ToggleRoofsHiddenEvent();
 				getProvider().execute(toggleRoofsHiddenEvent);
-				// getProvider().log("ello3");
 				if (getProvider().getTabs().getOpen() != Tab.INVENTORY) {
 					getProvider().getTabs().open(Tab.INVENTORY);
 				}
 			}
 		}
-		// }
-		// else if ((!getProvider().getSettings().areRoofsEnabled() || !isAudioDisabled
-		// || !getProvider().getSettings().isShiftDropActive())
-		// && (getContinueWidget() != null && getContinueWidget().isVisible())) {
-		// getProvider().getDialogues().clickContinue();
-		// }
-		// }
-		return true;
+
+		if (!isAudioDisabled) {
+			isAudioDisabled = disableAudio();
+			getProvider().getTabs().open(Tab.INVENTORY);
+			if (getProvider().getTabs().getOpen() != Tab.INVENTORY) {
+				getProvider().getTabs().open(Tab.INVENTORY);
+			}
+		}
+		if (!getProvider().getSettings().isShiftDropActive()) {
+			toggleShiftDrop();
+			if (getProvider().getTabs().getOpen() != Tab.INVENTORY) {
+				getProvider().getTabs().open(Tab.INVENTORY);
+			}
+		}
+
+	}
+	
+	protected boolean pendingContinue() {
+		RS2Widget continueWidget = getContinueWidget();
+		return continueWidget != null && continueWidget.isVisible();
 	}
 
 	private RS2Widget getContinueWidget() {

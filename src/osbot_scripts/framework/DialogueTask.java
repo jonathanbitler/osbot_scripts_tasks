@@ -186,17 +186,28 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 	@Override
 	public boolean finished() {
 		// TODO Auto-generated method stub
+		
+
+		getApi().log("quest finished: " + (getQuestProgress() >= getQuestPointsFinished()) + " "
+				+ !pendingContinue() + " " + " " + spokenTo + " " + !isInQuestCutscene() + " "
+				+ getQuestPointsFinished() + " " + getQuestProgress() + " " + "in cutscene: "
+				+ getApi().getMap().isMinimapLocked() + " " + getApi().getWidgets().get(548, 51) == null + " "
+						+ getApi().getWidgets().get(231, 1) + " " + (getApi().getCamera().getPitchAngle() == 22
+								&& getApi().getCamera().getYawAngle() == 191));
+		
 		if (getWaitForItem() != null && getWaitForItem().length() > 0) {
 			return !pendingContinue() && !getApi().getDialogues().isPendingOption() && spokenTo && !isInQuestCutscene()
 					&& getApi().getInventory().contains(getWaitForItem())
 					&& getApi().getInventory().getAmount(getWaitForItem()) > 0;
 		}
 		if (getQuestPointsFinished() > 0 && getConfigQuestId() > 0) {
-			int step = getQuestProgress();
-			return getQuestPointsFinished() == step && !pendingContinue() && !getApi().getDialogues().isPendingOption()
+			return getQuestProgress() >= getQuestPointsFinished() && !pendingContinue()
+			// && !getApi().getDialogues().isPendingOption()
 					&& spokenTo && !isInQuestCutscene();
 		}
-		return !pendingContinue() && !getApi().getDialogues().isPendingOption() && spokenTo && !isInQuestCutscene();
+		return !pendingContinue()
+				// && !getApi().getDialogues().isPendingOption()
+				&& spokenTo && !isInQuestCutscene();
 	}
 
 	/**
@@ -205,11 +216,14 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 	 * @return
 	 */
 	public boolean isInQuestCutscene() {
+
 		return
 		// getProv().getConfigs().get(1021) == 192 &&
-		getApi().getMap().isMinimapLocked() || getApi().getWidgets().get(548, 51) == null
-				|| getApi().getWidgets().get(231, 1) != null
-				|| (getApi().getCamera().getPitchAngle() == 22 && getApi().getCamera().getYawAngle() == 191);
+		getApi().getMap().isMinimapLocked() || 
+//		getApi().getWidgets().get(548, 51) == null
+//				|| getApi().getWidgets().get(231, 1) != null
+//				|| 
+				(getApi().getCamera().getPitchAngle() == 22 && getApi().getCamera().getYawAngle() == 191);
 	}
 
 	public void setArea(Area area) {

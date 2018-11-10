@@ -26,6 +26,9 @@ public class MiningLevelTo15Configuration extends QuestStep {
 		// TODO Auto-generated constructor stub
 	}
 
+	static final Area MINING_ZONE = new Area(new int[][] { { 3132, 3534 }, { 3224, 3527 }, { 3274, 3456 },
+			{ 3242, 3352 }, { 3151, 3352 }, { 3083, 3429 } });
+
 	private static final ArrayList<Position> BANK_POSITION_VARROCK_EAST = new ArrayList<Position>(
 			Arrays.asList(new Position(3184, 3436, 0)));
 
@@ -104,6 +107,10 @@ public class MiningLevelTo15Configuration extends QuestStep {
 		// log("Restarting tasks to 0 for another loop!");
 		// resetStage(AccountStage.MINING_LEVEL_TO_15.name());
 		// }
+		
+		if (getEvent().hasFinished() && !getClient().isLoggedIn()) {
+			System.exit(1);
+		}
 
 		// If the player is fighting or under combat, then reset the stage to prevent
 		// going dead
@@ -123,6 +130,10 @@ public class MiningLevelTo15Configuration extends QuestStep {
 			resetStage(AccountStage.MINING_LEVEL_TO_15.name());
 		}
 
+		if (!MINING_ZONE.contains(myPlayer())) {
+			resetStage(AccountStage.MINING_LEVEL_TO_15.name());
+		}
+		
 		// The tasks of getting new pickaxes, looking for the skill and then the pickaxe
 		// corresponding with this skill level, when the player is in lumrbidge, then
 		// also execute this task to get a new mining pickaxe

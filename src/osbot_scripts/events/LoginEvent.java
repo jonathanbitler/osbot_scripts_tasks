@@ -113,7 +113,7 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 			@Override
 			public boolean condition() throws InterruptedException {
 				return getLobbyButton() != null || getClient().getLoginUIState() == 3 || isDisabledMessageVisible()
-						|| isLocked() || isAlreadyLoggedInLocked();
+						|| isLocked() || isAlreadyLoggedInLocked() || isWrongEmail();
 			}
 		}.sleep();
 
@@ -124,6 +124,10 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 		} else if (isDisabledMessageVisible()) {
 			log("Account is banned, setting to locked");
 			DatabaseUtilities.updateAccountStatusInDatabase(this, "BANNED", this.username);
+			System.exit(1);
+		} else if (isWrongEmail()) {
+			log("Account password is wrong, setting to invalid password");
+			DatabaseUtilities.updateAccountStatusInDatabase(this, "INVALID_PASSWORD", this.username);
 			System.exit(1);
 		}
 
@@ -146,7 +150,37 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 			}
 
 		}
+
+//		beginTime = System.currentTimeMillis();
+//		Thread th1 = new Thread(() -> {
+//			boolean alive = true;
+//			while (alive) {
+//				if (System.currentTimeMillis() - beginTime > 300_000) {
+//					try {
+//						log("Couldn't be logged in.. restarting");
+//						Thread.sleep(5000);
+//					} catch (InterruptedException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+//					System.exit(1);
+//				}
+//				try {
+//					Thread.sleep(2000);
+//				} catch (InterruptedException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//			}
+//			if (getClient().isLoggedIn()) {
+//				alive = false;
+//				log("You've successfully logged in, it will no longer exit after 5 minutes");
+//			}
+//		});
+//		th1.start();
 	}
+
+	private long beginTime;
 
 	private boolean clickHereToPlayButton() {
 		RS2Widget clickToPlay = getWidgets().getWidgetContainingText("CLICK HERE TO PLAY");
@@ -159,6 +193,10 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 
 	private boolean isLocked() {
 		return getColorPicker().isColorAt(222, 196, Color.YELLOW);
+	}
+	
+	private boolean isWrongEmail() {
+		return getColorPicker().isColorAt(438, 327, new Color(255, 255, 255));
 	}
 
 	private boolean isAlreadyLoggedInLocked() {
