@@ -108,10 +108,17 @@ public class PickupItemTask extends TaskSkeleton implements Task, AreaInterface 
 			Sleep.sleepUntil(() -> getArea().contains(getApi().myPlayer()), 10000);
 		}
 
-		GroundItem object = getApi().getGroundItems().closest(obj -> obj.getName().equalsIgnoreCase(getWaitForItemString()));
-//		Optional<GroundItem> object = getApi().getGroundItems().getAll().stream().filter(Objects::nonNull)
-//				.filter(obj -> obj.getName().equalsIgnoreCase(getWaitForItemString())).findFirst();
+		GroundItem object = getApi().getGroundItems()
+				.closest(obj -> obj.getName().equalsIgnoreCase(getWaitForItemString()));
+		// Optional<GroundItem> object =
+		// getApi().getGroundItems().getAll().stream().filter(Objects::nonNull)
+		// .filter(obj ->
+		// obj.getName().equalsIgnoreCase(getWaitForItemString())).findFirst();
 		if (object != null) {
+			if (getArea() != null && !getArea().contains(getApi().myPlayer())) {
+				getApi().getWalking().webWalk(object.getPosition());
+			}
+
 			if (getInteractOption() != null && getInteractOption().length() > 0) {
 				object.interact(getInteractOption());
 				setPickedUp(true);
@@ -121,14 +128,15 @@ public class PickupItemTask extends TaskSkeleton implements Task, AreaInterface 
 			}
 		}
 
-//		if (getWaitForItemString() != null && getWaitForItemString().length() > 0) {
-//			Sleep.sleepUntil(() -> getApi().getInventory().contains(getWaitForItemString()), 10000);
-//
-//			if (getWaitForItemString() != null && getWaitForItemString().length() > 0
-//					&& !getApi().getInventory().contains(getWaitForItemString())) {
-//				setPickedUp(false);
-//			}
-//		}
+		// if (getWaitForItemString() != null && getWaitForItemString().length() > 0) {
+		// Sleep.sleepUntil(() ->
+		// getApi().getInventory().contains(getWaitForItemString()), 10000);
+		//
+		// if (getWaitForItemString() != null && getWaitForItemString().length() > 0
+		// && !getApi().getInventory().contains(getWaitForItemString())) {
+		// setPickedUp(false);
+		// }
+		// }
 
 	}
 

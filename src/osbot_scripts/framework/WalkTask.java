@@ -206,7 +206,7 @@ public class WalkTask extends TaskSkeleton implements Task {
 
 					if (failToWalk > 10 && getScript() != null && getLogin() != null) {
 						DatabaseUtilities.updateAccountStatusInDatabase(getApi(), "WALKING_STUCK", login.getUsername());
-						BotCommands.killProcess(getScript());
+						BotCommands.killProcess(getApi(),getScript());
 					}
 					// }
 				}
@@ -219,7 +219,8 @@ public class WalkTask extends TaskSkeleton implements Task {
 				if (!getLogin().getAccountStage().equalsIgnoreCase("UNKNOWN")) {
 					getLogin().setAccountStage("AVAILABLE");
 				}
-			} else if (isWebWalking()) {
+			} else if (isWebWalking()
+					&& !getApi().myPlayer().getArea(1).contains(getPathToWalk().get(getPathToWalk().size() - 1))) {
 				getApi().log("Webwalking to the last of the positions");
 				if (!getApi().getWalking().webWalk(getPathToWalk().get(getPathToWalk().size() - 1))) {
 					setWebWalking(false);

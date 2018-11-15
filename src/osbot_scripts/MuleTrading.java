@@ -2,13 +2,16 @@ package osbot_scripts;
 
 import java.awt.Graphics2D;
 
+import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 
 import osbot_scripts.bot.utils.BotCommands;
+import osbot_scripts.bot.utils.Coordinates;
 import osbot_scripts.bot.utils.RandomUtil;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
+import osbot_scripts.events.MandatoryEventsExecution;
 import osbot_scripts.login.LoginHandler;
 import osbot_scripts.qp7.progress.MuleTradingConfiguration;
 
@@ -26,27 +29,38 @@ public class MuleTrading extends Script {
 			getDialogues().clickContinue();
 		}
 		
+		if (Coordinates.isOnTutorialIsland(this)) {
+			DatabaseUtilities.updateStageProgress(this, "TUT_ISLAND", 0, login.getUsername());
+			BotCommands.killProcess((MethodProvider)this, (Script) this);
+		}
+
 		if (login.hasFinished() && !getClient().isLoggedIn()) {
 			System.exit(1);
 		}
 
-		getMuleTrading().getTaskHandler().getEvents().fixedMode();
-		getMuleTrading().getTaskHandler().getEvents().fixedMode2();
-		getMuleTrading().getTaskHandler().getEvents().executeAllEvents();
-		
+		if (getClient().isLoggedIn() && !getTrade().isCurrentlyTrading()) {
+			MandatoryEventsExecution ev = new MandatoryEventsExecution(this);
+			ev.fixedMode();
+			ev.fixedMode2();
+			if (login.getAccountStage().equalsIgnoreCase("MULE-TRADING")) {
+				ev.executeAllEvents();
+			}
+		}
+
 		// Account must have atleast 7 quest points, otherwise set it back to quesiton
-		
-//		if (getQuests().getQuestPoints() < 7) {
-//			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0,
-//					login.getUsername());
-//			BotCommands.killProcess((Script) this);
-//		}
 
-		//Looping for tasks and normal loop
+		// if (getQuests().getQuestPoints() < 7) {
+		// DatabaseUtilities.updateStageProgress(this,
+		// RandomUtil.gextNextAccountStage(this).name(), 0,
+		// login.getUsername());
+		// BotCommands.killProcess((Script) this);
+		// }
+
+		// Looping for tasks and normal loop
 		getMuleTrading().onLoop();
-//		getMuleTrading().getTaskHandler().taskLoop();
+		// getMuleTrading().getTaskHandler().taskLoop();
 
-		return random(300, 600);
+		return random(1000, 2000);
 	}
 
 	@Override

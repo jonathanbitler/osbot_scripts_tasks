@@ -1,5 +1,7 @@
 package osbot_scripts.qp7.progress;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -61,7 +63,10 @@ public class MiningLevelTo15Configuration extends QuestStep {
 
 	@Override
 	public void onStart() {
-
+		if (beginTime == -1) {
+			beginTime = System.currentTimeMillis();
+		}
+		
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("walk to varrock west bank", -1, -1, getBot().getMethods(), BANK_POSITION_VARROCK_EAST,
 						new Area(new int[][] { { 3180, 3441 }, { 3186, 3441 }, { 3186, 3433 }, { 3180, 3433 } }),
@@ -97,6 +102,19 @@ public class MiningLevelTo15Configuration extends QuestStep {
 
 	private GrandExchangeTask grandExchangeTask = null;
 
+	public void onPaint(Graphics2D g) {
+		g.setColor(Color.WHITE);
+		int profit = ((currentAmount - beginAmount) + soldAmount) * 140;
+		long profitPerHour = (long) (profit * (3600000.0 / (System.currentTimeMillis() - beginTime)));
+		g.drawString("Sold ores " + soldAmount, 60, 50);
+		g.drawString("Begin ores " + beginAmount, 60, 65);
+		g.drawString("Current ores " + currentAmount, 60, 80);
+		g.drawString("Total mined ores " + ((currentAmount - beginAmount) + soldAmount), 60, 95);
+		g.drawString("Money per hour " + (profitPerHour > 0 ? profitPerHour : "Need more data"), 60,
+				110);
+		g.drawString("Time taken " + (formatTime((System.currentTimeMillis() - beginTime))), 60, 125);
+	}
+	
 	@Override
 	public void onLoop() throws InterruptedException {
 		log("Running the side loop..");
@@ -142,7 +160,7 @@ public class MiningLevelTo15Configuration extends QuestStep {
 		if (getBank().isOpen() && getBank().getAmount("Clay") > 200) {
 			int amount = (int) (getBank().getAmount("Clay"));
 			setGrandExchangeTask(new GrandExchangeTask(this, new BankItem[] {},
-					new BankItem[] { new BankItem("Clay", 434, amount, 100, true) }, null, getScript()));
+					new BankItem[] { new BankItem("Clay", 434, amount, 1, true) }, null, getScript()));
 		}
 
 		int clayAmount = -1;
@@ -151,6 +169,15 @@ public class MiningLevelTo15Configuration extends QuestStep {
 			clayAmount = (int) getBank().getAmount("Clay");
 			totalAccountValue += (int) getBank().getAmount(995);
 			totalAccountValue += (clayAmount * 100);
+			
+			int bankedAmount = (int) getBank().getAmount("Clay");
+			if (beginAmount == -1) {
+				beginAmount = bankedAmount;
+			}
+			if (bankedAmount < currentAmount) {
+				soldAmount += (currentAmount - bankedAmount);
+			}
+			currentAmount = bankedAmount;
 		}
 		log("[ESTIMATED] account value is: " + totalAccountValue);
 		if (getEvent() != null && getEvent().getUsername() != null && totalAccountValue > 0) {
@@ -164,27 +191,27 @@ public class MiningLevelTo15Configuration extends QuestStep {
 
 			setGrandExchangeTask(
 					new GrandExchangeTask(this, new BankItem[] { new BankItem("Bronze pickaxe", 1265, 1, 1400, false) },
-							new BankItem[] { new BankItem("Clay", 434, 1000, 100, true) }, null, getScript()));
+							new BankItem[] { new BankItem("Clay", 434, 1000, 1, true) }, null, getScript()));
 		} else if (totalAccountValue > 5000 && getBank().isOpen() && getSkills().getStatic(Skill.MINING) > 3
 				&& getSkills().getStatic(Skill.MINING) < 6
 				&& ((!getInventory().contains("Iron pickaxe") && !getBank().contains("Iron pickaxe")))) {
 
 			setGrandExchangeTask(
 					new GrandExchangeTask(this, new BankItem[] { new BankItem("Iron pickaxe", 1267, 1, 1400, false) },
-							new BankItem[] { new BankItem("Clay", 434, 1000, 100, true) }, null, getScript()));
+							new BankItem[] { new BankItem("Clay", 434, 1000, 1, true) }, null, getScript()));
 		} else if (totalAccountValue > 10000 && getBank().isOpen() && getSkills().getStatic(Skill.MINING) >= 6
 				&& getSkills().getStatic(Skill.MINING) < 21
 				&& ((!getInventory().contains("Steel pickaxe") && !getBank().contains("Steel pickaxe")))) {
 
 			setGrandExchangeTask(
 					new GrandExchangeTask(this, new BankItem[] { new BankItem("Steel pickaxe", 1269, 1, 5000, false) },
-							new BankItem[] { new BankItem("Clay", 434, 1000, 100, true) }, null, getScript()));
+							new BankItem[] { new BankItem("Clay", 434, 1000, 1, true) }, null, getScript()));
 		} else if (totalAccountValue > 20000 && getBank().isOpen() && getSkills().getStatic(Skill.MINING) >= 21
 				&& ((!getInventory().contains("Mithril pickaxe") && !getBank().contains("Mithril pickaxe")))) {
 
 			setGrandExchangeTask(new GrandExchangeTask(this,
 					new BankItem[] { new BankItem("Mithril pickaxe", 1273, 1, 10000, false) },
-					new BankItem[] { new BankItem("Clay", 434, 1000, 100, true) }, null, getScript()));
+					new BankItem[] { new BankItem("Clay", 434, 1000, 1, true) }, null, getScript()));
 		}
 		log("g.e. running " + getGrandExchangeTask() + " "
 				+ (getGrandExchangeTask() != null ? getGrandExchangeTask().finished() : "null"));

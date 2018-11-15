@@ -46,7 +46,7 @@ public class SheepShearerConfiguration extends QuestStep {
 					{ 3210, 3276 }, { 3206, 3276 }, { 3205, 3277 }, { 3193, 3277 } });
 
 	private static final Area PATH_TO_QUEST_START_AREA = new Area(
-			new int[][] { { 3188, 3275 }, { 3188, 3270 }, { 3193, 3270 }, { 3193, 3276 }, { 3188, 3276 } });
+			new int[][] { { 3188, 3276 }, { 3188, 3270 }, { 3192, 3270 }, { 3192, 3276 } });
 
 	private static final ArrayList<Position> PATH_TO_LUMBRIDGE_CASTLE = new ArrayList<Position>(
 			Arrays.asList(new Position(3204, 3264, 0), new Position(3211, 3261, 0), new Position(3214, 3261, 0),
@@ -65,7 +65,7 @@ public class SheepShearerConfiguration extends QuestStep {
 	private static final ArrayList<Position> PATH_TO_LUMRBDIGE_CASTLE_FLOOR_ONE_SPINNING = new ArrayList<Position>(
 			Arrays.asList(new Position(3205, 3208, 1), new Position(3206, 3210, 1), new Position(3206, 3213, 1),
 					new Position(3206, 3214, 1), new Position(3209, 3214, 1), new Position(3210, 3214, 1),
-					new Position(3210, 3215, 1)));
+					new Position(3210, 3215, 1), new Position(3212, 3216, 1)));
 
 	private static final Area PATH_TO_LUMBRIDGE_CASTLE_AREA_FLOOR_ONE_SPINNING_AREA = new Area(
 			new int[][] { { 3208, 3217 }, { 3208, 3212 }, { 3214, 3212 }, { 3214, 3218 }, { 3208, 3218 } }).setPlane(1);

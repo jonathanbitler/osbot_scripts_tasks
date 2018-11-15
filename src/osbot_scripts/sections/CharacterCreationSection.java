@@ -1,15 +1,18 @@
 package osbot_scripts.sections;
 
+import java.awt.Color;
 import java.util.Random;
 
 import org.osbot.rs07.api.ui.RS2Widget;
 
 import osbot_scripts.TutorialScript;
+import osbot_scripts.events.LoginEvent;
 import osbot_scripts.sections.progress.CharacterCreationSectionProgress;
 import osbot_scripts.sections.total.progress.MainState;
+import osbot_scripts.util.Sleep;
 
 public class CharacterCreationSection extends TutorialSection {
-	
+
 	/**
 	 * Current progress
 	 */
@@ -19,14 +22,15 @@ public class CharacterCreationSection extends TutorialSection {
 	 * Parent ID for the inferface when creating a character
 	 */
 	public static final int DESIGN_CHARACTER_PARENT_ID = 269;
-	
+
 	/**
 	 * Time between selecting a specific part of a character
 	 */
 	public static final int TIME_BETWEEN_DESIGN_CHARACTER = 2000;
-	
+
 	/**
 	 * Constructor
+	 * 
 	 * @param mainState
 	 */
 	public CharacterCreationSection() {
@@ -37,13 +41,75 @@ public class CharacterCreationSection extends TutorialSection {
 	 * Loop
 	 */
 	@Override
-    public final void onLoop() throws InterruptedException {
+	public final void onLoop() throws InterruptedException {
 		if (!isCompleted() && getProgress() <= 1) {
 			createCharacterDesign();
 			log("Not yet completed");
 		} else {
 			TutorialScript.mainState = getNextMainState();
 			log("Section completed!");
+		}
+	}
+
+	public void typeCharacterName() throws InterruptedException {
+		RS2Widget widget = getWidgets().get(558, 3, 0);
+		if (widget != null && widget.isVisible()) {
+			log("1");
+			RS2Widget inputText = getWidgets().get(558, 7);
+
+			Sleep.sleepUntil(() -> inputText != null && inputText.isVisible(), 2000);
+			if (inputText != null && inputText.isVisible()) {
+				log("2");
+				inputText.interact();
+
+				RS2Widget typeBar = getWidgets().get(162, 40);
+				Sleep.sleepUntil(() -> typeBar != null && typeBar.isVisible(), 10000);
+
+				if (typeBar != null && typeBar.isVisible()) {
+					log("3");
+					getKeyboard().typeString(login.getActualUsername(), true);
+
+					RS2Widget setName = getWidgets().get(558, 18);
+
+					Sleep.sleepUntil(() -> setName != null && setName.isVisible()
+							&& getColorPicker().isColorAt(346, 217, new Color(0, 255, 0)), 10000);
+
+					if (setName != null && setName.isVisible()) {
+						int a = 0;
+						while (a < 3) {
+							a++;
+
+							sleep(3000);
+							log("loop: " + a);
+							setName.interact();
+						}
+					}
+					log("4");
+
+					Sleep.sleepUntil(() -> widget != null && !widget.isVisible(), 10000);
+
+					log("5");
+					if (widget != null && widget.isVisible()) {
+						RS2Widget suggestionName = getWidgets().get(558, 14);
+						if (suggestionName != null && suggestionName.isVisible()) {
+							suggestionName.interact("Set name");
+
+							Sleep.sleepUntil(() -> setName != null && setName.isVisible(), 10000);
+							if (setName != null && setName.isVisible()) {
+								int a = 0;
+								while (a < 3) {
+									a++;
+
+									sleep(3000);
+									log("loop: " + a);
+									setName.interact();
+								}
+							}
+						}
+
+					}
+				}
+			}
 		}
 	}
 
@@ -55,7 +121,7 @@ public class CharacterCreationSection extends TutorialSection {
 		// TODO Auto-generated method stub
 		return MainState.TALK_TO_GIELINOR_GUIDE_ONE;
 	}
-	
+
 	/**
 	 * Is the section completed?
 	 */
@@ -63,13 +129,15 @@ public class CharacterCreationSection extends TutorialSection {
 	public boolean isCompleted() {
 		return getProgress() == 0 && getWidgets().get(269, 96) == null ? true : false;
 	}
-	
+
 	/**
 	 * Creates an unique character design
 	 * 
 	 * @throws InterruptedException
 	 */
 	private void createCharacterDesign() throws InterruptedException {
+		typeCharacterName();
+
 		if (progress == CharacterCreationSectionProgress.CREATING_RANDOM_CHARACTER) {
 			progress = CharacterCreationSectionProgress.CHOOSING_HEAD;
 		} else if (progress == CharacterCreationSectionProgress.CHOOSING_HEAD) {
@@ -80,7 +148,7 @@ public class CharacterCreationSection extends TutorialSection {
 				for (int i = 0; i < random; i++) {
 					sleep(rand.nextInt(TIME_BETWEEN_DESIGN_CHARACTER));
 					designCharacterWidgetHead.interact("Change head");
-					
+
 					RS2Widget recolor = getWidgets().get(DESIGN_CHARACTER_PARENT_ID, 121);
 					if (recolor != null) {
 						recolor.interact("Recolour hair");
@@ -107,7 +175,7 @@ public class CharacterCreationSection extends TutorialSection {
 				for (int i = 0; i < random; i++) {
 					sleep(rand.nextInt(TIME_BETWEEN_DESIGN_CHARACTER));
 					designCharacterWidgetTorso.interact("Change torso");
-					
+
 					RS2Widget recolor = getWidgets().get(DESIGN_CHARACTER_PARENT_ID, 127);
 					if (recolor != null) {
 						recolor.interact("Recolour torso");
@@ -145,7 +213,7 @@ public class CharacterCreationSection extends TutorialSection {
 				for (int i = 0; i < random; i++) {
 					sleep(rand.nextInt(TIME_BETWEEN_DESIGN_CHARACTER));
 					designCharacterWidgetLegs.interact("Change legs");
-					
+
 					RS2Widget recolor = getWidgets().get(DESIGN_CHARACTER_PARENT_ID, 129);
 					if (recolor != null) {
 						recolor.interact("Recolour legs");
@@ -161,7 +229,7 @@ public class CharacterCreationSection extends TutorialSection {
 				for (int i = 0; i < random; i++) {
 					sleep(rand.nextInt(TIME_BETWEEN_DESIGN_CHARACTER));
 					designCharacterWidgetFeet.interact("Change feet");
-					
+
 					RS2Widget recolor = getWidgets().get(DESIGN_CHARACTER_PARENT_ID, 130);
 					if (recolor != null) {
 						recolor.interact("Recolour feet");

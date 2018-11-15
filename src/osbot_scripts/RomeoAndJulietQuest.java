@@ -5,13 +5,16 @@ import java.awt.Graphics2D;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.ui.RS2Widget;
+import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 
 import osbot_scripts.bot.utils.BotCommands;
+import osbot_scripts.bot.utils.Coordinates;
 import osbot_scripts.bot.utils.RandomUtil;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
+import osbot_scripts.events.MandatoryEventsExecution;
 import osbot_scripts.framework.AccountStage;
 import osbot_scripts.login.LoginHandler;
 import osbot_scripts.qp7.progress.RomeoAndJuliet;
@@ -30,9 +33,17 @@ public class RomeoAndJulietQuest extends Script {
 			getDialogues().clickContinue();
 		}
 
-		getRomeoAndJuliet().getTaskHandler().getEvents().fixedMode();
-		getRomeoAndJuliet().getTaskHandler().getEvents().fixedMode2();
-		getRomeoAndJuliet().getTaskHandler().getEvents().executeAllEvents();
+		if (getClient().isLoggedIn()) {
+			MandatoryEventsExecution ev = new MandatoryEventsExecution(this);
+			ev.fixedMode();
+			ev.fixedMode2();
+			ev.executeAllEvents();
+		}
+		
+		if (Coordinates.isOnTutorialIsland(this)) {
+			DatabaseUtilities.updateStageProgress(this, "TUT_ISLAND", 0, login.getUsername());
+			BotCommands.killProcess((MethodProvider)this, (Script) this);
+		}
 		
 		RS2Widget closeQuestCompleted = getWidgets().get(277, 15);
 		if (getRomeoAndJuliet().getQuestProgress() == 100 || closeQuestCompleted != null) {
@@ -43,8 +54,8 @@ public class RomeoAndJulietQuest extends Script {
 			Thread.sleep(5000);
 			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0, login.getUsername());
 			DatabaseUtilities.updateAccountBreakTill(this, getRomeoAndJuliet().getEvent().getUsername(), 60);
-			
-			BotCommands.killProcess((Script) this);
+
+			BotCommands.killProcess((MethodProvider)this, (Script) this);
 			return random(500, 600);
 		}
 
@@ -72,7 +83,7 @@ public class RomeoAndJulietQuest extends Script {
 					DatabaseUtilities.getQuestProgress(this, login.getUsername())));
 		}
 		log("Quest progress: " + getRomeoAndJuliet().getQuestStageStep());
-
+		
 		getRomeoAndJuliet().exchangeContext(getBot());
 		getRomeoAndJuliet().onStart();
 		// getRomeoAndJuliet().getTaskHandler().decideOnStartTask();

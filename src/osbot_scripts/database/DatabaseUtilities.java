@@ -12,6 +12,7 @@ import java.util.Date;
 
 import org.osbot.rs07.script.MethodProvider;
 
+import osbot_scripts.bot.utils.UsernameCheck;
 import osbot_scripts.config.Config;
 
 public class DatabaseUtilities {
@@ -66,6 +67,40 @@ public class DatabaseUtilities {
 
 		} catch (Exception e) {
 			prov.log(e);
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	public static boolean updateAccountUsername(MethodProvider prov, String email, String ingameName) {
+		try {
+			String urlParameters = "?email=" + URLEncoder.encode(email, "UTF-8") + "&ingameName="
+					+ URLEncoder.encode(ingameName, "UTF-8");
+
+			prov.log(LINK + "" + urlParameters);
+			sendGet(LINK + "" + urlParameters);
+
+			return true;
+
+		} catch (Exception e) {
+			prov.log(e);
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	public static boolean updateLoginStatus(String email, String loginStatus) {
+		try {
+			String urlParameters = "?email=" + URLEncoder.encode(email, "UTF-8") + "&loginstatus="
+					+ URLEncoder.encode(loginStatus, "UTF-8");
+
+//			prov.log(LINK + "" + urlParameters);
+			sendGet(LINK + "" + urlParameters);
+
+			return true;
+
+		} catch (Exception e) {
+//			prov.log(e);
 			e.printStackTrace();
 			return false;
 		}

@@ -71,6 +71,18 @@ public abstract class QuestStep extends MethodProvider {
 	 */
 	private int doneLaps;
 	
+	protected int beginAmount = -1, soldAmount = -1, currentAmount = -1;
+
+	protected long beginTime = -1;
+	
+	protected final String formatTime(final long ms) {
+		long s = ms / 1000, m = s / 60, h = m / 60;
+		s %= 60;
+		m %= 60;
+		h %= 24;
+		return String.format("%02d:%02d:%02d", h, m, s);
+	}
+	
 	/**
 	 * 
 	 * @param instructorName

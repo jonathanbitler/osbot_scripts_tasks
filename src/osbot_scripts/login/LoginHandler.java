@@ -14,6 +14,8 @@ public class LoginHandler {
 			String password = null;
 			String accountStage = null;
 			String tradeWith = null;
+			String emailTradeWith = null;
+			String actualUsername = null;
 			int pid = 0;
 			if (parameters != null) {
 				String[] params = parameters.split("_"); // split the _ character!!!!!!
@@ -21,15 +23,21 @@ public class LoginHandler {
 				password = params[1];
 				pid = Integer.parseInt(params[2]);
 				accountStage = params[3];
-				if (params.length > 4) {
+				actualUsername = params[4];
+				if (params.length > 5) {
 					tradeWith = params[4];
+					emailTradeWith = params[5];
 				}
 				p.log(username + " " + password);
 
 			}
 			loginEvent = new LoginEvent(username, password, pid, accountStage);
+			if (actualUsername != null) {
+				loginEvent.setActualUsername(actualUsername);
+			}
 			if (tradeWith != null) {
 				loginEvent.setTradeWith(tradeWith);
+				loginEvent.setEmailTradeWith(emailTradeWith);
 			}
 			p.getBot().addLoginListener(loginEvent);
 			p.execute(loginEvent);

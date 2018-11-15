@@ -3,13 +3,16 @@ package osbot_scripts;
 import java.awt.Graphics2D;
 
 import org.osbot.rs07.api.ui.RS2Widget;
+import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 
 import osbot_scripts.bot.utils.BotCommands;
+import osbot_scripts.bot.utils.Coordinates;
 import osbot_scripts.bot.utils.RandomUtil;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
+import osbot_scripts.events.MandatoryEventsExecution;
 import osbot_scripts.login.LoginHandler;
 import osbot_scripts.qp7.progress.CookingsAssistant;
 
@@ -26,10 +29,19 @@ public class CookingAssistantQuest extends Script {
 		if (getDialogues().isPendingContinuation()) {
 			getDialogues().clickContinue();
 		}
-		getCooksAssistant().getTaskHandler().getEvents().fixedMode();
-		getCooksAssistant().getTaskHandler().getEvents().fixedMode2();
-		getCooksAssistant().getTaskHandler().getEvents().executeAllEvents();
-		
+
+		if (getClient().isLoggedIn()) {
+			MandatoryEventsExecution ev = new MandatoryEventsExecution(this);
+			ev.fixedMode();
+			ev.fixedMode2();
+			ev.executeAllEvents();
+		}
+
+		if (Coordinates.isOnTutorialIsland(this)) {
+			DatabaseUtilities.updateStageProgress(this, "TUT_ISLAND", 0, login.getUsername());
+			BotCommands.killProcess((MethodProvider)this, (Script) this);
+		}
+
 		// TODO Auto-generated method stub
 		RS2Widget closeQuestCompleted = getWidgets().get(277, 15);
 		log(getCooksAssistant().getQuestProgress());
@@ -38,11 +50,11 @@ public class CookingAssistantQuest extends Script {
 			if (closeQuestCompleted != null) {
 				closeQuestCompleted.interact();
 			}
-			
+
 			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0,
 					login.getUsername());
 			DatabaseUtilities.updateAccountBreakTill(this, getCooksAssistant().getEvent().getUsername(), 60);
-			BotCommands.killProcess((Script)this);
+			BotCommands.killProcess((MethodProvider)this, (Script) this);
 			return random(500, 600);
 		}
 
@@ -56,7 +68,7 @@ public class CookingAssistantQuest extends Script {
 	@Override
 	public void onStart() throws InterruptedException {
 		login = LoginHandler.login(this, getParameters());
-		cooksAssistant = new CookingsAssistant(4626, 29, login, (Script)this);
+		cooksAssistant = new CookingsAssistant(4626, 29, login, (Script) this);
 
 		if (login != null && login.getUsername() != null) {
 			getCooksAssistant()
@@ -66,16 +78,16 @@ public class CookingAssistantQuest extends Script {
 
 		getCooksAssistant().exchangeContext(getBot());
 		getCooksAssistant().onStart();
-//		getCooksAssistant().getTaskHandler().decideOnStartTask();
+		// getCooksAssistant().getTaskHandler().decideOnStartTask();
 	}
-	
+
 	/**
 	 * 
 	 * @param g
 	 */
 	@Override
 	public void onPaint(Graphics2D g) {
-//		getCooksAssistant().getTrailMouse().draw(g);
+		// getCooksAssistant().getTrailMouse().draw(g);
 		getMouse().setDefaultPaintEnabled(true);
 	}
 

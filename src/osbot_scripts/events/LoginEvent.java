@@ -15,7 +15,7 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 
 	private final String username, password;
 
-	private String accountStage, tradeWith;
+	private String accountStage, tradeWith, emailTradeWith, actualUsername;
 
 	private int pid;
 
@@ -33,6 +33,7 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 			return 1000;
 		} else if ((getClient().isLoggedIn() && getLobbyButton() == null)) {
 			getBot().getScriptExecutor().resume();
+			DatabaseUtilities.updateLoginStatus(username, "LOGGED_IN");
 			setFinished();
 		} else if (getClient().isLoggedIn() && getLobbyButton() != null) {
 			clickHereToPlayButton();
@@ -151,33 +152,6 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 
 		}
 
-//		beginTime = System.currentTimeMillis();
-//		Thread th1 = new Thread(() -> {
-//			boolean alive = true;
-//			while (alive) {
-//				if (System.currentTimeMillis() - beginTime > 300_000) {
-//					try {
-//						log("Couldn't be logged in.. restarting");
-//						Thread.sleep(5000);
-//					} catch (InterruptedException e) {
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					}
-//					System.exit(1);
-//				}
-//				try {
-//					Thread.sleep(2000);
-//				} catch (InterruptedException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
-//			}
-//			if (getClient().isLoggedIn()) {
-//				alive = false;
-//				log("You've successfully logged in, it will no longer exit after 5 minutes");
-//			}
-//		});
-//		th1.start();
 	}
 
 	private long beginTime;
@@ -196,7 +170,7 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 	}
 	
 	private boolean isWrongEmail() {
-		return getColorPicker().isColorAt(438, 327, new Color(255, 255, 255));
+		return getColorPicker().isColorAt(422, 232, new Color(255, 255, 0));
 	}
 
 	private boolean isAlreadyLoggedInLocked() {
@@ -249,6 +223,50 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 			System.exit(1);
 			return;
 		}
+		
+		switch (responseCode) {
+		case 5:
+		case 1:
+		case 6:
+		case 7:
+		case 8:
+		case 9:
+		case 10:
+		case 13:
+		case 14:
+		case 16:
+		case 20:
+		case 21:
+		case 22:
+		case 23:
+		case 24:
+		case 25:
+		case 26:
+		case 27:
+			setFailed();
+			System.exit(1);
+			break;
+			
+		case 11:
+		case 18:
+			log("Account is locked, setting to locked");
+			DatabaseUtilities.updateAccountStatusInDatabase(this, "LOCKED", this.username);
+			System.exit(1);
+			break;
+			
+		case 3:
+			log("Account password is wrong, setting to invalid password");
+			DatabaseUtilities.updateAccountStatusInDatabase(this, "INVALID_PASSWORD", this.username);
+			System.exit(1);
+			break;
+			
+		case 4:
+			log("Account is banned, setting to locked");
+			DatabaseUtilities.updateAccountStatusInDatabase(this, "BANNED", this.username);
+			System.exit(1);
+			break;
+		}
+		
 	}
 
 	public String getUsername() {
@@ -299,6 +317,34 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 
 	public void setTradeWith(String tradeWith) {
 		this.tradeWith = tradeWith;
+	}
+
+	/**
+	 * @return the emailTradeWith
+	 */
+	public String getEmailTradeWith() {
+		return emailTradeWith;
+	}
+
+	/**
+	 * @param emailTradeWith the emailTradeWith to set
+	 */
+	public void setEmailTradeWith(String emailTradeWith) {
+		this.emailTradeWith = emailTradeWith;
+	}
+
+	/**
+	 * @return the actualUsername
+	 */
+	public String getActualUsername() {
+		return actualUsername;
+	}
+
+	/**
+	 * @param actualUsername the actualUsername to set
+	 */
+	public void setActualUsername(String actualUsername) {
+		this.actualUsername = actualUsername;
 	}
 
 }

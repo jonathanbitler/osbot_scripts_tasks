@@ -3,6 +3,7 @@ package osbot_scripts;
 import java.awt.Graphics2D;
 
 import org.osbot.rs07.api.map.Area;
+import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 
@@ -127,7 +128,7 @@ public class TutorialScript extends Script {
 		}
 
 		if (!getClient().isLoggedIn() && getConfigs().get(281) > 0) {
-			BotCommands.killProcess((Script) this);
+			BotCommands.killProcess((MethodProvider)this, (Script) this);
 		}
 
 		if ((!TUT_ISLAND_AREA.contains(myPlayer()) && !TUT_ISLAND_AREA_CAVE.contains(myPlayer()))
@@ -136,7 +137,7 @@ public class TutorialScript extends Script {
 			log("Succesfully completed!");
 			DatabaseUtilities.updateStageProgress(this, AccountStage.QUEST_COOK_ASSISTANT.name(), 0,
 					getLogin().getUsername());
-			BotCommands.killProcess((Script) this);
+			BotCommands.killProcess((MethodProvider)this, (Script) this);
 		}
 
 		log(mainState);
@@ -176,6 +177,7 @@ public class TutorialScript extends Script {
 	@Override
 	public void onStart() throws InterruptedException {
 		login = LoginHandler.login(this, getParameters());
+		getCharacterCreationSection().login = login;
 
 		getCharacterCreationSection().exchangeContext(getBot());
 		getGuilinorGuideSection().exchangeContext(getBot());

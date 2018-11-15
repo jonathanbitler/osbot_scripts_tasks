@@ -9,6 +9,7 @@ import org.osbot.rs07.script.Script;
 import org.osbot.rs07.utility.ConditionalSleep;
 
 import osbot_scripts.bot.utils.BotCommands;
+import osbot_scripts.bot.utils.RandomUtil;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.events.WidgetActionFilter;
@@ -25,7 +26,7 @@ public class MuleTradingConfiguration extends QuestStep {
 
 	@Override
 	public void onStart() {
-
+		timeout = System.currentTimeMillis();
 	}
 
 	private static final Area GRAND_EXCHANGE = new Area(
@@ -34,6 +35,12 @@ public class MuleTradingConfiguration extends QuestStep {
 	private HashMap<String, Integer> itemMap = new HashMap<String, Integer>();
 
 	private boolean tradingDone = false;
+
+	private boolean update = true;
+
+	private long timeout = -1;
+
+	private int tries = 0;
 
 	@Override
 	public void onLoop() throws InterruptedException {
@@ -45,27 +52,53 @@ public class MuleTradingConfiguration extends QuestStep {
 		// Not the mule
 
 		if (tradingDone) {
-			getScript().stop();
 			if (getEvent().getAccountStage().equalsIgnoreCase("MULE-TRADING")) {
-				DatabaseUtilities.updateStageProgress(this, "MINING_IRON_ORE", 0, getEvent().getUsername());
-				BotCommands.killProcess(getScript());
+				if (update) {
+					DatabaseUtilities.updateStageProgress(this,
+							RandomUtil.gextNextAccountStage(this).name().toUpperCase(), 0, getEvent().getUsername());
+					DatabaseUtilities.updateStageProgress(this, "UNKNOWN", 0, getEvent().getEmailTradeWith());
+				}
+				BotCommands.killProcess(this, getScript());
 			} else {
-				DatabaseUtilities.updateStageProgress(this, "UNKNOWN", 0, getEvent().getUsername());
-				BotCommands.killProcess(getScript());
+				if (update) {
+					DatabaseUtilities.updateStageProgress(this,
+							RandomUtil.gextNextAccountStage(this).name().toUpperCase(), 0,
+							getEvent().getEmailTradeWith());
+					DatabaseUtilities.updateStageProgress(this, "UNKNOWN", 0, getEvent().getUsername());
+				}
+				BotCommands.killProcess(this, getScript());
 			}
+			getScript().stop();
 			return;
 		}
 
 		log(getEvent().getAccountStage());
 
+		tries++;
+
+		if (tries > (getEvent().getAccountStage().equalsIgnoreCase("MULE-TRADING") ? 30 : 80)) {
+			tradingDone = true;
+			update = false;
+			log("Failed to trade it over");
+		}
+
 		if (getEvent().getAccountStage().equalsIgnoreCase("MULE-TRADING")) {
+
+			log("currently trading: " + getTrade().isCurrentlyTrading());
+			if ((getTrade().isCurrentlyTrading() || getTrade().isFirstInterfaceOpen()
+					|| getTrade().isSecondInterfaceOpen()) && itemMap.size() > 0) {
+				trade(getEvent().getTradeWith(), itemMap, false);
+				log("currently trading");
+				return;
+			}
+
+			log("getting to trade...");
 
 			// Not in g.e.? Walk to it
 			walkToGrandExchange();
 
 			// Not having the coins right now, getting it from the bank
-			if (!getInventory().contains(995) && !getTrade().isCurrentlyTrading() && !getTrade().isFirstInterfaceOpen()
-					&& !getTrade().isSecondInterfaceOpen()) {
+			if (!getInventory().contains(995) && !getTrade().isCurrentlyTrading()) {
 
 				// Open bank
 				if (!getBank().isOpen()) {
@@ -84,39 +117,45 @@ public class MuleTradingConfiguration extends QuestStep {
 
 			} else {
 				// Putting items into the list to trade
-				if (itemMap.size() == 0) {
+				if (itemMap.size() == 0 && (int) getInventory().getAmount(995) > 0) {
 					log("items to trade set to: coins " + (int) getInventory().getAmount(995));
 					itemMap.put("Coins", (int) getInventory().getAmount(995));
 				}
 			}
 
 			if (itemMap.size() > 0) {
-				trade(getEvent().getTradeWith(), itemMap, true);
+				trade(getEvent().getTradeWith(), itemMap, false);
 			}
 
 			// Open bank
-			if (!getBank().isOpen() && !getTrade().isCurrentlyTrading() && !getTrade().isFirstInterfaceOpen()
-					&& !getTrade().isSecondInterfaceOpen()) {
-				getBank().open();
-				Sleep.sleepUntil(() -> getBank().isOpen(), 20000);
-			}
+			if (!getInventory().contains(995) && !getTrade().isCurrentlyTrading()) {
+				if (!getBank().isOpen() && !getTrade().isCurrentlyTrading() && !getTrade().isFirstInterfaceOpen()
+						&& !getTrade().isSecondInterfaceOpen()) {
+					getBank().open();
+					Sleep.sleepUntil(() -> getBank().isOpen(), 20000);
+				}
 
-			if (getBank().isOpen() && !getTrade().isFirstInterfaceOpen() && !getTrade().isSecondInterfaceOpen()
-					&& getInventory().getAmount("Coins") <= 0 && getBank().getAmount("Coins") <= 0) {
-				tradingDone = true;
-				log("Trading is done!");
+				log("coins inv: " + getInventory().getAmount("Coins") + " coins bank: " + getBank().getAmount("Coins"));
+				if (getBank().isOpen() && !getTrade().isCurrentlyTrading() && !getTrade().isFirstInterfaceOpen()
+						&& !getTrade().isSecondInterfaceOpen() && getInventory().getAmount("Coins") <= 0
+						&& getBank().getAmount("Coins") <= 0) {
+					tradingDone = true;
+					log("Trading is done!");
+				}
 			}
-
 		}
+
 		// The mule itself
 		else
 
 		{
 
+			log("time: " + (System.currentTimeMillis() - timeout));
+
 			// Not in g.e.? Walk to it
 			walkToGrandExchange();
 
-			trade(getEvent().getTradeWith(), new HashMap<String, Integer>(), false);
+			trade(getEvent().getTradeWith(), new HashMap<String, Integer>(), true);
 
 			if (getInventory().contains(995) && !getTrade().isCurrentlyTrading()) {
 
@@ -124,7 +163,16 @@ public class MuleTradingConfiguration extends QuestStep {
 				if (!getBank().isOpen()) {
 					getBank().open();
 					Sleep.sleepUntil(() -> getBank().isOpen(), 20000);
-				} else {
+				}
+
+				if (getBank().isOpen()) {
+
+					int totalAccountValue = (int) getBank().getAmount(995);
+
+					log("[ESTIMATED MULE VALUE] account value is: " + totalAccountValue);
+					if (getEvent() != null && getEvent().getUsername() != null && totalAccountValue > 0) {
+						DatabaseUtilities.updateAccountValue(this, getEvent().getUsername(), totalAccountValue);
+					}
 
 					// Depositing the cash from the bank
 					// if (getBank().deposit(995, (int) getBank().getAmount(995))) {
@@ -138,16 +186,43 @@ public class MuleTradingConfiguration extends QuestStep {
 					Sleep.sleepUntil(() -> !getInventory().contains(995), 20000);
 				}
 			}
+			// When the mule doesn't have coins and trading isnt done and the other player
+			// is not near then check if it is already completed or not and hasn't completed
+			// in 5 minutes
+			else if (!getInventory().contains(995) && !tradingDone
+					&& getPlayers().closest(getEvent().getTradeWith()) == null
+					&& (System.currentTimeMillis() - timeout > 300_000)) {
 
+				if (!getBank().isOpen()) {
+					getBank().open();
+					Sleep.sleepUntil(() -> getBank().isOpen(), 20000);
+				}
+				if (getBank().isOpen()) {
+
+					int inv = (int) getInventory().getAmount(995);
+					int bank = (int) getBank().getAmount(995);
+
+					if (inv <= 0 && bank > 0) {
+						if (getBank().depositAll()) {
+							Sleep.sleepUntil(() -> getInventory().isEmpty(), 20000);
+							if (getInventory().isEmpty()) {
+								log("Trading timeout is done!");
+
+								tradingDone = true;
+							}
+						}
+					}
+				}
+			}
 		}
-
 	}
 
-	public void trade(String name, HashMap<String, Integer> itemSet, boolean acceptLast) {
+	public void trade(String name, HashMap<String, Integer> itemSet, boolean acceptLast) throws InterruptedException {
 		String cleanName = name.replaceAll(" ", "\\u00a0");
 		Player player = getScript().getPlayers().closest(cleanName);
 		if (player != null && !isTrading() && player.interact("trade with")) {
-			new ConditionalSleep(3000, 4000) {
+			log("1");
+			new ConditionalSleep(10000) {
 				@Override
 				public boolean condition() {
 					return isTrading();
@@ -156,11 +231,14 @@ public class MuleTradingConfiguration extends QuestStep {
 		}
 
 		if (isTrading() && getTrade().isFirstInterfaceOpen()) {
+			log("2");
 			if (!tradeOfferMatches(itemSet)) {
+				log("3");
 				for (String item : itemSet.keySet()) {
 					if (!getTrade().getOurOffers().contains(item)) {
 						if (getTrade().offer(item, itemSet.get(item))) {
-							new ConditionalSleep(2000, 3000) {
+							log("4");
+							new ConditionalSleep(10000) {
 
 								@Override
 								public boolean condition() {
@@ -172,13 +250,15 @@ public class MuleTradingConfiguration extends QuestStep {
 				}
 			} else {
 				if (acceptLast && getTrade().didOtherAcceptTrade()) {
-					if (WidgetActionFilter.interactTil(this, "Accept", 335, 11, new ConditionalSleep(1500, 2000) {
+					log("5");
+					if (WidgetActionFilter.interactTil(this, "Accept", 335, 11, new ConditionalSleep(10000) {
 						@Override
 						public boolean condition() {
 							return getTrade().isSecondInterfaceOpen();
 						}
 					})) {
-						new ConditionalSleep(3000, 4000) {
+						log("6");
+						new ConditionalSleep(10000) {
 							@Override
 							public boolean condition() {
 								return getTrade().isSecondInterfaceOpen();
@@ -187,13 +267,15 @@ public class MuleTradingConfiguration extends QuestStep {
 					}
 
 				} else if (!acceptLast && !hasAccepted()) {
-					if (WidgetActionFilter.interactTil(this, "Accept", 335, 11, new ConditionalSleep(1500, 2000) {
+					log("7");
+					if (WidgetActionFilter.interactTil(this, "Accept", 335, 11, new ConditionalSleep(10000) {
 						@Override
 						public boolean condition() {
 							return hasAccepted();
 						}
 					})) {
-						new ConditionalSleep(3000, 4000) {
+						log("8");
+						new ConditionalSleep(10000) {
 
 							@Override
 							public boolean condition() {
@@ -207,14 +289,16 @@ public class MuleTradingConfiguration extends QuestStep {
 		} else if (isTrading() && getTrade().isSecondInterfaceOpen()) {
 
 			if (acceptLast && getTrade().didOtherAcceptTrade()) {
-				if (WidgetActionFilter.interactTil(this, "Accept", 334, 25, new ConditionalSleep(1500, 2000) {
+				log("9");
+				if (WidgetActionFilter.interactTil(this, "Accept", 334, 25, new ConditionalSleep(10000) {
 
 					@Override
 					public boolean condition() {
 						return !isTrading();
 					}
 				})) {
-					new ConditionalSleep(3000, 4000) {
+					log("10");
+					new ConditionalSleep(10000) {
 
 						@Override
 						public boolean condition() {
@@ -224,14 +308,16 @@ public class MuleTradingConfiguration extends QuestStep {
 				}
 
 			} else if (!acceptLast && !hasAccepted()) {
-				if (WidgetActionFilter.interactTil(this, "Accept", 334, 25, new ConditionalSleep(1500, 2000) {
+				log("11");
+				if (WidgetActionFilter.interactTil(this, "Accept", 334, 25, new ConditionalSleep(10000) {
 
 					@Override
 					public boolean condition() {
 						return !isTrading();
 					}
 				})) {
-					new ConditionalSleep(3000, 4000) {
+					log("12");
+					new ConditionalSleep(10000) {
 						@Override
 						public boolean condition() {
 							return getTrade().isSecondInterfaceOpen();
@@ -248,8 +334,9 @@ public class MuleTradingConfiguration extends QuestStep {
 				|| WidgetActionFilter.containsText(this, 334, 4, "Waiting for other player...");
 	}
 
-	private boolean tradeOfferMatches(HashMap<String, Integer> itemSet) {
+	private boolean tradeOfferMatches(HashMap<String, Integer> itemSet) throws InterruptedException {
 		for (String item : itemSet.keySet()) {
+			Sleep.sleepUntil(() -> isTrading() && getTrade().getOurOffers().getItem(item) != null, 2000);
 			if (isTrading() && getTrade().getOurOffers().getItem(item) == null) {
 				log("Trade Offer Missing: " + item);
 				return false;

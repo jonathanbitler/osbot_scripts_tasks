@@ -62,7 +62,7 @@ public class TaskHandler {
 				if (getEvent() != null && getEvent().getUsername() != null) {
 					DatabaseUtilities.updateStageProgress(getProvider(), AccountStage.TUT_ISLAND.name(), 0,
 							getEvent().getUsername());
-					BotCommands.killProcess(getScript());
+					BotCommands.killProcess(getProvider(), getScript());
 					getProvider().log("Account didn't belong here, sending back to tutorial island");
 				}
 			}
@@ -77,7 +77,7 @@ public class TaskHandler {
 		// Checking is the account is not logged in
 		if (!getProvider().getClient().isLoggedIn()) {
 //			DatabaseUtilities.updateAccountStatusInDatabase(getProvider(), "TIMEOUT", getEvent().getUsername());
-			BotCommands.killProcess(getScript());
+			BotCommands.killProcess(getProvider(), getScript());
 		}
 
 		// Is the account too long logged in without doing anything? Set it to
@@ -166,20 +166,16 @@ public class TaskHandler {
 						getCurrentTask().loop();
 						
 						//Side loop for other events
-						getQuest().onLoop();
+//						getQuest().onLoop();
 					}
 
 					// Sometimes the script can't perform the task correctly and will get stuck
 					// performing the task over and over again without completing it
 					taskAttempts++;
 					if (taskAttempts > 150 && (getQuest().isQuest() || taskAttempts > 800)) {
-						if (getCurrentTask().scriptName().equalsIgnoreCase("getting whool")) {
-							getProvider().log("Not timing out when getting whool");
-							return;
-						}
 						DatabaseUtilities.updateAccountStatusInDatabase(getProvider(), "TASK_TIMEOUT",
 								getEvent().getUsername());
-						BotCommands.killProcess(getScript());
+						BotCommands.killProcess(getProvider(), getScript());
 					}
 
 					// If null current task, then continue

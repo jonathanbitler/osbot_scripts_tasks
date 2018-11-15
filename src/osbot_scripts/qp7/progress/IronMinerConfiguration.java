@@ -1,5 +1,6 @@
 package osbot_scripts.qp7.progress;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,32 +59,30 @@ public class IronMinerConfiguration extends QuestStep {
 
 	private String pickaxe;
 
-	private int beginAmount = -1, soldAmount = -1, currentAmount = -1;
 
-	private long beginTime;
 
-	public final String formatTime(final long ms) {
-		long s = ms / 1000, m = s / 60, h = m / 60;
-		s %= 60;
-		m %= 60;
-		h %= 24;
-		return String.format("%02d:%02d:%02d", h, m, s);
-	}
-
+	/**
+	 * 
+	 * @param g
+	 */
 	public void onPaint(Graphics2D g) {
-		int profit = (currentAmount - beginAmount + soldAmount) * 140;
-		g.drawString("Sold ores " + soldAmount, 60, 370);
-		g.drawString("Begin ores" + beginAmount, 60, 395);
-		g.drawString("Current ores" + currentAmount, 60, 420);
-		g.drawString("Money per hour " + (long) (profit * (3600000.0 / (System.currentTimeMillis() - beginTime))), 60,
-				445);
-		g.drawString("Time taken: " + (formatTime((System.currentTimeMillis() - beginTime))), 60, 470);
+		g.setColor(Color.WHITE);
+		int profit = ((currentAmount - beginAmount) + soldAmount) * 140;
+		long profitPerHour = (long) (profit * (3600000.0 / (System.currentTimeMillis() - beginTime)));
+		g.drawString("Sold ores " + soldAmount, 60, 50);
+		g.drawString("Begin ores " + beginAmount, 60, 65);
+		g.drawString("Current ores " + currentAmount, 60, 80);
+		g.drawString("Total mined ores " + ((currentAmount - beginAmount) + soldAmount), 60, 95);
+		g.drawString("Money per hour " + (profitPerHour > 0 ? profitPerHour : "Need more data"), 60,
+				110);
+		g.drawString("Time taken " + (formatTime((System.currentTimeMillis() - beginTime))), 60, 125);
 	}
-
 	@Override
 	public void onStart() {
-		beginTime = System.currentTimeMillis();
-
+		if (beginTime == -1) {
+			beginTime = System.currentTimeMillis();
+		}
+		
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("walk to varrock west bank", -1, -1, getBot().getMethods(), BANK_POSITION_VARROCK_EAST,
 						new Area(new int[][] { { 3180, 3441 }, { 3186, 3441 }, { 3186, 3433 }, { 3180, 3433 } }),
@@ -163,7 +162,7 @@ public class IronMinerConfiguration extends QuestStep {
 		if (getBank().isOpen() && getBank().getAmount("Iron ore") > 200) {
 			int amount = (int) (getBank().getAmount("Iron ore"));
 			setGrandExchangeTask(new GrandExchangeTask(this, new BankItem[] {},
-					new BankItem[] { new BankItem("Iron ore", 440, amount, 100, true) }, null, getScript()));
+					new BankItem[] { new BankItem("Iron ore", 440, amount, 1, true) }, null, getScript()));
 		}
 
 		int ironAmount = -1;
@@ -180,12 +179,12 @@ public class IronMinerConfiguration extends QuestStep {
 				// the database
 				if (getEvent() != null && getEvent().getUsername() != null) {
 					DatabaseUtilities.updateStageProgress(this, "MULE_TRADING", 0, getEvent().getUsername());
-					BotCommands.killProcess(getScript());
+					BotCommands.killProcess(this, getScript());
 				}
 			}
 
 			totalAccountValue += (ironAmount * 120);
-
+			
 			int bankedAmount = (int) getBank().getAmount("Iron ore");
 			if (beginAmount == -1) {
 				beginAmount = bankedAmount;
@@ -211,8 +210,8 @@ public class IronMinerConfiguration extends QuestStep {
 
 			setGrandExchangeTask(
 					new GrandExchangeTask(this, new BankItem[] { new BankItem("Bronze pickaxe", 1265, 1, 1400, false) },
-							new BankItem[] { new BankItem("Iron ore", 440, 1000, 100, true),
-									new BankItem("Clay", 434, 1000, 100, true) },
+							new BankItem[] { new BankItem("Iron ore", 440, 1000, 1, true),
+									new BankItem("Clay", 434, 1000, 1, true) },
 							null, getScript()));
 		} else if (totalAccountValue > 5000 && getBank().isOpen() && getSkills().getStatic(Skill.MINING) > 3
 				&& getSkills().getStatic(Skill.MINING) < 6
@@ -220,8 +219,8 @@ public class IronMinerConfiguration extends QuestStep {
 
 			setGrandExchangeTask(
 					new GrandExchangeTask(this, new BankItem[] { new BankItem("Iron pickaxe", 1267, 1, 1400, false) },
-							new BankItem[] { new BankItem("Iron ore", 440, 1000, 100, true),
-									new BankItem("Clay", 434, 1000, 100, true) },
+							new BankItem[] { new BankItem("Iron ore", 440, 1000, 1, true),
+									new BankItem("Clay", 434, 1000, 1, true) },
 							null, getScript()));
 		} else if (totalAccountValue > 8000 && getBank().isOpen() && getSkills().getStatic(Skill.MINING) >= 6
 				&& getSkills().getStatic(Skill.MINING) < 21
@@ -229,8 +228,8 @@ public class IronMinerConfiguration extends QuestStep {
 
 			setGrandExchangeTask(
 					new GrandExchangeTask(this, new BankItem[] { new BankItem("Steel pickaxe", 1269, 1, 5000, false) },
-							new BankItem[] { new BankItem("Iron ore", 440, 1000, 100, true),
-									new BankItem("Clay", 434, 1000, 100, true) },
+							new BankItem[] { new BankItem("Iron ore", 440, 1000, 1, true),
+									new BankItem("Clay", 434, 1000, 1, true) },
 							null, getScript()));
 		} else if (totalAccountValue > 15000 && getBank().isOpen() && getSkills().getStatic(Skill.MINING) >= 21
 				&& getSkills().getStatic(Skill.MINING) < 31
@@ -238,8 +237,8 @@ public class IronMinerConfiguration extends QuestStep {
 
 			setGrandExchangeTask(new GrandExchangeTask(this,
 					new BankItem[] { new BankItem("Mithril pickaxe", 1273, 1, 10000, false) },
-					new BankItem[] { new BankItem("Iron ore", 440, 1000, 100, true),
-							new BankItem("Clay", 434, 1000, 100, true) },
+					new BankItem[] { new BankItem("Iron ore", 440, 1000, 1, true),
+							new BankItem("Clay", 434, 1000, 1, true) },
 					null, getScript()));
 		} else if (totalAccountValue > 30000 && getBank().isOpen() && getSkills().getStatic(Skill.MINING) >= 31
 				&& getSkills().getStatic(Skill.MINING) < 41
@@ -247,16 +246,16 @@ public class IronMinerConfiguration extends QuestStep {
 
 			setGrandExchangeTask(new GrandExchangeTask(this,
 					new BankItem[] { new BankItem("Adamant pickaxe", 1271, 1, 20000, false) },
-					new BankItem[] { new BankItem("Iron ore", 440, 1000, 100, true),
-							new BankItem("Clay", 434, 1000, 100, true) },
+					new BankItem[] { new BankItem("Iron ore", 440, 1000, 1, true),
+							new BankItem("Clay", 434, 1000, 1, true) },
 					null, getScript()));
 		} else if (totalAccountValue > 100000 && getBank().isOpen() && getSkills().getStatic(Skill.MINING) >= 41
 				&& ((!getInventory().contains("Rune pickaxe") && !getBank().contains("Rune pickaxe")))) {
 
 			setGrandExchangeTask(
 					new GrandExchangeTask(this, new BankItem[] { new BankItem("Rune pickaxe", 1275, 1, 60000, false) },
-							new BankItem[] { new BankItem("Iron ore", 440, 1000, 100, true),
-									new BankItem("Clay", 434, 1000, 100, true) },
+							new BankItem[] { new BankItem("Iron ore", 440, 1000, 1, true),
+									new BankItem("Clay", 434, 1000, 1, true) },
 							null, getScript()));
 		}
 

@@ -212,6 +212,7 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 			collectToInventory();
 		}
 	}
+	
 
 	@Override
 	public void loop() throws InterruptedException {

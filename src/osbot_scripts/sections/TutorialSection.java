@@ -9,6 +9,7 @@ import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.script.MethodProvider;
 
 import osbot_scripts.bot.utils.RandomUtil;
+import osbot_scripts.events.LoginEvent;
 import osbot_scripts.sections.total.progress.MainState;
 import osbot_scripts.util.Sleep;
 
@@ -18,6 +19,11 @@ public abstract class TutorialSection extends MethodProvider {
 	 * The name of the instructor of the current stage
 	 */
 	private final String instructorName;
+	
+	/**
+	 * 
+	 */
+	public LoginEvent login;
 
 	/**
 	 * 

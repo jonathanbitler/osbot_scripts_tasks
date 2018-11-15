@@ -171,16 +171,6 @@ public class MandatoryEventsExecution {
 			getProvider().getWalking().walk(getProvider().myPlayer().getArea(2));
 		}
 
-		if (!LUMRBDIGE.contains(getProvider().myPlayer())) {
-			if (!getProvider().getSettings().areRoofsEnabled()) {
-				Event toggleRoofsHiddenEvent = new ToggleRoofsHiddenEvent();
-				getProvider().execute(toggleRoofsHiddenEvent);
-				if (getProvider().getTabs().getOpen() != Tab.INVENTORY) {
-					getProvider().getTabs().open(Tab.INVENTORY);
-				}
-			}
-		}
-
 		if (!isAudioDisabled) {
 			isAudioDisabled = disableAudio();
 			getProvider().getTabs().open(Tab.INVENTORY);
@@ -192,6 +182,21 @@ public class MandatoryEventsExecution {
 			toggleShiftDrop();
 			if (getProvider().getTabs().getOpen() != Tab.INVENTORY) {
 				getProvider().getTabs().open(Tab.INVENTORY);
+			}
+		}
+		
+		if (!LUMRBDIGE.contains(getProvider().myPlayer())) {
+			if (!getProvider().getSettings().areRoofsEnabled()) {
+				if (pendingContinue()) {
+					selectContinue();
+				}
+				
+				getProvider().getWalking().walk(getProvider().myPlayer().getPosition().translate(1, 1));
+				Event toggleRoofsHiddenEvent = new ToggleRoofsHiddenEvent();
+				getProvider().execute(toggleRoofsHiddenEvent);
+				if (getProvider().getTabs().getOpen() != Tab.INVENTORY) {
+					getProvider().getTabs().open(Tab.INVENTORY);
+				}
 			}
 		}
 
