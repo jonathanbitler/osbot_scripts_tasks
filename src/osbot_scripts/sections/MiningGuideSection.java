@@ -50,6 +50,7 @@ public class MiningGuideSection extends TutorialSection {
 			break;
 
 		case 300:
+		case 311:
 			mineTin();
 			break;
 
@@ -59,7 +60,7 @@ public class MiningGuideSection extends TutorialSection {
 
 		case 320:
 			//Walking to its own positon to prevent it getting stuck
-			getWalking().walk(myPlayer());
+			getWalking().walk(myPlayer().getArea(2).getRandomPosition());
 			
 //			if (getInventory().isItemSelected()) {
 //				getInventory().deselectItem();

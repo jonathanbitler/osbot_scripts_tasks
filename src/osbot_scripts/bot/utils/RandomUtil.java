@@ -54,13 +54,13 @@ public class RandomUtil {
 
 		// When everything is completed
 		if (stagesToDo.size() == 0) {
-			int randomNum = getRandomNumberInRange(0, 1);
-			if (randomNum == 0) {
-				stagesToDo.add(AccountStage.MINING_IRON_ORE);
-			} else {
-				stagesToDo.add(AccountStage.RIMMINGTON_IRON_ORE);
-			}
-
+			stagesToDo.add(AccountStage.MINING_IRON_ORE);
+//			int randomNum = getRandomNumberInRange(0, 1);
+//			if (randomNum == 0) {
+//				stagesToDo.add(AccountStage.MINING_IRON_ORE);
+//			} else {
+//				stagesToDo.add(AccountStage.RIMMINGTON_IRON_ORE);
+//			}
 		}
 
 		// Cant be negative

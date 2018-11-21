@@ -36,34 +36,35 @@ public class MiningLevelTo15 extends Script {
 			ev.fixedMode2();
 			ev.executeAllEvents();
 		}
-		
+
 		if (Coordinates.isOnTutorialIsland(this)) {
 			DatabaseUtilities.updateStageProgress(this, "TUT_ISLAND", 0, login.getUsername());
-			BotCommands.killProcess((MethodProvider)this, (Script) this);
+			BotCommands.killProcess((MethodProvider) this, (Script) this);
 		}
-		
+
 		// Account must have atleast 7 quest points, otherwise set it back to quesiton
 		if (getQuests().getQuestPoints() < 7) {
 			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0,
 					login.getUsername());
-			BotCommands.killProcess((MethodProvider)this, (Script) this);
+			BotCommands.killProcess((MethodProvider) this, (Script) this);
 		}
-		
+
 		// If mining is equals or bigger than 15, then it can proceed to mining iron
 		if (getSkills().getStatic(Skill.MINING) >= 15) {
 			Thread.sleep(5000);
 			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0,
 					login.getUsername());
-			BotCommands.killProcess((MethodProvider)this, (Script) this);
+			BotCommands.killProcess((MethodProvider) this, (Script) this);
 		}
-		
-		//Breaking for set amount of minutes because has done a few laps
-//		if (getGoldfarmMining().getDoneLaps() > 15) {
-//			log("Taking a break...");
-//			Thread.sleep(5000);
-//			DatabaseUtilities.updateAccountBreakTill(this, getGoldfarmMining().getEvent().getUsername(), 30);
-//			BotCommands.killProcess((MethodProvider)this, (Script) this);
-//		}
+
+		// Breaking for set amount of minutes because has done a few laps
+		// if (getGoldfarmMining().getDoneLaps() > 15) {
+		// log("Taking a break...");
+		// Thread.sleep(5000);
+		// DatabaseUtilities.updateAccountBreakTill(this,
+		// getGoldfarmMining().getEvent().getUsername(), 30);
+		// BotCommands.killProcess((MethodProvider)this, (Script) this);
+		// }
 
 		// The loop for other stuff than tasks
 		getGoldfarmMining().onLoop();
@@ -88,13 +89,16 @@ public class MiningLevelTo15 extends Script {
 		goldfarmMining = new MiningLevelTo15Configuration(login, (Script) this);
 
 		if (login != null && login.getUsername() != null) {
-			getGoldfarmMining()
-					.setQuestStageStep(Integer.parseInt(DatabaseUtilities.getQuestProgress(this, login.getUsername())));
+			getGoldfarmMining().setQuestStageStep(0
+			// Integer.parseInt(DatabaseUtilities.getQuestProgress(this,
+			// login.getUsername()))
+			);
 		}
 
 		getGoldfarmMining().exchangeContext(getBot());
 		getGoldfarmMining().onStart();
-		DatabaseUtilities.updateStageProgress(this, "MINING_LEVEL_TO_15", 0, getGoldfarmMining().getEvent().getUsername());
+		DatabaseUtilities.updateStageProgress(this, "MINING_LEVEL_TO_15", 0,
+				getGoldfarmMining().getEvent().getUsername());
 	}
 
 	/**

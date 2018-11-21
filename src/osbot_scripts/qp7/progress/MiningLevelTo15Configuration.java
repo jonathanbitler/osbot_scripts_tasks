@@ -10,6 +10,7 @@ import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.Script;
 
+import osbot_scripts.bot.utils.BotCommands;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.framework.AccountStage;
@@ -178,6 +179,20 @@ public class MiningLevelTo15Configuration extends QuestStep {
 				soldAmount += (currentAmount - bankedAmount);
 			}
 			currentAmount = bankedAmount;
+			
+			int coinsAmount = (int) getBank().getAmount(995);
+
+			// If has more than 100k then start tradinig it over to the mule
+			if (coinsAmount > 30_000) {
+
+				// Setting the status of the account that it wants to mule to another account in
+				// the database
+				if (getEvent() != null && getEvent().getUsername() != null) {
+					DatabaseUtilities.updateStageProgress(this, "MULE_TRADING", 0, getEvent().getUsername());
+					BotCommands.killProcess(this, getScript());
+				}
+			}
+			
 		}
 		log("[ESTIMATED] account value is: " + totalAccountValue);
 		if (getEvent() != null && getEvent().getUsername() != null && totalAccountValue > 0) {

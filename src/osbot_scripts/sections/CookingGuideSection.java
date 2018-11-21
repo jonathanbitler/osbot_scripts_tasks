@@ -29,6 +29,8 @@ public class CookingGuideSection extends TutorialSection {
 						new int[][] { { 3078, 3089 }, { 3075, 3089 }, { 3075, 3086 }, { 3079, 3086 }, { 3079, 3089 } })
 								.contains(myPlayer().getPosition()),
 						10000, 5000);
+			} else {
+				getWalking().walk(new Position(3079, 3084, 0));
 			}
 		}
 	}
@@ -71,8 +73,12 @@ public class CookingGuideSection extends TutorialSection {
 	}
 
 	private void walkToDungeon() {
+		getWalking().webWalk(new Area(new int[][] { { 3083, 3128 }, { 3087, 3128 }, { 3087, 3126 }, { 3083, 3126 } }));
 		clickObject(9716, "Open", new Position(3085, 3127, 0));
 		Sleep.sleepUntil(() -> myPlayer().getArea(5).contains(new Position(3085, 3127, 0)), 10000, 3000);
+
+		// if (!myPlayer().getArea(5).contains(new Position(3085, 3127, 0))) {
+		// }
 
 		Sleep.sleepUntil(() -> new Area(new int[][] { { 3082, 3126 }, { 3090, 3126 }, { 3090, 3119 }, { 3080, 3119 },
 				{ 3080, 3123 }, { 3080, 3124 } }).contains(myPlayer().getPosition()), 10000, 3000);
@@ -82,18 +88,27 @@ public class CookingGuideSection extends TutorialSection {
 			{ 3074, 3087 }, { 3073, 3087 }, { 3073, 3083 }, { 3079, 3083 }, { 3079, 3087 }, { 3076, 3087 },
 			{ 3076, 3089 }, { 3078, 3089 }, { 3078, 3092 }, { 3073, 3092 } });
 
+	private void openNextDoor(int x, int y, int objId) {
+		RS2Object door = getObjects().closest(obj -> obj.getX() == x && obj.getY() == y && obj.getId() == objId);
+		if (door != null) {
+			door.interact();
+		}
+	}
+
 	@Override
 	public void onLoop() throws InterruptedException {
 		log(getProgress());
 
 		switch (getProgress()) {
 		case 130:
-			openDoor();
+			openNextDoor(9709, 3078, 3084);
+			// openDoor();
 			break;
 
 		case 140:
 			if (!INSIDE_COOKING.contains(myPlayer())) {
-				openDoor();
+				openNextDoor(9709, 3078, 3084);
+				// openDoor();
 			} else {
 				talkAndContinueWithInstructor();
 			}
@@ -101,7 +116,7 @@ public class CookingGuideSection extends TutorialSection {
 
 		case 150:
 			if (!INSIDE_COOKING.contains(myPlayer())) {
-				openDoor();
+				openNextDoor(9709, 3078, 3084);
 			} else {
 				makeDough();
 			}
@@ -109,18 +124,16 @@ public class CookingGuideSection extends TutorialSection {
 
 		case 160:
 			if (!INSIDE_COOKING.contains(myPlayer())) {
-				openDoor();
+				openNextDoor(9709, 3078, 3084);
 			} else {
 				doughOnFire();
 			}
 			break;
 
 		case 170:
+			openNextDoor(9710, 3072, 3090);
 			if (!INSIDE_COOKING.contains(myPlayer())) {
-				openDoor();
-			} else {
-				getWalking().walk(new Position(3073, 3090, 0));
-				clickObject(9710, "Open", new Position(3073, 3090, 0));
+				openNextDoor(9709, 3078, 3084);
 			}
 			// if (getTabs().open(Tab.MUSIC)) {
 			// }
@@ -128,9 +141,9 @@ public class CookingGuideSection extends TutorialSection {
 
 		case 180:
 			if (!INSIDE_COOKING.contains(myPlayer())) {
-				openDoor();
+				openNextDoor(9709, 3078, 3084);
 			}
-			clickObject(9710, "Open", new Position(3073, 3090, 0));
+			openNextDoor(9710, 3072, 3090);
 
 			break;
 

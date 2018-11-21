@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.map.Position;
+import org.osbot.rs07.api.model.RS2Object;
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.api.ui.Tab;
 
@@ -34,9 +35,19 @@ public class BankGuideSection extends TutorialSection {
 
 		switch (getProgress()) {
 		case 510:
+
+			if (new Area(new int[][] { { 3072, 9525 }, { 3119, 9542 }, { 3123, 9501 }, { 3088, 9487 }, { 3063, 9493 } })
+					.contains(myPlayer())) {
+				RS2Object ladder = getObjects().closest(9727);
+				if (ladder != null) {
+					ladder.interact();
+				}
+			}
 			if (!BANK_AREA.contains(myPosition())) {
 				if (getWalking().walkPath(PATH_TO_BANK)) {
 					getDoorHandler().handleNextObstacle(BANK_AREA);
+				} else {
+					getWalking().webWalk(BANK_AREA);
 				}
 			} else if (pendingContinue()) {
 				selectContinue();

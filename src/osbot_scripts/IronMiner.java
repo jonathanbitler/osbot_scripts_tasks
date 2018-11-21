@@ -87,8 +87,10 @@ public class IronMiner extends Script {
 		goldfarmMining = new IronMinerConfiguration(login, (Script) this);
 
 		if (login != null && login.getUsername() != null) {
-			getGoldfarmMining()
-					.setQuestStageStep(Integer.parseInt(DatabaseUtilities.getQuestProgress(this, login.getUsername())));
+			getGoldfarmMining().setQuestStageStep(0
+			// Integer.parseInt(DatabaseUtilities.getQuestProgress(this,
+			// login.getUsername()))
+			);
 		}
 		getGoldfarmMining().exchangeContext(getBot());
 		getGoldfarmMining().onStart();

@@ -74,7 +74,7 @@ public abstract class TutorialSection extends MethodProvider {
 		}
 
 		if (rs2Object != null && (!rs2Object.isVisible() || !rs2Object.getArea(1).contains(myPlayer()))) {
-			getWalking().walk(rs2Object);
+			getWalking().walk(walkTo);
 		}
 
 	}

@@ -69,14 +69,15 @@ public class TaskHandler {
 
 			// Checking if he account is not fixed mode (client)
 		}
-		
+
 		// Checking if at task is resizable or no
 		getEvents().fixedMode();
 		getEvents().fixedMode2();
 
 		// Checking is the account is not logged in
 		if (!getProvider().getClient().isLoggedIn()) {
-//			DatabaseUtilities.updateAccountStatusInDatabase(getProvider(), "TIMEOUT", getEvent().getUsername());
+			// DatabaseUtilities.updateAccountStatusInDatabase(getProvider(), "TIMEOUT",
+			// getEvent().getUsername());
 			BotCommands.killProcess(getProvider(), getScript());
 		}
 
@@ -157,6 +158,15 @@ public class TaskHandler {
 						continue;
 					}
 
+					// If the person is not logged in anymore, but the client is still open, then
+					// exit the client
+					if ((!getProvider().getClient().isLoggedIn())
+							&& (System.currentTimeMillis() - getEvent().getStartTime() > 200_000)) {
+						getProvider().log("Person wasn't logged in anymore, logging out!");
+						Thread.sleep(5000);
+						System.exit(1);
+					}
+
 					// Sometimes dialogue pops up without a dialoguetask and could get stuck because
 					// of this
 					if (getProvider().getDialogues().isPendingContinuation()) {
@@ -164,9 +174,9 @@ public class TaskHandler {
 					} else {
 						// Task loop
 						getCurrentTask().loop();
-						
-						//Side loop for other events
-//						getQuest().onLoop();
+
+						// Side loop for other events
+						// getQuest().onLoop();
 					}
 
 					// Sometimes the script can't perform the task correctly and will get stuck
@@ -184,17 +194,16 @@ public class TaskHandler {
 					}
 					getProvider().log("performing task" + getCurrentTask().getClass().getSimpleName() + " attempt: "
 							+ taskAttempts);
-					
 
 					// Checking if at task is resizable or no
 					getEvents().fixedMode();
 					getEvents().fixedMode2();
 					getEvents().executeAllEvents();
-					
+
 					if (getEvent().hasFinished() && !getProvider().getClient().isLoggedIn()) {
 						System.exit(1);
 					}
-					
+
 					Thread.sleep(1000, 1500);
 				}
 

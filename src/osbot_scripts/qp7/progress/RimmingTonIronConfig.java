@@ -154,7 +154,7 @@ public class RimmingTonIronConfig extends QuestStep {
 		}
 
 		// When having more than 200 iron ore, then go to the g.e. and sell it
-		if (getBank().isOpen() && getBank().getAmount("Iron ore") > 500) {
+		if (getBank().isOpen() && getBank().getAmount("Iron ore") > 200) {
 			int amount = (int) (getBank().getAmount("Iron ore"));
 			int inventory = (int) (getInventory().getAmount("Iron ore"));
 			setGrandExchangeTask(new GrandExchangeTask(this, new BankItem[] {},
@@ -170,7 +170,7 @@ public class RimmingTonIronConfig extends QuestStep {
 			totalAccountValue += coinsAmount;
 
 			// If has more than 100k then start tradinig it over to the mule
-			if (coinsAmount > 100_000) {
+			if (coinsAmount > 50_000) {
 
 				// Setting the status of the account that it wants to mule to another account in
 				// the database

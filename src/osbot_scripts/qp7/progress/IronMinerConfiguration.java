@@ -173,7 +173,7 @@ public class IronMinerConfiguration extends QuestStep {
 			totalAccountValue += coinsAmount;
 
 			// If has more than 100k then start tradinig it over to the mule
-			if (coinsAmount > 100_000) {
+			if (coinsAmount > 30_000) {
 
 				// Setting the status of the account that it wants to mule to another account in
 				// the database

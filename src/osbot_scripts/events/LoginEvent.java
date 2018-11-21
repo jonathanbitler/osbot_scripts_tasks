@@ -17,6 +17,8 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 
 	private String accountStage, tradeWith, emailTradeWith, actualUsername;
 
+	private long startTime = -1;
+
 	private int pid;
 
 	public LoginEvent(final String username, final String password, int pid, String accountStage) {
@@ -29,6 +31,11 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 
 	@Override
 	public final int execute() throws InterruptedException {
+		//Set current time
+		if (getStartTime() == -1) {
+			setStartTime(System.currentTimeMillis());
+		}
+		
 		if (!getBot().isLoaded()) {
 			return 1000;
 		} else if ((getClient().isLoggedIn() && getLobbyButton() == null)) {
@@ -168,7 +175,7 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 	private boolean isLocked() {
 		return getColorPicker().isColorAt(222, 196, Color.YELLOW);
 	}
-	
+
 	private boolean isWrongEmail() {
 		return getColorPicker().isColorAt(422, 232, new Color(255, 255, 0));
 	}
@@ -223,7 +230,7 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 			System.exit(1);
 			return;
 		}
-		
+
 		switch (responseCode) {
 		case 5:
 		case 1:
@@ -246,27 +253,27 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 			setFailed();
 			System.exit(1);
 			break;
-			
+
 		case 11:
 		case 18:
 			log("Account is locked, setting to locked");
 			DatabaseUtilities.updateAccountStatusInDatabase(this, "LOCKED", this.username);
 			System.exit(1);
 			break;
-			
+
 		case 3:
 			log("Account password is wrong, setting to invalid password");
 			DatabaseUtilities.updateAccountStatusInDatabase(this, "INVALID_PASSWORD", this.username);
 			System.exit(1);
 			break;
-			
+
 		case 4:
 			log("Account is banned, setting to locked");
 			DatabaseUtilities.updateAccountStatusInDatabase(this, "BANNED", this.username);
 			System.exit(1);
 			break;
 		}
-		
+
 	}
 
 	public String getUsername() {
@@ -327,7 +334,8 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 	}
 
 	/**
-	 * @param emailTradeWith the emailTradeWith to set
+	 * @param emailTradeWith
+	 *            the emailTradeWith to set
 	 */
 	public void setEmailTradeWith(String emailTradeWith) {
 		this.emailTradeWith = emailTradeWith;
@@ -341,10 +349,26 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 	}
 
 	/**
-	 * @param actualUsername the actualUsername to set
+	 * @param actualUsername
+	 *            the actualUsername to set
 	 */
 	public void setActualUsername(String actualUsername) {
 		this.actualUsername = actualUsername;
+	}
+
+	/**
+	 * @return the startTime
+	 */
+	public long getStartTime() {
+		return startTime;
+	}
+
+	/**
+	 * @param startTime
+	 *            the startTime to set
+	 */
+	public void setStartTime(long startTime) {
+		this.startTime = startTime;
 	}
 
 }

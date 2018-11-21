@@ -116,7 +116,7 @@ public class PickupItemTask extends TaskSkeleton implements Task, AreaInterface 
 		// obj.getName().equalsIgnoreCase(getWaitForItemString())).findFirst();
 		if (object != null) {
 			if (getArea() != null && !getArea().contains(getApi().myPlayer())) {
-				getApi().getWalking().webWalk(object.getPosition());
+				getApi().getWalking().webWalk(getArea());
 			}
 
 			if (getInteractOption() != null && getInteractOption().length() > 0) {

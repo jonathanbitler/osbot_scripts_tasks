@@ -114,7 +114,15 @@ public class TutorialScript extends Script {
 		if (mainState == null) {
 			mainState = CheckInWhatArea.getState(this);
 		}
-		
+
+		// If the person is not logged in anymore, but the client is still open, then
+		// exit the client
+		if ((!getClient().isLoggedIn()) && (System.currentTimeMillis() - getLogin().getStartTime() > 200_000)) {
+			log("Person wasn't logged in anymore, logging out!");
+			Thread.sleep(5000);
+			System.exit(1);
+		}
+
 		if (getClient().isLoggedIn() && getConfigs().get(281) >= 3 && getConfigs().get(281) < 650) {
 			events.fixedMode();
 			events.fixedMode2();
@@ -128,7 +136,7 @@ public class TutorialScript extends Script {
 		}
 
 		if (!getClient().isLoggedIn() && getConfigs().get(281) > 0) {
-			BotCommands.killProcess((MethodProvider)this, (Script) this);
+			BotCommands.killProcess((MethodProvider) this, (Script) this);
 		}
 
 		if ((!TUT_ISLAND_AREA.contains(myPlayer()) && !TUT_ISLAND_AREA_CAVE.contains(myPlayer()))
@@ -137,7 +145,7 @@ public class TutorialScript extends Script {
 			log("Succesfully completed!");
 			DatabaseUtilities.updateStageProgress(this, AccountStage.QUEST_COOK_ASSISTANT.name(), 0,
 					getLogin().getUsername());
-			BotCommands.killProcess((MethodProvider)this, (Script) this);
+			BotCommands.killProcess((MethodProvider) this, (Script) this);
 		}
 
 		log(mainState);
