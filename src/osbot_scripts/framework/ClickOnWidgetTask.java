@@ -104,7 +104,7 @@ public class ClickOnWidgetTask extends TaskSkeleton implements Task {
 			// here something only run once
 		}
 		if (getRS2WidgetInterface() == null && getApi().myPlayer().getAnimation() == -1
-				&& !getApi().myPlayer().isAnimating() && (System.currentTimeMillis() - lastClick > 20000)) {
+				&& !getApi().myPlayer().isAnimating() && (System.currentTimeMillis() - lastClick > 40000)) {
 
 			if (getObjectId() != -1) {
 				RS2Object rs2Obj = getApi().getObjects().closest(obj -> obj.getId() == getObjectId());

@@ -25,6 +25,11 @@ public class CombatGuideSection extends TutorialSection {
 	public void onLoop() throws InterruptedException {
 		// TODO Auto-generated method stub
 		log(getProgress());
+		
+		if (pendingContinue()) {
+			selectContinue();
+			return;
+		}
 
 		switch (getProgress()) {
 		case 370:
@@ -36,9 +41,7 @@ public class CombatGuideSection extends TutorialSection {
 			break;
 
 		case 390:
-			talkAndContinueWithInstructor();
-			if (getTabs().open(Tab.EQUIPMENT)) {
-			}
+			getTabs().open(Tab.EQUIPMENT);
 			break;
 
 		case 400:
@@ -107,18 +110,14 @@ public class CombatGuideSection extends TutorialSection {
 			}
 			break;
 
-		case 490:
 		case 480:
-			if (getTabs().open(Tab.INVENTORY)) {
-				if (!getEquipment().isWearingItem(EquipmentSlot.WEAPON, "Shortbow")) {
-					wieldItem("Shortbow");
-				} else if (!getEquipment().isWearingItem(EquipmentSlot.ARROWS, "Bronze arrow")) {
-					wieldItem("Bronze arrow");
-				}
-				if (attackRat()) {
-					Sleep.sleepUntil(() -> !myPlayer().isUnderAttack() && myPlayer().isAttackable()
-							&& myPlayer().getAnimation() == -1, 25000, 8000);
-				}
+		case 490:
+			if (!getEquipment().isWearingItem(EquipmentSlot.WEAPON, "Shortbow")) {
+				wieldItem("Shortbow");
+			} else if (!getEquipment().isWearingItem(EquipmentSlot.ARROWS, "Bronze arrow")) {
+				wieldItem("Bronze arrow");
+			} else if (!isAttackingRat()) {
+				attackRat();
 			}
 			break;
 
@@ -131,6 +130,10 @@ public class CombatGuideSection extends TutorialSection {
 			break;
 		}
 
+	}
+
+	private boolean isAttackingRat() {
+		return myPlayer().getInteracting() != null && myPlayer().getInteracting().getName().equals("Giant rat");
 	}
 
 	/**
@@ -160,8 +163,7 @@ public class CombatGuideSection extends TutorialSection {
 	 * @return
 	 */
 	private boolean attackRat() {
-		NPC rat = getNpcs().closest(
-				npc -> npc.getName().equalsIgnoreCase("Giant rat") && npc.isAttackable());
+		NPC rat = getNpcs().closest(npc -> npc.getName().equalsIgnoreCase("Giant rat") && npc.isAttackable());
 		if (rat != null) {
 			if (rat.interact("Attack")) {
 				Sleep.sleepUntil(() -> myPlayer().getInteracting() != null, 15000);

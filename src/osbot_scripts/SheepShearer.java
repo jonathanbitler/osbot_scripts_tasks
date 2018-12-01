@@ -74,6 +74,7 @@ public class SheepShearer extends Script {
 	@Override
 	public void onStart() throws InterruptedException {
 		login = LoginHandler.login(this, getParameters());
+		login.setScript("QUEST_SHEEP_SHEARER");
 		sheepShearer = new SheepShearerConfiguration(login, (Script) this);
 
 		if (login != null && login.getUsername() != null) {

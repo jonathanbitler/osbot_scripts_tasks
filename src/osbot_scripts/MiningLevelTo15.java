@@ -3,6 +3,7 @@ package osbot_scripts;
 import java.awt.Graphics2D;
 
 import org.osbot.rs07.api.ui.Skill;
+import org.osbot.rs07.event.Event;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
@@ -71,11 +72,11 @@ public class MiningLevelTo15 extends Script {
 
 		// The loop for tasks, may only loop when a grand exchange task
 		// is not active at the moment
-		if (getGoldfarmMining().getGrandExchangeTask() == null) {
-			getGoldfarmMining().getTaskHandler().taskLoop();
-		}
+		// if (getGoldfarmMining().getGrandExchangeTask() == null) {
+		getGoldfarmMining().getTaskHandler().taskLoop();
+		// }
 
-		return random(0, 1);
+		return random(20, 80);
 	}
 
 	@Override
@@ -86,13 +87,14 @@ public class MiningLevelTo15 extends Script {
 	@Override
 	public void onStart() throws InterruptedException {
 		login = LoginHandler.login(this, getParameters());
+		login.setScript("MINING_LEVEL_TO_15");
 		goldfarmMining = new MiningLevelTo15Configuration(login, (Script) this);
+		getGoldfarmMining().setQuest(false);
 
 		if (login != null && login.getUsername() != null) {
-			getGoldfarmMining().setQuestStageStep(0
-			// Integer.parseInt(DatabaseUtilities.getQuestProgress(this,
-			// login.getUsername()))
-			);
+			getGoldfarmMining()
+					.setQuestStageStep(0);
+//							Integer.parseInt(DatabaseUtilities.getQuestProgress(this, login.getUsername())));
 		}
 
 		getGoldfarmMining().exchangeContext(getBot());

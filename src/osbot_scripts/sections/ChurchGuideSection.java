@@ -1,5 +1,8 @@
 package osbot_scripts.sections;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.ui.Tab;
@@ -19,20 +22,24 @@ public class ChurchGuideSection extends TutorialSection {
 		// TODO Auto-generated method stub
 		log(getProgress());
 
+		if (pendingContinue()) {
+			selectContinue();
+			return;
+		}
+
 		switch (getProgress()) {
 		case 550:
-			if (new Area(new int[][] { { 3129, 3111 }, { 3129, 3103 }, { 3120, 3103 }, { 3120, 3111 } })
+			if (new Area(new int[][] { { 3120, 3110 }, { 3120, 3103 }, { 3129, 3103 }, { 3129, 3111 }, { 3120, 3111 } })
 					.contains(myPlayer().getPosition())) {
 				talkAndContinueWithInstructor();
 			} else {
-				getWalking().webWalk(new Position(3123, 3106, 0));
-//				clickObject(1521, "Open");
-				talkAndContinueWithInstructor();
+				getWalking().webWalk(new Area(new int[][] { { 3120, 3110 }, { 3120, 3103 }, { 3129, 3103 },
+						{ 3129, 3111 }, { 3120, 3111 } }));
+				log("webwalking to the position of church");
 			}
 			break;
 
 		case 560:
-			talkAndContinueWithInstructor();
 			getTabs().open(Tab.PRAYER);
 			break;
 
@@ -41,8 +48,11 @@ public class ChurchGuideSection extends TutorialSection {
 			break;
 
 		case 580:
-			talkAndContinueWithInstructor();
 			getTabs().open(Tab.FRIENDS);
+			break;
+
+		case 590:
+			getTabs().open(Tab.IGNORES);
 			break;
 
 		case 600:
@@ -52,7 +62,7 @@ public class ChurchGuideSection extends TutorialSection {
 		case 610:
 			clickObject(9723, "Open", new Position(3122, 3103, 0));
 			break;
-			
+
 		case 620:
 			TutorialScript.mainState = getNextMainState();
 			break;

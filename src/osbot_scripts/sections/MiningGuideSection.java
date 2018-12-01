@@ -1,5 +1,8 @@
 package osbot_scripts.sections;
 
+import java.util.Optional;
+
+import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.model.Item;
 import org.osbot.rs07.api.ui.RS2Widget;
@@ -19,6 +22,11 @@ public class MiningGuideSection extends TutorialSection {
 	@Override
 	public void onLoop() throws InterruptedException {
 		log(getProgress());
+		
+		if (pendingContinue()) {
+			selectContinue();
+			return;
+		}
 
 		switch (getProgress()) {
 		case 260:
@@ -43,10 +51,7 @@ public class MiningGuideSection extends TutorialSection {
 			break;
 
 		case 290:
-			talkAndContinueWithInstructor();
-
-			if (getTabs().open(Tab.INVENTORY)) {
-			}
+			getTabs().open(Tab.INVENTORY);
 			break;
 
 		case 300:
@@ -59,13 +64,13 @@ public class MiningGuideSection extends TutorialSection {
 			break;
 
 		case 320:
-			//Walking to its own positon to prevent it getting stuck
+			// Walking to its own positon to prevent it getting stuck
 			getWalking().walk(myPlayer().getArea(2).getRandomPosition());
-			
-//			if (getInventory().isItemSelected()) {
-//				getInventory().deselectItem();
-//			}
-			
+
+			// if (getInventory().isItemSelected()) {
+			// getInventory().deselectItem();
+			// }
+
 			Item tinOre = getInventory().getItem(438);
 			if (tinOre != null) {
 				Item copperOre = getInventory().getItem(436);
@@ -86,21 +91,20 @@ public class MiningGuideSection extends TutorialSection {
 			break;
 
 		case 340:
-			clickObject(2097, "Smith", new Position(3082, 9499, 0));
-			Sleep.sleepUntil(() -> myPlayer().getAnimation() == -1, 5000, 1000);
+			if (getTabs().open(Tab.INVENTORY)) {
+				smith();
+			}
 			break;
 
 		case 350:
-			clickObject(2097, "Smith", new Position(3082, 9499, 0));
-			Thread.sleep(2000);
-
-			RS2Widget daggerWidget = getWidgets().get(312, 2, 2);
-			if (daggerWidget != null) {
-				if (daggerWidget.interact()) {
-					Sleep.sleepUntil(() -> getInventory().contains(1205), 5000, 1000);
+			Optional<RS2Widget> daggerWidgetOpt = getDaggerWidget();
+			if (daggerWidgetOpt.isPresent()) {
+				if (daggerWidgetOpt.get().interact()) {
+					Sleep.sleepUntil(() -> getInventory().contains("Bronze dagger"), 6000, 600);
 				}
+			} else {
+				smith();
 			}
-			Sleep.sleepUntil(() -> myPlayer().getAnimation() == -1, 5000, 1000);
 			break;
 
 		case 360:
@@ -116,6 +120,27 @@ public class MiningGuideSection extends TutorialSection {
 			selectContinue();
 		}
 
+	}
+
+	private static final Area SMITH_AREA = new Area(3076, 9497, 3082, 9504);
+
+	private void smith() {
+		if (!SMITH_AREA.contains(myPosition())) {
+			getWalking().walk(SMITH_AREA);
+		} else if (!"Bronze bar".equals(getInventory().getSelectedItemName())) {
+			getInventory().getItem("Bronze bar").interact("Use");
+		} else if (getObjects().closest("Anvil").interact("Use")) {
+			Sleep.sleepUntil(() -> getDaggerWidget().isPresent(), 5000, 600);
+		}
+	}
+
+	private Optional<RS2Widget> getDaggerWidget() {
+		RS2Widget daggerTextWidget = getWidgets().getWidgetContainingText(312, "Dagger");
+		if (daggerTextWidget != null) {
+			return Optional
+					.ofNullable(getWidgets().get(daggerTextWidget.getRootId(), daggerTextWidget.getSecondLevelId()));
+		}
+		return Optional.empty();
 	}
 
 	/**

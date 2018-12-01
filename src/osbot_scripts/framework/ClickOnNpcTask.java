@@ -76,6 +76,11 @@ public class ClickOnNpcTask extends TaskSkeleton implements Task {
 			onStart();
 		}
 
+		if (getApi() != null && !getArea().contains(getApi().myPlayer())) {
+			getApi().log("wasn't in area.. walking to it!");
+			getApi().getWalking().webWalk(getArea());
+		}
+
 		NPC npc = getApi().getNpcs().closest(getNpcId());
 
 		if (npc != null && getArea().contains(npc)) {

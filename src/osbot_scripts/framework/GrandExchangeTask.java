@@ -3,18 +3,16 @@ package osbot_scripts.framework;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.osbot.rs07.api.GrandExchange;
 import org.osbot.rs07.api.Bank.BankMode;
+import org.osbot.rs07.api.GrandExchange;
 import org.osbot.rs07.api.GrandExchange.Box;
 import org.osbot.rs07.api.map.Area;
-import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.model.NPC;
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
+import org.osbot.rs07.utility.ConditionalSleep;
 
-import osbot_scripts.bot.utils.BotCommands;
-import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.framework.parts.BankItem;
 import osbot_scripts.task.Task;
@@ -114,12 +112,13 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 	}
 
 	private void depositItems() throws InterruptedException {
-		if (!getApi().getBank().isOpen()) {
+		while (!getApi().getBank().isOpen() && !getApi().getInventory().isEmpty()) {
+			
 			getApi().getBank().open();
 			Sleep.sleepUntil(() -> getApi().getBank().isOpen(), 10000);
 
 			// Finding the deposit button
-			RS2Widget depositAll = getApi().getWidgets().get(12, 41);
+			RS2Widget depositAll = getApi().getWidgets().get(12, 42);
 			Sleep.sleepUntil(() -> depositAll != null, 10000);
 
 			// Wait until it clicked on the button and inventory is empty
@@ -132,25 +131,84 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 
 	}
 
+	private BankItem containsOnBuyList(int id) {
+		for (BankItem sell : getItemsToBuy()) {
+			if (sell.getItemId() == id) {
+				return sell;
+			}
+		}
+		return null;
+	}
+
 	private void withdrawAllItemsNeeded() {
 
+		try {
+			depositItems();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 		if (getItemsToSell().size() == 0) {
-//			withdrawn[0] = true;
+			// withdrawn[0] = true;
+		}
+
+		for (BankItem buy : getItemsToBuy()) {
+			if (buy.isCompletedTask()) {
+				// withdrawn[1] = true;
+				continue;
+			}
+
+			// Already has enough
+			if (getApi().getBank().getAmount(buy.getName()) >= buy.getAmount()) {
+				buy.setCompletedTask(true);
+				getApi().log("set compelted for: " + buy.getName() + " to: " + buy.isCompletedTask());
+				continue;
+			}
+
+			int coinsRequired = buy.getPrice() * buy.getAmount();
+			if (getApi().getBank().withdraw(995, coinsRequired)) {
+				// withdrawn[1] = true;
+			}
 		}
 
 		// Withdrawing all the items you want to sell
 		for (BankItem sell : getItemsToSell()) {
 			if (sell.isCompletedTask()) {
-//				withdrawn[0] = true;
+				// withdrawn[0] = true;
 				continue;
 			}
 
 			int amountInBank = (int) getApi().getBank().getAmount(sell.getName());
 			if (amountInBank <= 0) {
 				sell.setCompletedTask(true);
-//				withdrawn[0] = true;
+				// withdrawn[0] = true;
 				continue;
 			}
+			
+			if (sell.getAmount() > amountInBank) {
+				getApi().log("didnt have: " + sell.getAmount() + " to sell, so set to: " + amountInBank);
+				sell.setAmount(amountInBank);
+			}
+
+			BankItem onBoth = containsOnBuyList(sell.getItemId());
+			getApi().log("ONBOTH: " + onBoth);
+
+			if (onBoth != null) {
+				if (sell.getAmount() - onBoth.getAmount() > 0) {
+					sell.setAmount(sell.getAmount() - onBoth.getAmount());
+					getApi().log("on both lists detected, set to: " + sell.getAmount() + " on " + sell.getName());
+				} else if (sell.getAmount() - onBoth.getAmount() == 0) {
+					sell.setCompletedTask(true);
+					onBoth.setCompletedTask(true);
+					getApi().log("completed! " + onBoth.getName() + " " + sell.getName());
+				} else if (sell.getAmount() - onBoth.getAmount() < 0) {
+					sell.setCompletedTask(true);
+					onBoth.setAmount(onBoth.getAmount() + (onBoth.getAmount() - sell.getAmount()));
+					getApi().log("modified " + onBoth.getAmount() + " " + onBoth.getName());
+				}
+			}
+
 			if (amountInBank < sell.getAmount()) {
 				sell.setAmount(amountInBank);
 			}
@@ -163,25 +221,14 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 				Sleep.sleepUntil(() -> getApi().getBank().getWithdrawMode().equals(BankMode.WITHDRAW_ITEM), 10000);
 			}
 			if (getApi().getBank().withdraw(sell.getName(), sell.getAmount())) {
-//				withdrawn[0] = true;
+				// withdrawn[0] = true;
 			}
 		}
 
 		if (getItemsToBuy().size() == 0) {
-//			withdrawn[1] = true;
+			// withdrawn[1] = true;
 		}
 
-		for (BankItem buy : getItemsToBuy()) {
-			if (buy.isCompletedTask()) {
-//				withdrawn[1] = true;
-				continue;
-			}
-
-			int coinsRequired = buy.getPrice() * buy.getAmount();
-			if (getApi().getBank().withdraw(995, coinsRequired)) {
-//				withdrawn[1] = true;
-			}
-		}
 	}
 
 	/**
@@ -213,6 +260,23 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 		}
 	}
 	
+	private boolean containgItemsToSellInInventory() {
+		for (BankItem containg : getItemsToSell()) {
+			if (!getApi().getInventory().contains(containg.getName()) && !containg.isCompletedTask()) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	private boolean containgItemsToBuyInInventory() {
+		for (BankItem containg : getItemsToSell()) {
+			if (!getApi().getInventory().contains(995) && !containg.isCompletedTask()) {
+				return false;
+			}
+		}
+		return true;
+	}
 
 	@Override
 	public void loop() throws InterruptedException {
@@ -220,13 +284,15 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 			onStart();
 		}
 
+		GE ge = new GE(getScript());
+
 		tries++;
 
 		// If the player is not in the grand exchange area, then walk to it
 		if (!new Area(new int[][] { { 3144, 3508 }, { 3144, 3471 }, { 3183, 3470 }, { 3182, 3509 } })
 				.contains(getApi().myPlayer())) {
-			Position ge = new Position(3165, 3487, 0);
-			getApi().getWalking().webWalk(ge);
+			getApi().getWalking()
+					.webWalk(new Area(new int[][] { { 3160, 3494 }, { 3168, 3494 }, { 3168, 3485 }, { 3160, 3485 } }));
 			getApi().log("The player has a grand exchange task but isn't there, walking to there");
 		}
 
@@ -245,9 +311,20 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 		}
 
 		// Must have withdrawn the items from the bank before continueing
-//		if (!withdrawn[0] || !withdrawn[1]) {
-//			return;
-//		}
+		// if (!withdrawn[0] || !withdrawn[1]) {
+		// return;
+		// }
+		
+		if (getItemsToSell().size() != 0 && !containgItemsToSellInInventory()) {
+			if (!getApi().getBank().isOpen()) {
+
+				// Deposting all the items first
+				depositItems();
+
+				// Withdrawing all items
+				withdrawAllItemsNeeded();
+			}
+		}
 
 		// Sell the items, if the items can't be sold, then it takes the item from the
 		// bank to sell as an extra bankup
@@ -262,58 +339,131 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 			// Open the G.E.
 			openGrandExchange();
 
-			// Item id must be better than -1 & price be more than 0
-			Box box = getBox();
-			boolean sellItem = getApi().getGrandExchange().sellItem(
-					(sell.isWithdrawNoted() ? (sell.getItemId() + 1) : sell.getItemId()), sell.getPrice(),
-					sell.getAmount());
+			// // Item id must be better than -1 & price be more than 0
+			// Box box = getBox();
+			//
+			// RS2Widget sellWidget = getApi().getWidgets().get(465, 7, 4);
+			// if (sellWidget != null && sellWidget.isVisible()) {
+			// sellWidget.interact();
+			// }
+			//
+			// boolean sellItem =
 
-			if (!sell.isCompletedTask() && sellItem) {
-				getApi().log("Selling the item progress continued");
-				getApi().log("Using the box: " + box + " to sell item: " + sell.getName());
+			boolean finished = false;
+			int tries = 0;
 
-				Sleep.sleepUntil(
-						() -> getApi().getGrandExchange().getStatus(box) != GrandExchange.Status.EMPTY
-								&& getApi().getGrandExchange().getStatus(box) != GrandExchange.Status.INITIALIZING_SALE,
-						10000);
-
-				getApi().log("Current box status: " + getApi().getGrandExchange().getStatus(box));
-
-				// Sale not instant sold
-				if (getApi().getGrandExchange().getStatus(box) == GrandExchange.Status.PENDING_SALE) {
-					int number = getUsedBox(box);
-
-					// Aborting the offer
-					abortOffer(number);
-
-					sell.setPrice((int) (sell.getPrice() * 0.75));
-					sell.setCompletedTask(false);
-					getApi().log("Item price decreased to " + sell.getPrice());
-
+			while (!finished) {
+				if (tries > 10) {
+					if (!getApi().getInventory().contains(sell.getName())) {
+						sell.setCompletedTask(true);
+					}
+					finished = true;
+					break;
 				}
 
-				// Sale successful
-				if (getApi().getGrandExchange().getStatus(box) == GrandExchange.Status.FINISHED_SALE
-						|| getApi().getGrandExchange().getStatus(box) == GrandExchange.Status.COMPLETING_SALE) {
-					getApi().log("Sell was successfull, collecting to inventory");
+				finished = new ConditionalSleep(3000, 500) {
+					@Override
+					public boolean condition() throws InterruptedException {
+						return ge.createSellOffer(sell.getItemId(), sell.getName(), sell.getPrice(), sell.getAmount(),
+								true, true, true);
+					}
+				}.sleep();
 
-					// Collecting the item
-					collectToInventory();
+				Thread.sleep(5000);
 
+				if (!finished) {
+					int sellPrice = (sell.getPrice() - (sell.getPrice() * sell.getAmount() / 100)) > 1
+							? (sell.getPrice() - (sell.getPrice() * sell.getAmount() / 100))
+							: 1;
+
+					getApi().log(sell.getName() + " set sell price to: " + sellPrice);
+					ge.closeGE();
+					ge.openGe();
+				} else {
 					sell.setCompletedTask(true);
+					ge.closeGE();
 				}
+				tries++;
 
-			} else if (!sell.isCompletedTask() && !sellItem) {
-				getApi().log("Couldn't sell item, will try next time with a new task");
-//				if (sell.isCompletedTask()) {
-//					sell.setCompletedTask(false);
-//				}
-				// sell.setCompletedTask(true);
 			}
+			// new ConditionalSleep(3000, 500) {
+			// @Override
+			// public boolean condition() throws InterruptedException {
+			// return ge.createSellOffer((sell.isWithdrawNoted() ? (sell.getItemId() + 1) :
+			// sell.getItemId()),
+			// sell.getName(), sell.getPrice(), sell.getAmount(), true, true, true);
+			// }
+			// }.sleep();
+
+			//
+			// // getApi().getGrandExchange().sellItem(
+			// // (sell.isWithdrawNoted() ? (sell.getItemId() + 1) : sell.getItemId()),
+			// // sell.getPrice(),
+			// // sell.getAmount());
+			//
+			// if (!sell.isCompletedTask() && sellItem) {
+			// getApi().log("Selling the item progress continued");
+			// getApi().log("Using the box: " + box + " to sell item: " + sell.getName());
+			//
+			// Sleep.sleepUntil(
+			// () -> getApi().getGrandExchange().getStatus(box) !=
+			// GrandExchange.Status.EMPTY
+			// && getApi().getGrandExchange().getStatus(box) !=
+			// GrandExchange.Status.INITIALIZING_SALE,
+			// 10000);
+			//
+			// getApi().log("Current box status: " +
+			// getApi().getGrandExchange().getStatus(box));
+			//
+			// // Sale not instant sold
+			// if (getApi().getGrandExchange().getStatus(box) ==
+			// GrandExchange.Status.PENDING_SALE) {
+			// int number = getUsedBox(box);
+			//
+			// // Aborting the offer
+			// abortOffer(number);
+			//
+			// sell.setPrice((int) (sell.getPrice() * 0.75));
+			// sell.setCompletedTask(false);
+			// getApi().log("Item price decreased to " + sell.getPrice());
+			//
+			// }
+			//
+			// // Sale successful
+			// if (getApi().getGrandExchange().getStatus(box) ==
+			// GrandExchange.Status.FINISHED_SALE
+			// || getApi().getGrandExchange().getStatus(box) ==
+			// GrandExchange.Status.COMPLETING_SALE) {
+			// getApi().log("Sell was successfull, collecting to inventory");
+			//
+			// // Collecting the item
+			// collectToInventory();
+			//
+			// sell.setCompletedTask(true);
+			// }
+			//
+			// } else if (!sell.isCompletedTask() && !sellItem) {
+			// getApi().log("Couldn't sell item, will try next time with a new task");
+			// // if (sell.isCompletedTask()) {
+			// // sell.setCompletedTask(false);
+			// // }
+			// // sell.setCompletedTask(true);
+			// }
 		}
 
 		// Just some cooldown
 		Thread.sleep(2500);
+		
+		if (getItemsToBuy().size() != 0 && !containgItemsToBuyInInventory()) {
+			if (!getApi().getBank().isOpen()) {
+
+				// Deposting all the items first
+				depositItems();
+
+				// Withdrawing all items
+				withdrawAllItemsNeeded();
+			}
+		}
 
 		for (BankItem buy : getItemsToBuy()) {
 
@@ -325,50 +475,102 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 			// Open G.E. interface
 			openGrandExchange();
 
-			Box box = getBox();
-			getApi().log("trying to buy item: " + buy.getItemId() + " " + buy.getName() + " " + buy.getPrice() + " "
-					+ buy.getAmount());
-			boolean buyItem = getApi().getGrandExchange().buyItem(buy.getItemId(), buy.getName(), buy.getPrice(),
-					buy.getAmount());
-			getApi().log("trying to buy item: " + buy.getName());
+			// Box box = getBox();
+			// getApi().log("trying to buy item: " + buy.getItemId() + " " + buy.getName() +
+			// " " + buy.getPrice() + " "
+			// + buy.getAmount());
+			//
 
-			if (!buy.isCompletedTask() && buyItem) {
+			boolean finished = false;
+			int tries = 0;
 
-				Sleep.sleepUntil(
-						() -> getApi().getGrandExchange().getStatus(box) != GrandExchange.Status.EMPTY
-								&& getApi().getGrandExchange().getStatus(box) != GrandExchange.Status.INITIALIZING_BUY,
-						10000);
-
-				getApi().log("box status: " + getApi().getGrandExchange().getStatus(box));
-
-				// Buy was not instant
-				if (getApi().getGrandExchange().getStatus(box) == GrandExchange.Status.PENDING_BUY
-						|| getApi().getGrandExchange().getStatus(box) == GrandExchange.Status.FINISHED_BUY) {
-					int number = getUsedBox(box);
-
-					// Aborting the offer
-					abortOffer(number);
-
-					// Collecting the item
-					collectToInventory();
-
-					buy.setPrice((int) (buy.getPrice() * 1.25));
-					getApi().log("Price increased to " + buy.getPrice());
-					buy.setCompletedTask(false);
+			while (!finished) {
+				if (tries > 10) {
+					finished = true;
+					break;
 				}
+				finished = new ConditionalSleep(3000, 500) {
+					@Override
+					public boolean condition() throws InterruptedException {
+						return ge.createBuyOffer(buy.getItemId(), buy.getName(), buy.getPrice(), buy.getAmount(), true,
+								true, true);
+					}
+				}.sleep();
 
-				// Buy was instant
-				if (getApi().getGrandExchange().getStatus(box) == GrandExchange.Status.COMPLETING_BUY) {
-					getApi().log("Buy was successfull");
+				Thread.sleep(5000);
+
+				if (!finished) {
+					buy.setPrice((getApi().getInventory().getAmount(995) >= (buy.getPrice() * buy.getAmount()))
+							? (buy.getPrice() + (buy.getPrice() * buy.getAmount() / 100))
+							: (int)(getApi().getInventory().getAmount(995) / buy.getAmount()));
+
+					getApi().log("set buy price to: " + buy.getPrice());
+					ge.closeGE();
+					ge.openGe();
+				} else {
 					buy.setCompletedTask(true);
-
-					// Collecting the item
-					collectToInventory();
+					ge.closeGE();
 				}
-
-			} else if (!buy.isCompletedTask() && !buyItem) {
-				getApi().log("Didn't have enough money");
+				tries++;
 			}
+
+			// new ConditionalSleep(3000, 500) {
+			// @Override
+			// public boolean condition() throws InterruptedException {
+			// return ;
+			// }
+			// }.sleep();
+
+			//
+			// /*
+			// * getApi().getGrandExchange().buyItem(buy.getItemId(), buy.getName(),
+			// * buy.getPrice(), buy.getAmount());
+			// */
+			//
+			// getApi().log("trying to buy item: " + buy.getName());
+			//
+			// if (!buy.isCompletedTask() && buyItem) {
+			//
+			// Sleep.sleepUntil(
+			// () -> getApi().getGrandExchange().getStatus(box) !=
+			// GrandExchange.Status.EMPTY
+			// && getApi().getGrandExchange().getStatus(box) !=
+			// GrandExchange.Status.INITIALIZING_BUY,
+			// 10000);
+			//
+			// getApi().log("box status: " + getApi().getGrandExchange().getStatus(box));
+			//
+			// // Buy was not instant
+			// if (getApi().getGrandExchange().getStatus(box) ==
+			// GrandExchange.Status.PENDING_BUY
+			// || getApi().getGrandExchange().getStatus(box) ==
+			// GrandExchange.Status.FINISHED_BUY) {
+			// int number = getUsedBox(box);
+			//
+			// // Aborting the offer
+			// abortOffer(number);
+			//
+			// // Collecting the item
+			// collectToInventory();
+			//
+			// buy.setPrice((int) (buy.getPrice() * 1.25));
+			// getApi().log("Price increased to " + buy.getPrice());
+			// buy.setCompletedTask(false);
+			// }
+			//
+			// // Buy was instant
+			// if (getApi().getGrandExchange().getStatus(box) ==
+			// GrandExchange.Status.COMPLETING_BUY) {
+			// getApi().log("Buy was successfull");
+			// buy.setCompletedTask(true);
+			//
+			// // Collecting the item
+			// collectToInventory();
+			// }
+			//
+			// } else if (!buy.isCompletedTask() && !buyItem) {
+			// getApi().log("Didn't have enough money");
+			// }
 
 		}
 
@@ -384,12 +586,20 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 		// Close the bank
 		getApi().getBank().close();
 
+		for (BankItem sell : getItemsToBuy()) {
+			getApi().log("sell : " + sell.getName() + " " + sell.isCompletedTask());
+		}
+
+		for (BankItem sell : getItemsToBuy()) {
+			getApi().log("buy : " + sell.getName() + " " + sell.isCompletedTask());
+		}
+
 	}
 
 	public void openGrandExchange() {
 		// Is it open?
 		if (!getApi().getGrandExchange().isOpen()) {
-			NPC npc = getApi().getNpcs().closest(n -> n.getId() == 2149);
+			NPC npc = getApi().getNpcs().closest(n -> n.getName().equalsIgnoreCase("Grand Exchange Clerk"));
 			if (npc != null) {
 				npc.interact("Exchange");
 			}
@@ -447,7 +657,7 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 		// "+!getApi().getGrandExchange().isOpen());
 		// getApi().log(allSold() && allBought() &&
 		// !getApi().getGrandExchange().isOpen());
-		return (allSold() && allBought()) || (tries > 2)
+		return (allSold() && allBought()) || (tries > 5)
 				|| (getItemsToBuy().size() == 0 && getItemsToSell().size() == 0);
 	}
 

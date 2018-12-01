@@ -14,6 +14,7 @@ import osbot_scripts.events.LoginEvent;
 import osbot_scripts.events.MandatoryEventsExecution;
 import osbot_scripts.framework.AccountStage;
 import osbot_scripts.login.LoginHandler;
+import osbot_scripts.qp7.progress.ThreadDemo;
 import osbot_scripts.sections.BankGuideSection;
 import osbot_scripts.sections.CharacterCreationSection;
 import osbot_scripts.sections.ChurchGuideSection;
@@ -182,10 +183,18 @@ public class TutorialScript extends Script {
 		return random(400, 800);
 	}
 
+	private ThreadDemo demo;
+	
 	@Override
 	public void onStart() throws InterruptedException {
 		login = LoginHandler.login(this, getParameters());
+		login.setScript("TUT_ISLAND");
 		getCharacterCreationSection().login = login;
+		
+//		demo = new ThreadDemo();
+//		demo.exchangeContext(this.getBot());
+//		demo.setLoginEvent(getLogin());
+//		new Thread(demo).start();
 
 		getCharacterCreationSection().exchangeContext(getBot());
 		getGuilinorGuideSection().exchangeContext(getBot());

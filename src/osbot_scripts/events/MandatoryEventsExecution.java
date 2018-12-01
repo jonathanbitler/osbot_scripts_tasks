@@ -165,6 +165,7 @@ public class MandatoryEventsExecution {
 			new int[][] { { 3220, 3236 }, { 3247, 3236 }, { 3246, 3211 }, { 3203, 3204 }, { 3200, 3234 } });
 
 	public void executeAllEvents() {
+		
 		// Continueing when has a dialogue to prevent getting stuck
 		if (pendingContinue()) {
 			selectContinue();
@@ -184,13 +185,13 @@ public class MandatoryEventsExecution {
 				getProvider().getTabs().open(Tab.INVENTORY);
 			}
 		}
-		
+
 		if (!LUMRBDIGE.contains(getProvider().myPlayer())) {
 			if (!getProvider().getSettings().areRoofsEnabled()) {
 				if (pendingContinue()) {
 					selectContinue();
 				}
-				
+
 				getProvider().getWalking().walk(getProvider().myPlayer().getPosition().translate(1, 1));
 				Event toggleRoofsHiddenEvent = new ToggleRoofsHiddenEvent();
 				getProvider().execute(toggleRoofsHiddenEvent);
@@ -201,7 +202,7 @@ public class MandatoryEventsExecution {
 		}
 
 	}
-	
+
 	protected boolean pendingContinue() {
 		RS2Widget continueWidget = getContinueWidget();
 		return continueWidget != null && continueWidget.isVisible();

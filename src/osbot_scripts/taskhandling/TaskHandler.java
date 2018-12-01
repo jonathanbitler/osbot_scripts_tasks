@@ -96,13 +96,16 @@ public class TaskHandler {
 		}
 
 		// When taking too long to do a task, then set the timeout status
-		if (lastTask != 0 && currentTask - lastTask > 60000) {
+		if ((!getQuest().isQuest() && lastTask != 0 && currentTask - lastTask > 60_000)) {
 			getProvider().log("Took too much time, proably stuck!");
 			if (getEvent() != null && getEvent().getUsername() != null) {
 				DatabaseUtilities.updateAccountStatusInDatabase(getProvider(),
 						getEvent().getAccountStage().equalsIgnoreCase("WALKING-STUCK") ? "WALKING_STUCK" : "TIMEOUT",
 						getEvent().getUsername());
 			}
+			System.exit(1);
+		} else if (getQuest().isQuest() && lastTask != 0 && currentTask - lastTask > 800_000) {
+			getProvider().log("Took too much time, proably stuck!");
 			System.exit(1);
 		}
 
@@ -182,10 +185,21 @@ public class TaskHandler {
 					// Sometimes the script can't perform the task correctly and will get stuck
 					// performing the task over and over again without completing it
 					taskAttempts++;
-					if (taskAttempts > 150 && (getQuest().isQuest() || taskAttempts > 800)) {
+
+					if (taskAttempts > 250 && getQuest().isQuest()) {
 						DatabaseUtilities.updateAccountStatusInDatabase(getProvider(), "TASK_TIMEOUT",
 								getEvent().getUsername());
 						BotCommands.killProcess(getProvider(), getScript());
+					} else if (!getQuest().isQuest() && taskAttempts > 1500) {
+						DatabaseUtilities.updateAccountStatusInDatabase(getProvider(), "TASK_TIMEOUT",
+								getEvent().getUsername());
+						BotCommands.killProcess(getProvider(), getScript());
+						// Change world or something
+
+						// DatabaseUtilities.updateAccountStatusInDatabase(getProvider(),
+						// "TASK_TIMEOUT",
+						// getEvent().getUsername());
+						// BotCommands.killProcess(getProvider(), getScript());
 					}
 
 					// If null current task, then continue
@@ -204,7 +218,11 @@ public class TaskHandler {
 						System.exit(1);
 					}
 
-					Thread.sleep(1000, 1500);
+					if (getQuest().isQuest()) {
+						Thread.sleep(1000, 1500);
+					} else {
+						Thread.sleep(40, 80);
+					}
 				}
 
 				// Task is finished, go to the next one

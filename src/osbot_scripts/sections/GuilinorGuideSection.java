@@ -21,6 +21,7 @@ public class GuilinorGuideSection extends TutorialSection {
 
 		if (pendingContinue()) {
 			selectContinue();
+			return;
 		}
 
 		switch (getProgress()) {

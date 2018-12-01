@@ -44,7 +44,7 @@ public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface
 
 	private Rock rock;
 
-	private String chatboxContainingText;
+	private String[] chatboxContainingText;
 
 	/**
 	 * 
@@ -100,7 +100,7 @@ public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface
 	}
 
 	public ClickObjectTask(String scriptName, int questProgress, int questConfig, MethodProvider prov, Area area,
-			int objectId, int waitOnObjectIdToChange, String chatboxContainingConfirmation) {
+			int objectId, int waitOnObjectIdToChange, String chatboxContainingConfirmation[]) {
 		setScriptName(scriptName);
 		setProv(prov);
 		setArea(area);
@@ -211,7 +211,7 @@ public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface
 			if (!getArea().contains(getApi().myPlayer())) {
 				getApi().getWalking().webWalk(getArea());
 			}
-			Sleep.sleepUntil(() -> getArea().contains(getApi().myPlayer()), 10000);
+			// Sleep.sleepUntil(() -> getArea().contains(getApi().myPlayer()), 10000);
 		}
 
 		RS2Object object = getApi().getObjects()
@@ -219,6 +219,19 @@ public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface
 						&& getRock().hasOre(obj, getApi()) && getApi().myPlayer().getArea(1).contains(obj))));
 
 		if (object != null) {
+
+			if (waitOnItems != null) {
+				waitOnItems.setAmountBeforeAction(getApi().getInventory().getAmount(waitOnItems.getName()));
+			}
+
+			if (getInteractOption() != null && getInteractOption().length() > 0) {
+				object.interact(getInteractOption());
+				setClickedObject(true);
+			} else {
+				object.interact();
+				setClickedObject(true);
+			}
+
 			if (getQuest() != null) {
 				// Also looping with quest
 				try {
@@ -227,17 +240,6 @@ public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-			}
-
-			if (waitOnItems != null) {
-				waitOnItems.setAmountBeforeAction(getApi().getInventory().getAmount(waitOnItems.getName()));
-			}
-			if (getInteractOption() != null && getInteractOption().length() > 0) {
-				object.interact(getInteractOption());
-				setClickedObject(true);
-			} else {
-				object.interact();
-				setClickedObject(true);
 			}
 
 			// For mining
@@ -291,23 +293,44 @@ public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface
 
 	}
 
+	public boolean contains() {
+		for (String a : getChatboxContainingText()) {
+			if (getApi().getChatbox().contains(Chatbox.MessageType.GAME, a)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	@Override
 	public boolean finished() {
 		getApi().log("CONF: " + isClickedObject() + " "
 				+ (getWaitForItemString() != null && getWaitForItemString().length() > 0) + " "
 				+ getFinalDestinationArea() != null);
 
-		//The must be a certain text in the chatbox for it to proceed
-		if (getChatboxContainingText() != null && getChatboxContainingText().length() > 0) {
-			return getApi().getChatbox().contains(Chatbox.MessageType.GAME,
-					getChatboxContainingText()) && isClickedObject();
+		if (new Area(new int[][] { { 3217, 3229 }, { 3227, 3229 }, { 3227, 3210 }, { 3208, 3210 }, { 3208, 3229 } })
+				.contains(getApi().myPlayer())) {
+			return true;
+		}
+		// The must be a certain text in the chatbox for it to proceed
+		if (getChatboxContainingText() != null && getChatboxContainingText().length > 0) {
+			return contains() && isClickedObject();
 		}
 		if (waitOnItems != null && isTillInventoryFull()) {
 			long afterAmount = getApi().getInventory().getAmount(waitOnItems.getName());
+
 			return (((afterAmount == (waitOnItems.getAmountBeforeAction() + waitOnItems.getAmount())
 					&& isClickedObject() && getApi().getInventory().contains(getWaitForItemString())))
 					|| (isTillInventoryFull() && getApi().getInventory().isFull())
-					|| (getApi().myPlayer().isUnderAttack() || getApi().getCombat().isFighting()));
+					|| (((getApi().myPlayer().isUnderAttack() || getApi().getCombat().isFighting())
+							&& (getApi().myPlayer().getHealthPercent() < 35))));
+		} else if (waitOnItems != null && !isTillInventoryFull()) {
+			long afterAmount = getApi().getInventory().getAmount(waitOnItems.getName());
+
+			getApi().log((afterAmount >= waitOnItems.getAmount()) + " " + isClickedObject() + " "
+					+ getApi().getInventory().contains(waitOnItems.getItemId()));
+
+			return (afterAmount >= waitOnItems.getAmount()) && (isClickedObject());
 		}
 		if (getWaitForItemString() != null && getWaitForItemString().length() > 0) {
 			return isClickedObject() && getApi().getInventory().contains(getWaitForItemString());
@@ -488,16 +511,16 @@ public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface
 	/**
 	 * @return the chatboxContainingText
 	 */
-	public String getChatboxContainingText() {
+	public String[] getChatboxContainingText() {
 		return chatboxContainingText;
 	}
 
 	/**
-	 * @param chatboxContainingText
+	 * @param chatboxContainingConfirmation
 	 *            the chatboxContainingText to set
 	 */
-	public void setChatboxContainingText(String chatboxContainingText) {
-		this.chatboxContainingText = chatboxContainingText;
+	public void setChatboxContainingText(String[] chatboxContainingConfirmation) {
+		this.chatboxContainingText = chatboxContainingConfirmation;
 	}
 
 }

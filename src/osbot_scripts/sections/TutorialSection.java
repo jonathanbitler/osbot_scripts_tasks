@@ -19,7 +19,7 @@ public abstract class TutorialSection extends MethodProvider {
 	 * The name of the instructor of the current stage
 	 */
 	private final String instructorName;
-	
+
 	/**
 	 * 
 	 */
@@ -65,13 +65,18 @@ public abstract class TutorialSection extends MethodProvider {
 	 * @param interactName
 	 */
 	public void clickObject(int objectId, String interactName, Position walkTo) {
-		getCamera().movePitch(67);
-		getCamera().moveYaw(RandomUtil.getRandomNumberInRange(0, 360));
+		if (getCamera().getPitchAngle() < 60) {
+			getCamera().movePitch(67);
+		}
 		RS2Object rs2Object = getObjects().closest(objectId);
 		if (rs2Object != null) {
+			if (!rs2Object.isVisible()) {
+				getCamera().moveYaw(RandomUtil.getRandomNumberInRange(0, 360));
+			}
 			rs2Object.interact();
 			Sleep.sleepUntil(() -> myPlayer().getArea(2).contains(rs2Object.getPosition()), 5000, 2000);
 		}
+		
 
 		if (rs2Object != null && (!rs2Object.isVisible() || !rs2Object.getArea(1).contains(myPlayer()))) {
 			getWalking().walk(walkTo);

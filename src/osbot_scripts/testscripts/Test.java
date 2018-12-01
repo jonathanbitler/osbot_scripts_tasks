@@ -1,4 +1,4 @@
-package osbot_scripts.qp7.progress;
+package osbot_scripts.testscripts;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,9 +15,10 @@ import osbot_scripts.framework.DialogueTask;
 import osbot_scripts.framework.ItemOnObjectTask;
 import osbot_scripts.framework.PickupItemTask;
 import osbot_scripts.framework.WalkTask;
+import osbot_scripts.qp7.progress.QuestStep;
 import osbot_scripts.sections.total.progress.MainState;
 
-public class CookingsAssistant extends QuestStep {
+public class Test extends QuestStep {
 
 	private static final List<Position> PATH_TO_COOK = new ArrayList<Position>(
 			Arrays.asList(new Position(3235, 3218, 0), new Position(3227, 3218, 0), new Position(3217, 3218, 0),
@@ -104,97 +105,18 @@ public class CookingsAssistant extends QuestStep {
 
 	private static final int QUEST_CONFIG = 29;
 
-	public CookingsAssistant(int questStartNpc, int configQuestId, LoginEvent event, Script script) {
+	public Test(int questStartNpc, int configQuestId, LoginEvent event, Script script) {
 		super(questStartNpc, configQuestId, AccountStage.QUEST_COOK_ASSISTANT, event, script, true);
 		// TODO Auto-generated constructor stub
 	}
 
 	@Override
 	public void onStart() {
-		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new WalkTask("walk to cook", 0,
-				QUEST_CONFIG, getBot().getMethods(), PATH_TO_COOK, COOKS_AREA, getScript(), getEvent(), true, false));
 
-		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-				new DialogueTask("talk with cook", 0, QUEST_CONFIG, getBot().getMethods(), COOKS_AREA, 4626, 1,
-						new String[] { "What's wrong?", "I'm always happy to help a cook in distress",
-								"I'll get right on it", "Actually, I know where to find this stuff." }));
-
-		// if (!getInventory().contains("Bucket of milk")) {
-		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-				new WalkTask("walk cow milking", 1, QUEST_CONFIG, getBot().getMethods(), PATH_TO_MILKING_COW,
-						MILKING_AREA, getScript(), getEvent(), true, false));
-
-		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new ClickObjectTask("fill bucket", 1,
-				QUEST_CONFIG, getBot().getMethods(), MILKING_AREA, 8689, "Milk", "Bucket of milk"));
-		// }
-
-		// if (!getInventory().contains("Egg")) {
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("walk to chickens", 1, QUEST_CONFIG, getBot().getMethods(), PATH_TO_CHICKENS,
 						CHICKENS_AREA, getScript(), getEvent(), true, false));
 
-		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-				new PickupItemTask("pickup egg", 1, QUEST_CONFIG, getBot().getMethods(), CHICKENS_AREA, "Take", "Egg"));
-		// }
-
-		// if (!getInventory().contains("Pot of flour")) {
-
-		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-				new WalkTask("path to wheat field", 1, QUEST_CONFIG, getBot().getMethods(), PATH_TO_WHEAT_FIELD,
-						WHEAT_AREA, getScript(), getEvent(), true, false));
-
-		// if (!getInventory().contains("Grain")) {
-
-		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new ClickObjectTask("take wheat", 1,
-				QUEST_CONFIG, getBot().getMethods(), WHEAT_AREA, 15506, "Pick", "Grain"));
-		// }
-		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-				new WalkTask("path to wind mill", 1, QUEST_CONFIG, getBot().getMethods(),
-						new ArrayList<Position>(Arrays.asList(new Position(3165, 3308, 2))), WHEAT_FLOOR_2, getScript(),
-						getEvent(), true, false));
-
-		// go up 2 ladders
-		// getTaskHandler().getTasks().put(9, new ClickObjectTask("climb up 1", 1,
-		// QUEST_CONFIG, getBot().getMethods(),
-		// WHEAT_FLOOR_0, 12964, "Climb-up", WHEAT_FLOOR_1));
-		//
-		// getTaskHandler().getTasks().put(10, new ClickObjectTask("climb up 2", 1,
-		// QUEST_CONFIG,
-		// getBot().getMethods(), WHEAT_FLOOR_1, 12965, "Climb-up", WHEAT_FLOOR_2));
-
-		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new ItemOnObjectTask("grain on machine", 1,
-				QUEST_CONFIG, getBot().getMethods(), FLOWER_AREA, 24961, "Grain"));
-
-		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-				new ClickObjectTask("operate", 1, QUEST_CONFIG, getBot().getMethods(), WHEAT_FLOOR_2, 24964, 24967,
-						new String[] { "You operate the hopper. The grain slides down the chute.",
-								"You operate the empty hopper. Nothing interesting happens." }));
-
-		// go down 2 ladders
-		// getTaskHandler().getTasks().put(13, new ClickObjectTask("climb down 1", 1,
-		// QUEST_CONFIG,
-		// getBot().getMethods(), WHEAT_FLOOR_2, 12966, "Climb-down", WHEAT_FLOOR_1));
-		//
-		// getTaskHandler().getTasks().put(14, new ClickObjectTask("climb down 0", 1,
-		// QUEST_CONFIG,
-		// getBot().getMethods(), WHEAT_FLOOR_1, 12965, "Climb-down", WHEAT_FLOOR_0));
-
-		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-				new WalkTask("path down", 1, QUEST_CONFIG, getBot().getMethods(),
-						new ArrayList<Position>(Arrays.asList(new Position(3167, 3305, 0))), WHEAT_FLOOR_0, getScript(),
-						getEvent(), true, false));
-
-		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new ClickObjectTask("get flour to pot", 1,
-				QUEST_CONFIG, getBot().getMethods(), WHEAT_FLOOR_0, 1781, "Pot of flour"));
-
-		// }
-
-		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-				new WalkTask("path to cook from mill", 1, QUEST_CONFIG, getBot().getMethods(), PATH_TO_COOK_FROM_MILL,
-						COOKS_AREA, getScript(), getEvent(), true, false));
-
-		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new DialogueTask("talk with cook final", 1,
-				QUEST_CONFIG, getBot().getMethods(), COOKS_AREA, 4626, 2, new String[] { "" }));
 
 	}
 

@@ -70,11 +70,17 @@ public abstract class QuestStep extends MethodProvider {
 	 * 
 	 */
 	private int doneLaps;
-	
+
 	protected int beginAmount = -1, soldAmount = -1, currentAmount = -1;
 
 	protected long beginTime = -1;
-	
+
+	/**
+	 * Formatting time to be HOUR:MINUTE:SECONDS
+	 * 
+	 * @param ms
+	 * @return
+	 */
 	protected final String formatTime(final long ms) {
 		long s = ms / 1000, m = s / 60, h = m / 60;
 		s %= 60;
@@ -82,7 +88,7 @@ public abstract class QuestStep extends MethodProvider {
 		h %= 24;
 		return String.format("%02d:%02d:%02d", h, m, s);
 	}
-	
+
 	/**
 	 * 
 	 * @param instructorName
@@ -98,6 +104,7 @@ public abstract class QuestStep extends MethodProvider {
 		this.taskHandler = new TaskHandler((MethodProvider) this, (QuestStep) this, event, script);
 		this.setMouse(new MouseTrailApi((MethodProvider) this));
 		this.setQuest(isQuest);
+//		setLogoutEventThread(new ThreadDemo());
 	}
 
 	/**
@@ -453,7 +460,8 @@ public abstract class QuestStep extends MethodProvider {
 	}
 
 	/**
-	 * @param doneLaps the doneLaps to set
+	 * @param doneLaps
+	 *            the doneLaps to set
 	 */
 	public void setDoneLaps(int doneLaps) {
 		this.doneLaps = doneLaps;

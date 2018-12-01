@@ -5,6 +5,7 @@ import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.model.NPC;
 import org.osbot.rs07.api.ui.Spells;
 import org.osbot.rs07.api.ui.Tab;
+import org.osbot.rs07.event.WalkingEvent;
 
 import osbot_scripts.sections.total.progress.MainState;
 import osbot_scripts.util.Sleep;
@@ -34,33 +35,44 @@ public class WizardGuideSection extends TutorialSection {
 			}
 			break;
 
-		case 640:
 		case 630:
-			if (getTabs().open(Tab.MAGIC)) {
-				talkAndContinueWithInstructor();
-			}
+			getTabs().open(Tab.MAGIC);
+			break;
+		case 640:
+			talkAndContinueWithInstructor();
 			break;
 
 		case 650:
-			Area wizard = new Area(
-					new int[][] { { 3139, 3090 }, { 3141, 3088 }, { 3143, 3089 }, { 3141, 3091 }, { 3138, 3091 } });
-			if (!wizard.contains(myPlayer())) {
-				getWalking().walk(new Position(3140, 3089, 0));
-			}
-			attackChicken();
+			if (!CHICKEN_AREA.contains(myPosition())) {
+                walkToChickenArea();
+            } else {
+                attackChicken();
+            }
 			break;
 
 		case 670:
-			talkAndContinueWithInstructor();
-
 			if (getDialogues().isPendingOption()) {
-				getDialogues().selectOption("Yes.");
-				getDialogues().selectOption("No, I'm not planning to do that.");
+				getDialogues().selectOption("No, I'm not planning to do that.", "Yes.", "I'm fine, thanks.");
+			} else if (getMagic().isSpellSelected()) {
+				getMagic().deselectSpell();
+			} else {
+				talkAndContinueWithInstructor();
 			}
 			break;
 		}
 
 	}
+	
+	private boolean walkToChickenArea() {
+        WalkingEvent walkingEvent = new WalkingEvent(CHICKEN_AREA);
+        walkingEvent.setMinDistanceThreshold(0);
+        walkingEvent.setMiniMapDistanceThreshold(0);
+        execute(walkingEvent);
+        return walkingEvent.hasFinished();
+    }
+
+	
+    private static final Area CHICKEN_AREA = new Area(3139, 3091, 3140, 3090);
 
 	private boolean attackChicken() {
 		NPC chicken = getNpcs().closest("Chicken");

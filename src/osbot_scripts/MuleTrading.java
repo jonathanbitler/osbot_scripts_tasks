@@ -2,6 +2,7 @@ package osbot_scripts;
 
 import java.awt.Graphics2D;
 
+import org.osbot.rs07.event.Event;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
@@ -71,13 +72,14 @@ public class MuleTrading extends Script {
 	@Override
 	public void onStart() throws InterruptedException {
 		login = LoginHandler.login(this, getParameters());
+		login.setScript("MULE_TRADING");
 		muleTrading = new MuleTradingConfiguration(login, (Script) this);
 
 		if (login != null && login.getUsername() != null) {
 			getMuleTrading()
 					.setQuestStageStep(Integer.parseInt(DatabaseUtilities.getQuestProgress(this, login.getUsername())));
 		}
-
+		
 		getMuleTrading().exchangeContext(getBot());
 		getMuleTrading().onStart();
 	}

@@ -20,22 +20,24 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 	private long startTime = -1;
 
 	private int pid;
+	
+	private String script;
 
 	public LoginEvent(final String username, final String password, int pid, String accountStage) {
 		this.username = username;
 		this.password = password;
 		this.pid = pid;
 		this.accountStage = accountStage;
-		setAsync();
+		this.setAsync();
 	}
 
 	@Override
 	public final int execute() throws InterruptedException {
-		//Set current time
+		// Set current time
 		if (getStartTime() == -1) {
 			setStartTime(System.currentTimeMillis());
 		}
-		
+
 		if (!getBot().isLoaded()) {
 			return 1000;
 		} else if ((getClient().isLoggedIn() && getLobbyButton() == null)) {
@@ -177,7 +179,8 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 	}
 
 	private boolean isWrongEmail() {
-		return getColorPicker().isColorAt(422, 232, new Color(255, 255, 0));
+		// return getColorPicker().isColorAt(422, 232, new Color(255, 255, 0));
+		return getColorPicker().isColorAt(541, 216, new Color(255, 255, 0));
 	}
 
 	private boolean isAlreadyLoggedInLocked() {
@@ -215,6 +218,8 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 
 	@Override
 	public final void onResponseCode(final int responseCode) throws InterruptedException {
+		log("RESPONSE CODE IS: " + responseCode);
+
 		if (ResponseCode.isDisabledError(responseCode)) {
 			log("Login failed, account is disabled");
 			DatabaseUtilities.updateAccountStatusInDatabase(this, "BANNED", this.username);
@@ -369,6 +374,20 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 	 */
 	public void setStartTime(long startTime) {
 		this.startTime = startTime;
+	}
+
+	/**
+	 * @return the script
+	 */
+	public String getScript() {
+		return script;
+	}
+
+	/**
+	 * @param script the script to set
+	 */
+	public void setScript(String script) {
+		this.script = script;
 	}
 
 }

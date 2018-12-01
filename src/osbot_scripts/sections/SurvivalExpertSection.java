@@ -1,5 +1,6 @@
 package osbot_scripts.sections;
 
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -33,11 +34,21 @@ public class SurvivalExpertSection extends TutorialSection {
 	private static final int BURNED_SHRIMP = 7954;
 
 	private static final int FIRE_OBJECT_ID = 26185;
+	
+	private final List<Position> PATH_TO_GATE = Arrays.asList(
+            new Position(3098, 3092, 0),
+            new Position(3092, 3091, 0)
+    );
 
 	@Override
 	public void onLoop() throws InterruptedException {
 		log(getProgress());
 
+		if (pendingContinue()) {
+			selectContinue();
+			return;
+		}
+		
 		switch (getProgress()) {
 		case 20:
 			if (!new Area(new int[][] { { 3097, 3103 }, { 3097, 3099 }, { 3088, 3098 }, { 3091, 3092 }, { 3097, 3088 },
@@ -51,7 +62,6 @@ public class SurvivalExpertSection extends TutorialSection {
 			}
 			break;
 		case 30:
-			talkAndContinueWithInstructor();
 			Sleep.sleepUntil(() -> getTabs().open(Tab.INVENTORY), 10000, 1000);
 			break;
 		case 40:
@@ -94,8 +104,15 @@ public class SurvivalExpertSection extends TutorialSection {
 			}
 			break;
 		case 120:
-			walkThroughGate();
-			break;
+            RS2Object gate = getObjects().closest("Gate");
+            if (gate != null && gate.isVisible()) {
+                if (gate.interact("Open")) {
+                    Sleep.sleepUntil(() -> getProgress() == 130, 5000, 600);
+                }
+            } else {
+                getWalking().walkPath(PATH_TO_GATE);
+            }
+            break;
 
 		case 130:
 			TutorialScript.mainState = getNextMainState();

@@ -32,6 +32,11 @@ public class BankGuideSection extends TutorialSection {
 	public void onLoop() throws InterruptedException {
 		// TODO Auto-generated method stub
 		log(getProgress());
+		
+		if (pendingContinue()) {
+			selectContinue();
+			return;
+		}
 
 		switch (getProgress()) {
 		case 510:
@@ -84,9 +89,7 @@ public class BankGuideSection extends TutorialSection {
 
 		case 531:
 			isInInstrucorRoom();
-			talkAndContinueWithInstructor();
-			if (getTabs().open(Tab.IGNORES)) {
-			}
+			getTabs().open(Tab.IGNORES);
 			break;
 
 		case 532:

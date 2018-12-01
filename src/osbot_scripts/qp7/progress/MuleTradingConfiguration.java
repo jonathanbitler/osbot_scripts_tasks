@@ -27,10 +27,18 @@ public class MuleTradingConfiguration extends QuestStep {
 	@Override
 	public void onStart() {
 		timeout = System.currentTimeMillis();
+		
+//		demo = new ThreadDemo();
+//		demo.exchangeContext(this.getBot());
+//		demo.setLoginEvent(getEvent());
+//		new Thread(demo).start();
 	}
 
-	private static final Area GRAND_EXCHANGE = new Area(
-			new int[][] { { 3160, 3489 }, { 3169, 3489 }, { 3169, 3483 }, { 3160, 3483 } });
+	private ThreadDemo demo;
+
+	// private static final Area GRAND_EXCHANGE = new Area(
+	// new int[][] { { 3160, 3489 }, { 3169, 3489 }, { 3169, 3483 }, { 3160, 3483 }
+	// });
 
 	private HashMap<String, Integer> itemMap = new HashMap<String, Integer>();
 
@@ -351,8 +359,11 @@ public class MuleTradingConfiguration extends QuestStep {
 	}
 
 	private void walkToGrandExchange() {
-		if (!GRAND_EXCHANGE.contains(myPlayer())) {
-			getWalking().webWalk(GRAND_EXCHANGE);
+		if (!new Area(new int[][] { { 3144, 3508 }, { 3144, 3471 }, { 3183, 3470 }, { 3182, 3509 } })
+				.contains(myPlayer())) {
+			getWalking()
+					.webWalk(new Area(new int[][] { { 3160, 3494 }, { 3168, 3494 }, { 3168, 3485 }, { 3160, 3485 } }));
+			log("The player has a grand exchange task but isn't there, walking to there");
 		}
 	}
 

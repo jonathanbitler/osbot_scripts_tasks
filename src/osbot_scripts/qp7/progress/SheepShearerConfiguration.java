@@ -72,7 +72,6 @@ public class SheepShearerConfiguration extends QuestStep {
 
 	@Override
 	public void onStart() {
-
 		log(getQuestProgress());
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),

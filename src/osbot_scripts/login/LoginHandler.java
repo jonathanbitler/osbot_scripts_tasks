@@ -3,9 +3,12 @@ package osbot_scripts.login;
 import org.osbot.rs07.script.MethodProvider;
 
 import osbot_scripts.events.LoginEvent;
+import osbot_scripts.qp7.progress.ThreadDemo;
 
 public class LoginHandler {
 
+	private static ThreadDemo demo;
+	
 	public static LoginEvent login(MethodProvider p, String parameters) {
 		LoginEvent loginEvent = null;
 
@@ -42,6 +45,12 @@ public class LoginHandler {
 			p.getBot().addLoginListener(loginEvent);
 			p.execute(loginEvent);
 		}
+		
+		demo = new ThreadDemo();
+		demo.exchangeContext(p.getBot());
+		demo.setLoginEvent(loginEvent);
+		new Thread(demo).start();
+		
 		return loginEvent;
 	}
 }

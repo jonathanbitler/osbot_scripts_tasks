@@ -5,6 +5,7 @@ import java.awt.Graphics2D;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.ui.RS2Widget;
+import org.osbot.rs07.event.Event;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
@@ -76,12 +77,14 @@ public class RomeoAndJulietQuest extends Script {
 	public void onStart() throws InterruptedException {
 		// TODO Auto-generated method stub
 		login = LoginHandler.login(this, getParameters());
+		login.setScript("QUEST_ROMEO_AND_JULIET");
 		romeoAndJuliet = new RomeoAndJuliet(login, (Script)this);
 
 		if (login != null && login.getUsername() != null) {
 			getRomeoAndJuliet().setQuestStageStep(Integer.parseInt(
 					DatabaseUtilities.getQuestProgress(this, login.getUsername())));
 		}
+		
 		log("Quest progress: " + getRomeoAndJuliet().getQuestStageStep());
 		
 		getRomeoAndJuliet().exchangeContext(getBot());

@@ -1,77 +1,107 @@
 package osbot_scripts.testscripts;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
+import java.util.Arrays;
+import java.util.LinkedList;
 
-import org.osbot.rs07.api.ui.RS2Widget;
+import org.osbot.rs07.api.map.Position;
+import org.osbot.rs07.event.WalkingEvent;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 
-import osbot_scripts.framework.GrandExchangeTask;
-import osbot_scripts.util.Sleep;
+import osbot_scripts.events.LoginEvent;
+import osbot_scripts.qp7.progress.CookingsAssistant;
 
-@ScriptManifest(author = "pim97@github & dormic@osbot", info = "ge", logo = "", name = "GE_TEST", version = 0)
+@ScriptManifest(author = "pim97", info = "GE_TEST", logo = "", name = "GE_TEST", version = 1.0)
 public class GrandExchangeTest extends Script {
 
-	private GrandExchangeTask task;
+	private CookingsAssistant cooksAssistant;
 
-	/**
-	 * Loops
-	 */
+	private LoginEvent login;
+
 	@Override
 	public int onLoop() throws InterruptedException {
 
-		// MandatoryEventsExecution e = new MandatoryEventsExecution(this);
-		// e.fixedMode();
-		// e.fixedMode2();
+		// getCooksAssistant().getTaskHandler().taskLoop();
 
-		// if (!getTask().finished()) {
-		// getTask().loop();
-		// } else {
-		// log("task was finished!");
-		// }
-
-		return random(800, 1600);
+		return random(500, 600);
 	}
 
+	private LoginEvent loginEvent;
+
+	private static final LinkedList<Position> TEST = new LinkedList<Position>(
+			Arrays.asList(
+					new Position(3185, 3370, 0),
+					new Position(3182, 3363, 0),
+					new Position(3180, 3371, 0)
+//					new Position(3181, 3371, 0), new Position(3190, 3366, 0), new Position(3191, 3365, 0),
+//					new Position(3190, 3363, 0), new Position(3186, 3363, 0), new Position(3186, 3361, 0)
+					)
+			);
+
+	
+	public boolean walkExact(Position position, boolean disableRun) {
+        WalkingEvent event = new WalkingEvent(position);
+		event.setEnergyThreshold(101);
+        event.setMinDistanceThreshold(1);
+        if (disableRun && getSettings().isRunning()) {
+			getSettings().setRunning(false);
+		} else if (!disableRun && !getSettings().isRunning()) {
+			getSettings().setRunning(true);
+		}
+        try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        return execute(event).hasFinished();
+    }
+	
 	@Override
 	public void onStart() throws InterruptedException {
 
-		// log(getChatbox().contains(Chatbox.MessageType.GAME, "You operate the hopper.
-		// The grain slides down the chute."));
+		walkExact(TEST.get(0), true);
+		walkExact(TEST.get(1), true);
+		walkExact(TEST.get(2), false);
 
-		// e.executeAllEvents();
-
-		// setTask(new GrandExchangeTask(this, new BankItem[] {
-		//// new BankItem("Iron pickaxe", 1267, 1, 1000, false)
-		// },
-		// new BankItem[] { new BankItem("Clay", 434, 3, 2, true) }, null, (Script)
-		// this));
+		// login = LoginHandler.login(this, getParameters());
+		// cooksAssistant = new CookingsAssistant(4626, 29, login, (Script) this);
+		//
+		// if (login != null && login.getUsername() != null) {
+		// getCooksAssistant()
+		// .setQuestStageStep(0);
+		// }
+		// log("Quest progress: " + getCooksAssistant().getQuestStageStep());
+		//
+		// getCooksAssistant().exchangeContext(getBot());
+		// getCooksAssistant().onStart();
+		// getCooksAssistant().getTaskHandler().decideOnStartTask();
 	}
 
-	@Override
-	public void onExit() throws InterruptedException {
-
-	}
-
+	/**
+	 * 
+	 * @param g
+	 */
 	@Override
 	public void onPaint(Graphics2D g) {
+		// getCooksAssistant().getTrailMouse().draw(g);
 		getMouse().setDefaultPaintEnabled(true);
 	}
 
 	/**
-	 * @return the task
+	 * @return the cooksAssistant
 	 */
-	public GrandExchangeTask getTask() {
-		return task;
+	public CookingsAssistant getCooksAssistant() {
+		return cooksAssistant;
 	}
 
 	/**
-	 * @param task
-	 *            the task to set
+	 * @param cooksAssistant
+	 *            the cooksAssistant to set
 	 */
-	public void setTask(GrandExchangeTask task) {
-		this.task = task;
+	public void setCooksAssistant(CookingsAssistant cooksAssistant) {
+		this.cooksAssistant = cooksAssistant;
 	}
 
 }

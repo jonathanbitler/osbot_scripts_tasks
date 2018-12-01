@@ -108,7 +108,6 @@ public class RomeoAndJuliet extends QuestStep {
 
 	@Override
 	public void onStart() {
-
 		log(getQuestProgress());
 
 //		if (getQuestProgress() == 0) {

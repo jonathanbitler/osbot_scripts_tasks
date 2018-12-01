@@ -84,31 +84,50 @@ public class CookingGuideSection extends TutorialSection {
 				{ 3080, 3123 }, { 3080, 3124 } }).contains(myPlayer().getPosition()), 10000, 3000);
 	}
 
-	private static final Area INSIDE_COOKING = new Area(new int[][] { { 3073, 3091 }, { 3073, 3089 }, { 3074, 3089 },
-			{ 3074, 3087 }, { 3073, 3087 }, { 3073, 3083 }, { 3079, 3083 }, { 3079, 3087 }, { 3076, 3087 },
-			{ 3076, 3089 }, { 3078, 3089 }, { 3078, 3092 }, { 3073, 3092 } });
+	private static final Area INSIDE_COOKING = new Area(new int[][] { { 3073, 3086 }, { 3073, 3083 }, { 3079, 3083 },
+			{ 3079, 3087 }, { 3076, 3087 }, { 3076, 3089 }, { 3078, 3089 }, { 3078, 3092 }, { 3073, 3092 },
+			{ 3073, 3089 }, { 3074, 3089 }, { 3074, 3087 }, { 3073, 3087 }, { 3073, 3086 } });
 
-	private void openNextDoor(int x, int y, int objId) {
-		RS2Object door = getObjects().closest(obj -> obj.getX() == x && obj.getY() == y && obj.getId() == objId);
-		if (door != null) {
-			door.interact();
-		}
+	private void openNextDoor(int objId, int x, int y) {
+
+		// getObjects().getAll().stream().forEach(obj -> {
+		// if (obj.getId() == objId) {
+		// log(x+" "+y+" "+obj.getX()+" "+obj.getY()+" "+objId+" "+obj.getId());
+		// if (x == obj.getX() && y == obj.getY()) {
+		// obj.interact();
+		// log("clicking on obj: "+obj.getId()+" "+obj.getX()+" "+obj.getY());
+		// }
+		// }
+		// });
+		// getObjects().closest(obj -> obj.getX() == x && obj.getY() == y && obj.getId()
+		// == objId)
+
+		getDoorHandler().handleNextObstacle(new Position(x, y, 0));
+		Sleep.sleepUntil(() -> myPlayer().getArea(1).contains(new Position(x, y, 0)), 10000);
+
+		// RS2Object door = getObjects().closest(obj -> obj.getX() == x && obj.getY() ==
+		// y && obj.getId() == objId);
+		// if (door != null) {
+		// door.interact();
+		// }
+		// Sleep.sleepUntil(() -> door.getArea(1).contains(myPlayer()), 10000);
 	}
 
 	@Override
 	public void onLoop() throws InterruptedException {
 		log(getProgress());
 
+		log("inside cooking: " + INSIDE_COOKING.contains(myPlayer()));
+
 		switch (getProgress()) {
 		case 130:
-			openNextDoor(9709, 3078, 3084);
-			// openDoor();
+			getWalking().walk(new Position(3080, 3084, 0));
+			openNextDoor(9709, 3079, 3084);
 			break;
 
 		case 140:
 			if (!INSIDE_COOKING.contains(myPlayer())) {
-				openNextDoor(9709, 3078, 3084);
-				// openDoor();
+				openNextDoor(9709, 3079, 3084);
 			} else {
 				talkAndContinueWithInstructor();
 			}
@@ -116,7 +135,7 @@ public class CookingGuideSection extends TutorialSection {
 
 		case 150:
 			if (!INSIDE_COOKING.contains(myPlayer())) {
-				openNextDoor(9709, 3078, 3084);
+				openNextDoor(9709, 3079, 3084);
 			} else {
 				makeDough();
 			}
@@ -124,26 +143,24 @@ public class CookingGuideSection extends TutorialSection {
 
 		case 160:
 			if (!INSIDE_COOKING.contains(myPlayer())) {
-				openNextDoor(9709, 3078, 3084);
+				openNextDoor(9709, 3079, 3084);
 			} else {
 				doughOnFire();
 			}
 			break;
 
 		case 170:
-			openNextDoor(9710, 3072, 3090);
-			if (!INSIDE_COOKING.contains(myPlayer())) {
-				openNextDoor(9709, 3078, 3084);
+			if (getDoorHandler().handleNextObstacle(new Position(3072, 3090, 0))) {
+				Sleep.sleepUntil(() -> getProgress() != 170, 5000, 600);
 			}
-			// if (getTabs().open(Tab.MUSIC)) {
-			// }
 			break;
 
 		case 180:
 			if (!INSIDE_COOKING.contains(myPlayer())) {
-				openNextDoor(9709, 3078, 3084);
+				openNextDoor(9709, 3079, 3084);
+			} else {
+				openNextDoor(9710, 3072, 3090);
 			}
-			openNextDoor(9710, 3072, 3090);
 
 			break;
 
