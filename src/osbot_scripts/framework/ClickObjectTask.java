@@ -330,7 +330,9 @@ public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface
 			getApi().log((afterAmount >= waitOnItems.getAmount()) + " " + isClickedObject() + " "
 					+ getApi().getInventory().contains(waitOnItems.getItemId()));
 
-			return (afterAmount >= waitOnItems.getAmount()) && (isClickedObject());
+			return ((afterAmount >= waitOnItems.getAmount()) && (isClickedObject()))
+					|| (new Area(new int[][] { { 3214, 3228 }, { 3215, 3208 }, { 3231, 3211 }, { 3229, 3228 },
+							{ 3220, 3230 }, { 3214, 3228 } }).contains(getApi().myPlayer()));
 		}
 		if (getWaitForItemString() != null && getWaitForItemString().length() > 0) {
 			return isClickedObject() && getApi().getInventory().contains(getWaitForItemString());

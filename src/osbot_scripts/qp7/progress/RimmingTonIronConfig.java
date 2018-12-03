@@ -131,7 +131,7 @@ public class RimmingTonIronConfig extends QuestStep {
 		// }
 
 		if (getEvent().hasFinished() && !getClient().isLoggedIn()) {
-			System.exit(1);
+			BotCommands.waitBeforeKill();
 		}
 		// If the player is fighting or under combat, then reset the stage to prevent
 		// going dead

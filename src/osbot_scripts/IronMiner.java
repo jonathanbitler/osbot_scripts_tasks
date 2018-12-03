@@ -23,6 +23,8 @@ public class IronMiner extends Script {
 	private IronMinerConfiguration goldfarmMining;
 
 	private LoginEvent login;
+	
+	private MandatoryEventsExecution ev = new MandatoryEventsExecution(this);
 
 	@Override
 	public int onLoop() throws InterruptedException {
@@ -32,7 +34,6 @@ public class IronMiner extends Script {
 		}
 
 		if (getClient().isLoggedIn()) {
-			MandatoryEventsExecution ev = new MandatoryEventsExecution(this);
 			ev.fixedMode();
 			ev.fixedMode2();
 			ev.executeAllEvents();
@@ -67,7 +68,7 @@ public class IronMiner extends Script {
 		}
 
 		// The loop for other stuff than tasks
-		getGoldfarmMining().onLoop();
+//		getGoldfarmMining().onLoop();
 
 		// The loop for tasks, may only loop when a grand exchange task
 		// is not active at the moment

@@ -19,7 +19,9 @@ public class DatabaseUtilities {
 
 	private static final String API_KEY = "SDFJNLKDASNFJK798283423NJASKF";
 
-	private static final String LINK = "http://localhost:8000/osbot/api";
+	private static final String LINK = "http://localhost/osbot/public/osbot/api";
+
+	public static final String DATABASE_THREAD_NAME = "DB_THREAD";
 
 	/**
 	 * Updates the account status (banned, locked etc) in the database
@@ -31,12 +33,21 @@ public class DatabaseUtilities {
 	public static boolean updateAccountStatusInDatabase(MethodProvider prov, String status, String email) {
 		try {
 
-			String urlParameters = "?status=" + URLEncoder.encode(status, "UTF-8") + "&email="
-					+ URLEncoder.encode(email, "UTF-8") + "&qp="
-					+ URLEncoder.encode("" + prov.getQuests().getQuestPoints(), "UTF-8");
+			Thread t1 = new Thread(() -> {
+				try {
+					String urlParameters = "?status=" + URLEncoder.encode(status, "UTF-8") + "&email="
+							+ URLEncoder.encode(email, "UTF-8") + "&qp="
+							+ URLEncoder.encode("" + prov.getQuests().getQuestPoints(), "UTF-8");
 
-			prov.log(LINK + "" + urlParameters);
-			sendGet(LINK + "" + urlParameters);
+					prov.log(LINK + "" + urlParameters);
+					sendGet(LINK + "" + urlParameters);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			});
+
+			t1.setName(DATABASE_THREAD_NAME);
+			t1.start();
 
 			return true;
 
@@ -57,11 +68,21 @@ public class DatabaseUtilities {
 	 */
 	public static boolean updateAccountValue(MethodProvider prov, String email, int value) {
 		try {
-			String urlParameters = "?email=" + URLEncoder.encode(email, "UTF-8") + "&value="
-					+ URLEncoder.encode(Integer.toString(value), "UTF-8");
 
-			prov.log(LINK + "" + urlParameters);
-			sendGet(LINK + "" + urlParameters);
+			Thread t1 = new Thread(() -> {
+				try {
+					String urlParameters = "?email=" + URLEncoder.encode(email, "UTF-8") + "&value="
+							+ URLEncoder.encode(Integer.toString(value), "UTF-8");
+
+					prov.log(LINK + "" + urlParameters);
+					sendGet(LINK + "" + urlParameters);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			});
+
+			t1.setName(DATABASE_THREAD_NAME);
+			t1.start();
 
 			return true;
 
@@ -74,11 +95,21 @@ public class DatabaseUtilities {
 
 	public static boolean updateAccountUsername(MethodProvider prov, String email, String ingameName) {
 		try {
-			String urlParameters = "?email=" + URLEncoder.encode(email, "UTF-8") + "&ingameName="
-					+ URLEncoder.encode(ingameName, "UTF-8");
 
-			prov.log(LINK + "" + urlParameters);
-			sendGet(LINK + "" + urlParameters);
+			Thread t1 = new Thread(() -> {
+				try {
+					String urlParameters = "?email=" + URLEncoder.encode(email, "UTF-8") + "&ingameName="
+							+ URLEncoder.encode(ingameName, "UTF-8");
+
+					prov.log(LINK + "" + urlParameters);
+					sendGet(LINK + "" + urlParameters);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			});
+
+			t1.setName(DATABASE_THREAD_NAME);
+			t1.start();
 
 			return true;
 
@@ -88,19 +119,29 @@ public class DatabaseUtilities {
 			return false;
 		}
 	}
-	
+
 	public static boolean updateLoginStatus(String email, String loginStatus) {
 		try {
-			String urlParameters = "?email=" + URLEncoder.encode(email, "UTF-8") + "&loginstatus="
-					+ URLEncoder.encode(loginStatus, "UTF-8");
 
-//			prov.log(LINK + "" + urlParameters);
-			sendGet(LINK + "" + urlParameters);
+			Thread t1 = new Thread(() -> {
+				try {
+					String urlParameters = "?email=" + URLEncoder.encode(email, "UTF-8") + "&loginstatus="
+							+ URLEncoder.encode(loginStatus, "UTF-8");
+
+					// prov.log(LINK + "" + urlParameters);
+					sendGet(LINK + "" + urlParameters);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			});
+
+			t1.setName(DATABASE_THREAD_NAME);
+			t1.start();
 
 			return true;
 
 		} catch (Exception e) {
-//			prov.log(e);
+			// prov.log(e);
 			e.printStackTrace();
 			return false;
 		}
@@ -109,23 +150,32 @@ public class DatabaseUtilities {
 	public static boolean updateAccountBreakTill(MethodProvider prov, String email, int minutesBreak) {
 		try {
 			if (!Config.NO_BREAK) {
-				Calendar calendar = Calendar.getInstance();
-				calendar.setTime(new Date());
+				Thread t1 = new Thread(() -> {
+					try {
+						Calendar calendar = Calendar.getInstance();
+						calendar.setTime(new Date());
 
-				calendar.add(Calendar.MINUTE, minutesBreak);
+						calendar.add(Calendar.MINUTE, minutesBreak);
 
-				java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-				String dateTime = sdf.format(calendar.getTime());
+						java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+						String dateTime = sdf.format(calendar.getTime());
 
-				String urlParameters = "?email=" + URLEncoder.encode(email, "UTF-8") + "&breaktill="
-						+ URLEncoder.encode(dateTime, "UTF-8");
+						String urlParameters = "?email=" + URLEncoder.encode(email, "UTF-8") + "&breaktill="
+								+ URLEncoder.encode(dateTime, "UTF-8");
 
-				if (prov == null) {
-					System.out.println(LINK + "" + urlParameters);
-				} else {
-					prov.log(LINK + "" + urlParameters);
-				}
-				sendGet(LINK + "" + urlParameters);
+						if (prov == null) {
+							System.out.println(LINK + "" + urlParameters);
+						} else {
+							prov.log(LINK + "" + urlParameters);
+						}
+						sendGet(LINK + "" + urlParameters);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				});
+
+				t1.setName(DATABASE_THREAD_NAME);
+				t1.start();
 				return true;
 			}
 			return false;
@@ -148,11 +198,20 @@ public class DatabaseUtilities {
 	 */
 	public static boolean updateStageProgress(MethodProvider prov, String accountStatus, int number, String email) {
 		try {
-			String urlParameters = "?accountStage=" + URLEncoder.encode(accountStatus, "UTF-8") + "&email="
-					+ URLEncoder.encode(email, "UTF-8") + "&number=" + URLEncoder.encode("" + number, "UTF-8");
+			Thread t1 = new Thread(() -> {
+				try {
+					String urlParameters = "?accountStage=" + URLEncoder.encode(accountStatus, "UTF-8") + "&email="
+							+ URLEncoder.encode(email, "UTF-8") + "&number=" + URLEncoder.encode("" + number, "UTF-8");
 
-			prov.log(LINK + "" + urlParameters);
-			sendGet(LINK + "" + urlParameters);
+					prov.log(LINK + "" + urlParameters);
+					sendGet(LINK + "" + urlParameters);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			});
+
+			t1.setName(DATABASE_THREAD_NAME);
+			t1.start();
 
 			return true;
 

@@ -142,7 +142,7 @@ public class DoricsQuestConfig extends QuestStep {
 					{ 3210, 3358 }, { 3232, 3387 }, { 3230, 3438 }, { 3227, 3456 } });
 
 	public DoricsQuestConfig(int questStartNpc, int configQuestId, LoginEvent event, Script script) {
-		super(questStartNpc, configQuestId, AccountStage.QUEST_COOK_ASSISTANT, event, script, true);
+		super(questStartNpc, configQuestId, AccountStage.QUEST_DORICS_QUEST, event, script, true);
 		// TODO Auto-generated constructor stub
 	}
 
@@ -190,9 +190,15 @@ public class DoricsQuestConfig extends QuestStep {
 				this));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-				new GrandExchangeTask(this, new BankItem[] { new BankItem("Copper ore", 436, 4, 150, true),
-						new BankItem("Iron ore", 440, 2, 250, true), new BankItem("Clay", 434, 6, 160, true), },
-						new BankItem[] { new BankItem("Clay", 434, 25, 1, true) }, null, getScript()));
+				new GrandExchangeTask(this,
+						new BankItem[] { new BankItem("Copper ore", 436, 4, 150, true),
+								new BankItem("Iron ore", 440, 2, 250, true), new BankItem("Clay", 434, 6, 160, true), },
+						new BankItem[] { new BankItem("Clay", 434, 25, 1, true),
+								new BankItem("Uncut diamond", 1617, 1000, 1, true),
+								new BankItem("Uncut emerald", 1621, 1000, 1, true),
+								new BankItem("Uncut ruby", 1619, 1000, 1, true),
+								new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
+						null, getScript(), this));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new BankTask("withdraw items for quest", 0, getBot().getMethods(), true,
@@ -208,7 +214,7 @@ public class DoricsQuestConfig extends QuestStep {
 		// TODO wrong npc id and dialogue & dialogue step after talk
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new DialogueTask("talk with doric", 0, QUEST_CONFIG, getBot().getMethods(), DORIC_QUEST_START_AREA,
-						3893, 1, new String[] { "I wanted to use your anvils.", "Yes, I will get you the materials.",
+						3893, 1, this, new String[] { "I wanted to use your anvils.", "Yes, I will get you the materials.",
 								"Certainly, I'll be right back!" }));
 
 		/**
@@ -322,19 +328,35 @@ public class DoricsQuestConfig extends QuestStep {
 	public void onLoop() throws InterruptedException {
 		if (getCombat().isFighting() || myPlayer().isUnderAttack()) {
 			log("Under attack! Resetting stage for now! Going a round to stuck mugger");
-			MuggerStuck.run(getScript(), (MethodProvider) this);
+			MuggerStuck.runCopperMine(getScript(), (MethodProvider) this);
 		}
-		
-		if (getInventory().getEmptySlotCount() <= 14) {
-			setQuestStageStep(0);
-			getTaskHandler().setCurrentTask(getTaskHandler().getTasks().get(0));
+
+		if (getInventory().getEmptySlotCount() <= 14 && getQuestStageStep() == 4 && !getInventory().contains("Clay")) {
+			resetStage(AccountStage.QUEST_DORICS_QUEST.name());
 		}
 
 		if (new Area(new int[][] { { 3214, 3228 }, { 3215, 3208 }, { 3231, 3211 }, { 3229, 3228 }, { 3220, 3230 },
 				{ 3214, 3228 } }).contains(myPlayer())) {
-			setQuestStageStep(0);
-			getTaskHandler().setCurrentTask(getTaskHandler().getTasks().get(0));
+			resetStage(AccountStage.QUEST_DORICS_QUEST.name());
 		}
+
+		if (new Area(new int[][] { { 2950, 3454 }, { 2950, 3449 }, { 2954, 3449 }, { 2954, 3455 }, { 2950, 3455 },
+				{ 2950, 3454 } }).contains(myPlayer()) && !inventoryContainsAllItems()) {
+			resetStage(AccountStage.QUEST_DORICS_QUEST.name());
+		}
+
+		if (MINING_AREA.contains(myPlayer())
+				&& (!getInventory().contains("Bronze pickaxe") && !getInventory().contains("Iron pickaxe")
+						&& !getInventory().contains("Steel pickaxe") && !getInventory().contains("Mithril pickaxe"))
+				|| (getInventory().isFull() && getInventory().getAmount("Clay") < 20)) {
+			log("Is at mining area wihout a pickaxe, restarting tasks!");
+			resetStage(AccountStage.QUEST_DORICS_QUEST.name());
+		}
+	}
+
+	private boolean inventoryContainsAllItems() {
+		return (getInventory().getAmount("Iron ore") >= 2 && getInventory().getAmount("Clay") >= 6
+				&& getInventory().getAmount("Copper ore") >= 4);
 	}
 
 	@Override

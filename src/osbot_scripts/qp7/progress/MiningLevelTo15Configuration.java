@@ -22,6 +22,7 @@ import osbot_scripts.framework.WalkTask;
 import osbot_scripts.framework.parts.BankItem;
 import osbot_scripts.qp7.progress.entities.Rock;
 import osbot_scripts.sections.total.progress.MainState;
+import osbot_scripts.util.Sleep;
 
 public class MiningLevelTo15Configuration extends QuestStep {
 
@@ -128,16 +129,16 @@ public class MiningLevelTo15Configuration extends QuestStep {
 		// }
 
 		if (getEvent().hasFinished() && !getClient().isLoggedIn()) {
-			System.exit(1);
+			BotCommands.waitBeforeKill();
 		}
 
-	
-		
 		// If the player is fighting or under combat, then reset the stage to prevent
 		// going dead
 		if (getCombat().isFighting() || myPlayer().isUnderAttack()) {
 			log("Under attack! Resetting stage for now! Going a round to stuck mugger");
-			MuggerStuck.run(getScript(), (MethodProvider) this);
+			MuggerStuck.runCopperMine(getScript(), (MethodProvider) this);
+
+			Sleep.sleepUntil(() -> !getCombat().isFighting() && !myPlayer().isUnderAttack(), 5000);
 
 			// getWalking().walkPath(
 			// new ArrayList<Position>(Arrays.asList(new Position(3182, 3371, 0), new

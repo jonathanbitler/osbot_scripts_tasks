@@ -27,11 +27,11 @@ public class MuleTradingConfiguration extends QuestStep {
 	@Override
 	public void onStart() {
 		timeout = System.currentTimeMillis();
-		
-//		demo = new ThreadDemo();
-//		demo.exchangeContext(this.getBot());
-//		demo.setLoginEvent(getEvent());
-//		new Thread(demo).start();
+
+		// demo = new ThreadDemo();
+		// demo.exchangeContext(this.getBot());
+		// demo.setLoginEvent(getEvent());
+		// new Thread(demo).start();
 	}
 
 	private ThreadDemo demo;
@@ -57,6 +57,13 @@ public class MuleTradingConfiguration extends QuestStep {
 		}
 		log("Running the side loop..");
 
+		// If the player is not in the grand exchange area, then walk to it
+		if (!new Area(new int[][] { { 3161, 3492 }, { 3168, 3492 }, { 3168, 3485 }, { 3161, 3485 } })
+				.contains(myPlayer())) {
+			getWalking()
+					.webWalk(new Area(new int[][] { { 3161, 3492 }, { 3168, 3492 }, { 3168, 3485 }, { 3161, 3485 } }));
+			 log("The player has a grand exchange task but isn't there, walking to there");
+		}
 		// Not the mule
 
 		if (tradingDone) {

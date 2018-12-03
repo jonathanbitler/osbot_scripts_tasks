@@ -2,15 +2,14 @@ package osbot_scripts.qp7.progress;
 
 import java.awt.Color;
 
+import org.osbot.rs07.api.Client.LoginState;
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.script.MethodProvider;
 
-import osbot_scripts.bot.utils.Coordinates;
+import osbot_scripts.bot.utils.BotCommands;
 import osbot_scripts.database.DatabaseUtilities;
-import osbot_scripts.events.CachedWidget;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.events.MandatoryEventsExecution;
-import osbot_scripts.framework.AccountStage;
 
 public class ThreadDemo extends MethodProvider implements Runnable {
 
@@ -31,6 +30,26 @@ public class ThreadDemo extends MethodProvider implements Runnable {
 		return getColorPicker().isColorAt(541, 216, new Color(255, 255, 0));
 	}
 
+	public boolean isLoggedIn() {
+		return //
+		isHopping() || //
+				getClient().getLoginStateValue() == 30 || //
+				getClient().isLoggedIn() || //
+				isLoading();
+	}
+	
+	public boolean isHopping() {
+		return //
+		getClient().getLoginStateValue() == 45 || //
+				getClient().getLoginStateValue() == 25;//
+	}
+
+	public boolean isLoading() {
+		return //
+		getClient().getLoginState() == LoginState.LOADING || //
+				getClient().getLoginState() == LoginState.LOADING_MAP;
+	}
+	
 	// private final CachedWidget isDeadInterface = new CachedWidget("Never show me
 	// this again");
 
@@ -38,35 +57,31 @@ public class ThreadDemo extends MethodProvider implements Runnable {
 	public void run() {
 		while (run) {
 			try {
-				if (loginEvent == null) {
-					run = false;
-					log("Didnt have a login event, exiting this thread");
-					return;
-				}
 
-				if (loginEvent.getScript() != null) {
-					log("Seperate thread is currently running.. " + loginEvent.getScript());
-				}
+				if (loginEvent != null) {
+					if (loginEvent.getScript() != null) {
+						log("Seperate thread is currently running.. " + loginEvent.getScript());
+					}
 
-				if (getClient().isLoggedIn() && loginEvent.hasFinished()
-						&& loginEvent.getScript() != null && !loginEvent.getScript().equalsIgnoreCase("TUT_ISLAND")) {
-					MandatoryEventsExecution ev = new MandatoryEventsExecution(this);
-					ev.fixedMode();
-					ev.fixedMode2();
-					// ev.executeAllEvents();
+					if (getClient().isLoggedIn() && loginEvent.hasFinished() && loginEvent.getScript() != null
+							&& !loginEvent.getScript().equalsIgnoreCase("TUT_ISLAND")) {
+						MandatoryEventsExecution ev = new MandatoryEventsExecution(this);
+						ev.fixedMode();
+						ev.fixedMode2();
+						// ev.executeAllEvents();
+					}
 				}
 
 				if (!getClient().isLoggedIn() && isWrongEmail()) {
 					log("Account password is wrong, setting to invalid password");
 					DatabaseUtilities.updateAccountStatusInDatabase(this, "INVALID_PASSWORD",
 							getLoginEvent().getUsername());
-					System.exit(1);
+					BotCommands.waitBeforeKill();
 				}
 
-				if (!getClient().isLoggedIn() && loginEvent.hasFinished()) {
+				if (loginEvent != null && loginEvent.hasFinished() && !isLoggedIn()) {
 					log("Isn't logged in!?");
-					Thread.sleep(5000);
-					System.exit(1);
+					BotCommands.waitBeforeKill();
 				}
 
 				// if (isDeadInterface != null && getWidgets() != null &&

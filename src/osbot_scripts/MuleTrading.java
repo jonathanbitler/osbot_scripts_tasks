@@ -36,7 +36,7 @@ public class MuleTrading extends Script {
 		}
 
 		if (login.hasFinished() && !getClient().isLoggedIn()) {
-			System.exit(1);
+			BotCommands.waitBeforeKill();
 		}
 
 		if (getClient().isLoggedIn() && !getTrade().isCurrentlyTrading()) {

@@ -4,11 +4,13 @@ import java.awt.event.KeyEvent;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.osbot.rs07.api.Quests.Quest;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.model.NPC;
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.script.MethodProvider;
 
+import osbot_scripts.qp7.progress.QuestStep;
 import osbot_scripts.task.AreaInterface;
 import osbot_scripts.task.DialogueInterface;
 import osbot_scripts.task.Task;
@@ -30,6 +32,8 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 	private String waitForItem;
 
 	private int questPointsFinished;
+	
+	private QuestStep quest;
 
 	public DialogueTask(String scriptName, int questProgress, int questConfig, MethodProvider prov, Area area,
 			int npcId, String... selections) {
@@ -54,6 +58,19 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 		setConfigQuestId(questConfig);
 	}
 
+	public DialogueTask(String scriptName, int questProgress, int questConfig, MethodProvider prov, Area area,
+			int npcId, int questPointsFinished, QuestStep quest, String... selections) {
+		setScriptName(scriptName);
+		setProv(prov);
+		setArea(area);
+		setNpcId(npcId);
+		setDialogueSelection(selections);
+		setCurrentQuestProgress(questProgress);
+		setQuestPointsFinished(questPointsFinished);
+		setConfigQuestId(questConfig);
+		setQuest(quest);
+	}
+	
 	public DialogueTask(String scriptName, int questProgress, int questConfig, MethodProvider prov, Area area,
 			int npcId, String waitForItem, String... selections) {
 		setScriptName(scriptName);
@@ -156,6 +173,16 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 			selectContinue();
 		} else if (getApi().getDialogues().isPendingOption()) {
 			getApi().getDialogues().selectOption(getDialogueSelections());
+		}
+		
+		if (getQuest() != null) {
+			// Also looping with quest
+			try {
+				getQuest().onLoop();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 
 		if (!isInQuestCutscene()) {
@@ -341,6 +368,20 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 	 */
 	public void setQuestPointsFinished(int questPointsFinished) {
 		this.questPointsFinished = questPointsFinished;
+	}
+
+	/**
+	 * @return the quest
+	 */
+	public QuestStep getQuest() {
+		return quest;
+	}
+
+	/**
+	 * @param quest the quest to set
+	 */
+	public void setQuest(QuestStep quest) {
+		this.quest = quest;
 	}
 
 }

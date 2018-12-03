@@ -8,6 +8,7 @@ import org.osbot.rs07.api.ui.Tab;
 import org.osbot.rs07.event.Event;
 import org.osbot.rs07.script.MethodProvider;
 
+import osbot_scripts.bot.utils.BotCommands;
 import osbot_scripts.util.Sleep;
 
 public class MandatoryEventsExecution {
@@ -40,11 +41,12 @@ public class MandatoryEventsExecution {
 		boolean loop = true;
 		RS2Widget isResizable = getProvider().getWidgets().get(164, 32);
 
+		if ((isResizable != null && !isResizable.isVisible()) || (isResizable == null)) {
+			return;
+		}
+		
 		// Has the resizable screen active
 		while (loop) {
-			if ((isResizable != null && !isResizable.isVisible()) || (isResizable == null)) {
-				loop = false;
-			}
 			if (isResizable != null && isResizable.isVisible()) {
 				getProvider().log("In resizable mode!");
 
@@ -60,7 +62,7 @@ public class MandatoryEventsExecution {
 
 					getProvider().log("Couldn't fix itself, restarting");
 					Thread.sleep(5000);
-					System.exit(1);
+					BotCommands.waitBeforeKill();
 				}
 				failed++;
 
@@ -85,7 +87,7 @@ public class MandatoryEventsExecution {
 							getProvider().log("Successfully resized");
 							loop = false;
 							Thread.sleep(5000);
-							System.exit(1);
+							BotCommands.waitBeforeKill();
 						}
 
 					}
@@ -99,18 +101,19 @@ public class MandatoryEventsExecution {
 		if (!EnableFixedModeEvent.isFixedModeEnabled(getProvider())) {
 			if (getProvider().execute(new EnableFixedModeEvent()).hasFinished()) {
 				System.out.println("Set client to fixed mode, finished");
-				System.exit(1);
+				BotCommands.waitBeforeKill();
 			}
 		}
 
 		boolean loop = true;
 		RS2Widget isResizable = getProvider().getWidgets().get(164, 34);
-
+		
+		if ((isResizable != null && !isResizable.isVisible()) || (isResizable == null)) {
+			return;
+		}
+		
 		// Has the resizable screen active
 		while (loop) {
-			if ((isResizable != null && !isResizable.isVisible()) || (isResizable == null)) {
-				loop = false;
-			}
 			// Has the resizable screen active
 			while (isResizable != null && isResizable.isVisible()) {
 				getProvider().log("In resizable mode!");
@@ -126,7 +129,7 @@ public class MandatoryEventsExecution {
 				if (failed > 5) {
 					getProvider().log("Couldn't fix itself, restarting");
 					Thread.sleep(5000);
-					System.exit(1);
+					BotCommands.waitBeforeKill();
 				}
 				failed++;
 
@@ -152,7 +155,7 @@ public class MandatoryEventsExecution {
 							getProvider().log("Successfully resized");
 							loop = false;
 							Thread.sleep(5000);
-							System.exit(1);
+							BotCommands.waitBeforeKill();
 						}
 
 					}

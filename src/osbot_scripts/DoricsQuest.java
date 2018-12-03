@@ -69,9 +69,8 @@ public class DoricsQuest extends Script {
 		login = LoginHandler.login(this, getParameters());
 		if (login != null) {
 			login.setScript("QUEST_DORICS_QUEST");
-			log("Didnt login properly, doesn't have a login event");
 		}
-		goblinsDiplomacy = new DoricsQuestConfig(4626, 31, login, (Script) this);
+		goblinsDiplomacy = new DoricsQuestConfig(3893, 31, login, (Script) this);
 
 		if (login != null && login.getUsername() != null) {
 			getGoblinsDiplomacy()

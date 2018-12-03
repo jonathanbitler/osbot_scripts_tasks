@@ -121,7 +121,7 @@ public class TutorialScript extends Script {
 		if ((!getClient().isLoggedIn()) && (System.currentTimeMillis() - getLogin().getStartTime() > 200_000)) {
 			log("Person wasn't logged in anymore, logging out!");
 			Thread.sleep(5000);
-			System.exit(1);
+			BotCommands.waitBeforeKill();
 		}
 
 		if (getClient().isLoggedIn() && getConfigs().get(281) >= 3 && getConfigs().get(281) < 650) {
@@ -131,7 +131,7 @@ public class TutorialScript extends Script {
 			if (!EnableFixedModeEvent.isFixedModeEnabled(this)) {
 				if (execute(new EnableFixedModeEvent()).hasFinished()) {
 					System.out.println("Set client to fixed mode, finished");
-					System.exit(1);
+					BotCommands.waitBeforeKill();
 				}
 			}
 		}

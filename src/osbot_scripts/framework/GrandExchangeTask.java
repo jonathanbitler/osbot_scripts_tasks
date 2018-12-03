@@ -13,8 +13,12 @@ import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.utility.ConditionalSleep;
 
+import osbot_scripts.bot.utils.BotCommands;
+import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
+import osbot_scripts.events.MandatoryEventsExecution;
 import osbot_scripts.framework.parts.BankItem;
+import osbot_scripts.qp7.progress.QuestStep;
 import osbot_scripts.task.Task;
 import osbot_scripts.task.TaskSkeleton;
 import osbot_scripts.util.Sleep;
@@ -32,6 +36,8 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 	private Script script;
 
 	private int tries;
+
+	private QuestStep quest;
 
 	/**
 	 * 
@@ -62,6 +68,17 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 		setItemsToSell(new ArrayList<BankItem>(Arrays.asList(toSell)));
 		setLogin(login);
 		setScript(script);
+	}
+
+	public GrandExchangeTask(MethodProvider prov, BankItem[] toBuy, BankItem[] toSell, LoginEvent login, Script script,
+			QuestStep quest) {
+
+		setProv(prov);
+		setItemsToBuy(new ArrayList<BankItem>(Arrays.asList(toBuy)));
+		setItemsToSell(new ArrayList<BankItem>(Arrays.asList(toSell)));
+		setLogin(login);
+		setScript(script);
+		setQuest(quest);
 	}
 
 	@Override
@@ -113,7 +130,7 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 
 	private void depositItems() throws InterruptedException {
 		while (!getApi().getBank().isOpen() && !getApi().getInventory().isEmpty()) {
-			
+
 			getApi().getBank().open();
 			Sleep.sleepUntil(() -> getApi().getBank().isOpen(), 10000);
 
@@ -125,6 +142,17 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 			if (depositAll != null) {
 				depositAll.interact("Deposit inventory");
 			}
+
+			if (getQuest() != null) {
+				// Also looping with quest
+				try {
+					getQuest().onLoop();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+
 			Sleep.sleepUntil(() -> getApi().getInventory().isEmpty(), 10000);
 			getApi().log("[GRAND EXCHANGE] inventory deposited");
 		}
@@ -185,7 +213,7 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 				// withdrawn[0] = true;
 				continue;
 			}
-			
+
 			if (sell.getAmount() > amountInBank) {
 				getApi().log("didnt have: " + sell.getAmount() + " to sell, so set to: " + amountInBank);
 				sell.setAmount(amountInBank);
@@ -259,7 +287,7 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 			collectToInventory();
 		}
 	}
-	
+
 	private boolean containgItemsToSellInInventory() {
 		for (BankItem containg : getItemsToSell()) {
 			if (!getApi().getInventory().contains(containg.getName()) && !containg.isCompletedTask()) {
@@ -268,7 +296,7 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 		}
 		return true;
 	}
-	
+
 	private boolean containgItemsToBuyInInventory() {
 		for (BankItem containg : getItemsToSell()) {
 			if (!getApi().getInventory().contains(995) && !containg.isCompletedTask()) {
@@ -284,15 +312,23 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 			onStart();
 		}
 
+		if (getApi() != null && getApi().getClient() != null && getApi().getClient().isLoggedIn() && login != null
+				&& login.hasFinished()) {
+			MandatoryEventsExecution ev = new MandatoryEventsExecution(getApi());
+			ev.fixedMode();
+			ev.fixedMode2();
+			// ev.executeAllEvents();
+		}
+
 		GE ge = new GE(getScript());
 
 		tries++;
 
 		// If the player is not in the grand exchange area, then walk to it
-		if (!new Area(new int[][] { { 3144, 3508 }, { 3144, 3471 }, { 3183, 3470 }, { 3182, 3509 } })
+		if (!new Area(new int[][] { { 3161, 3492 }, { 3168, 3492 }, { 3168, 3485 }, { 3161, 3485 } })
 				.contains(getApi().myPlayer())) {
 			getApi().getWalking()
-					.webWalk(new Area(new int[][] { { 3160, 3494 }, { 3168, 3494 }, { 3168, 3485 }, { 3160, 3485 } }));
+					.webWalk(new Area(new int[][] { { 3161, 3492 }, { 3168, 3492 }, { 3168, 3485 }, { 3161, 3485 } }));
 			getApi().log("The player has a grand exchange task but isn't there, walking to there");
 		}
 
@@ -314,7 +350,7 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 		// if (!withdrawn[0] || !withdrawn[1]) {
 		// return;
 		// }
-		
+
 		if (getItemsToSell().size() != 0 && !containgItemsToSellInInventory()) {
 			if (!getApi().getBank().isOpen()) {
 
@@ -372,18 +408,22 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 				Thread.sleep(5000);
 
 				if (!finished) {
-					int sellPrice = (sell.getPrice() - (sell.getPrice() * sell.getAmount() / 100)) > 1
-							? (sell.getPrice() - (sell.getPrice() * sell.getAmount() / 100))
-							: 1;
+					if (tries > 1) {
+						int sellPrice = (sell.getPrice() - (sell.getPrice() * sell.getAmount() / 100)) > 1
+								? (sell.getPrice() - (sell.getPrice() * sell.getAmount() / 100))
+								: 1;
 
-					getApi().log(sell.getName() + " set sell price to: " + sellPrice);
-					ge.closeGE();
-					ge.openGe();
+						getApi().log(sell.getName() + " set sell price to: " + sellPrice);
+					}
+
 				} else {
 					sell.setCompletedTask(true);
-					ge.closeGE();
 				}
 				tries++;
+
+				if (!getApi().getGrandExchange().isOpen()) {
+					ge.openGe();
+				}
 
 			}
 			// new ConditionalSleep(3000, 500) {
@@ -453,17 +493,6 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 
 		// Just some cooldown
 		Thread.sleep(2500);
-		
-		if (getItemsToBuy().size() != 0 && !containgItemsToBuyInInventory()) {
-			if (!getApi().getBank().isOpen()) {
-
-				// Deposting all the items first
-				depositItems();
-
-				// Withdrawing all items
-				withdrawAllItemsNeeded();
-			}
-		}
 
 		for (BankItem buy : getItemsToBuy()) {
 
@@ -485,7 +514,45 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 			int tries = 0;
 
 			while (!finished) {
+
+				if (!getApi().getInventory().contains("Coins")) {
+					getApi().log("not enough coins, closing g.e. and opening bank!");
+					ge.closeGE();
+
+					Sleep.sleepUntil(() -> !getApi().getGrandExchange().isOpen(), 5000);
+
+					getApi().getBank().open();
+
+					Sleep.sleepUntil(() -> !getApi().getBank().isOpen(), 5000);
+
+					withdrawAllItemsNeeded();
+
+					Thread.sleep(2500);
+
+					continue;
+				}
+
 				if (tries > 10) {
+
+					// ge.closeGE();
+					//
+					// while (!getApi().getBank().isOpen()) {
+					// getApi().getBank().open();
+					// }
+					// int coins = (int) getApi().getBank().getAmount(995);
+					// if (coins > 0) {
+					// getApi().getBank().withdrawAll(995);
+					// }
+					//
+					// if ((getApi().getInventory().getAmount("Coins") + coins) < (buy.getPrice() *
+					// buy.getAmount())) {
+					// DatabaseUtilities.updateStageProgress(getApi(), "OUT_OF_MONEY", 0,
+					// login.getUsername());
+					// getApi().log("Bot is out of money!");
+					// Thread.sleep(5000);
+					// System.exit(1);
+					// }
+
 					finished = true;
 					break;
 				}
@@ -500,18 +567,21 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 				Thread.sleep(5000);
 
 				if (!finished) {
-					buy.setPrice((getApi().getInventory().getAmount(995) >= (buy.getPrice() * buy.getAmount()))
-							? (buy.getPrice() + (buy.getPrice() * buy.getAmount() / 100))
-							: (int)(getApi().getInventory().getAmount(995) / buy.getAmount()));
+					if (tries > 1) {
+						buy.setPrice((getApi().getInventory().getAmount(995) >= (buy.getPrice() * buy.getAmount()))
+								? (buy.getPrice() + (buy.getPrice() * buy.getAmount() / 100))
+								: (int) (getApi().getInventory().getAmount(995) / buy.getAmount()));
+					}
 
 					getApi().log("set buy price to: " + buy.getPrice());
-					ge.closeGE();
-					ge.openGe();
 				} else {
 					buy.setCompletedTask(true);
-					ge.closeGE();
 				}
 				tries++;
+
+				if (!getApi().getGrandExchange().isOpen()) {
+					ge.openGe();
+				}
 			}
 
 			// new ConditionalSleep(3000, 500) {
@@ -732,6 +802,21 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 	 */
 	public void setScript(Script script) {
 		this.script = script;
+	}
+
+	/**
+	 * @return the quest
+	 */
+	public QuestStep getQuest() {
+		return quest;
+	}
+
+	/**
+	 * @param quest
+	 *            the quest to set
+	 */
+	public void setQuest(QuestStep quest) {
+		this.quest = quest;
 	}
 
 }

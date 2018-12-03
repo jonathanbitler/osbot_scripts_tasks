@@ -33,7 +33,7 @@ public class GrandExchangeTest extends Script {
 			Arrays.asList(
 					new Position(3185, 3370, 0),
 					new Position(3182, 3363, 0),
-					new Position(3180, 3371, 0)
+					new Position(3175, 3367, 0)
 //					new Position(3181, 3371, 0), new Position(3190, 3366, 0), new Position(3191, 3365, 0),
 //					new Position(3190, 3363, 0), new Position(3186, 3363, 0), new Position(3186, 3361, 0)
 					)

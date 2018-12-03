@@ -24,6 +24,8 @@ public class MiningLevelTo15 extends Script {
 
 	private LoginEvent login;
 
+	private MandatoryEventsExecution ev = new MandatoryEventsExecution(this);
+
 	@Override
 	public int onLoop() throws InterruptedException {
 
@@ -32,7 +34,6 @@ public class MiningLevelTo15 extends Script {
 		}
 
 		if (getClient().isLoggedIn()) {
-			MandatoryEventsExecution ev = new MandatoryEventsExecution(this);
 			ev.fixedMode();
 			ev.fixedMode2();
 			ev.executeAllEvents();
@@ -68,7 +69,7 @@ public class MiningLevelTo15 extends Script {
 		// }
 
 		// The loop for other stuff than tasks
-		getGoldfarmMining().onLoop();
+		// getGoldfarmMining().onLoop();
 
 		// The loop for tasks, may only loop when a grand exchange task
 		// is not active at the moment
@@ -92,9 +93,9 @@ public class MiningLevelTo15 extends Script {
 		getGoldfarmMining().setQuest(false);
 
 		if (login != null && login.getUsername() != null) {
-			getGoldfarmMining()
-					.setQuestStageStep(0);
-//							Integer.parseInt(DatabaseUtilities.getQuestProgress(this, login.getUsername())));
+			getGoldfarmMining().setQuestStageStep(0);
+			// Integer.parseInt(DatabaseUtilities.getQuestProgress(this,
+			// login.getUsername())));
 		}
 
 		getGoldfarmMining().exchangeContext(getBot());

@@ -30,5 +30,15 @@
 			<type>2</type>
 			<location>C:/Users/pim/OSBot/Scripts</location>
 		</link>
+		<link>
+			<name>bin/Scripts2/dropbox</name>
+			<type>2</type>
+			<location>C:/Users/pim/Dropbox/osbot_scripts</location>
+		</link>
+		<link>
+			<name>bin/Scripts2/osbot_scripts2</name>
+			<type>2</type>
+			<location>C:/Users/pim/Dropbox/osbot_scripts2</location>
+		</link>
 	</linkedResources>
 </projectDescription>

@@ -7,5 +7,5 @@
 	<classpathentry kind="lib" path="C:/Users/pim/Desktop/OS-War development/Server/deps/org.json.jar"/>
 	<classpathentry kind="lib" path="C:/Users/pim/Desktop/OS-War development/Server/deps/commons-lang3-3.3.2.jar"/>
 	<classpathentry kind="lib" path="C:/Users/pim/Desktop/OS-War development/Server/deps/commons-io-2.4.jar"/>
-	<classpathentry kind="output" path="bin/Scripts2"/>
+	<classpathentry kind="output" path="bin/Scripts2/osbot_scripts2"/>
 </classpath>

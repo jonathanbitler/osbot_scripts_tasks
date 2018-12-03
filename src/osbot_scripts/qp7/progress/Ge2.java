@@ -49,12 +49,13 @@ public class Ge2 extends Script {
 		if (!getClient().isLoggedIn() && login.hasFinished()) {
 			log("Isn't logged in!?");
 			Thread.sleep(5000);
-			System.exit(1);
+			BotCommands.waitBeforeKill();
 		}
 
 		log("task: " + getTask());
 		if (getTask() != null && !getTask().finished()) {
 			getTask().loop();
+
 		} else if (getTask() != null && getTask().finished()) {
 			log("Task has finished!");
 			if (login != null) {
@@ -72,16 +73,12 @@ public class Ge2 extends Script {
 
 	public void sideLoop() throws InterruptedException {
 		log("Running the side loop..");
-		
 
-		if (getClient().isLoggedIn() && login.hasFinished()) {
+		if (getClient().isLoggedIn() && myPlayer() != null && myPlayer().isVisible()) {
+
 			MandatoryEventsExecution ev = new MandatoryEventsExecution(this);
 			ev.fixedMode();
 			ev.fixedMode2();
-			// ev.executeAllEvents();
-		}
-
-		if (getClient().isLoggedIn() && myPlayer() != null && myPlayer().isVisible()) {
 
 			if (tries > 15 && getTask() == null) {
 				if (!getBank().isOpen()) {
@@ -251,10 +248,10 @@ public class Ge2 extends Script {
 	public void onStart() throws InterruptedException {
 		login = LoginHandler.login(this, getParameters());
 
-		// demo = new ThreadDemo();
-		// demo.exchangeContext(this.getBot());
-		// demo.setLoginEvent(login);
-		// new Thread(demo).start();
+		demo = new ThreadDemo();
+		demo.exchangeContext(this.getBot());
+		demo.setLoginEvent(login);
+		new Thread(demo).start();
 	}
 
 	private ThreadDemo demo;
