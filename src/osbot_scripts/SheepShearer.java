@@ -34,11 +34,11 @@ public class SheepShearer extends Script {
 		
 		if (Coordinates.isOnTutorialIsland(this)) {
 			DatabaseUtilities.updateStageProgress(this, "TUT_ISLAND", 0, login.getUsername());
-			BotCommands.killProcess((MethodProvider)this, (Script) this);
+			BotCommands.killProcess((MethodProvider)this, (Script) this, "SHOULD BE ON TUT ISLAND SHEEP");
 		}
 		
-		if (getClient().isLoggedIn()) {
-			MandatoryEventsExecution ev = new MandatoryEventsExecution(this);
+		if (getSheepShearer().isLoggedIn()) {
+			MandatoryEventsExecution ev = new MandatoryEventsExecution(this, login);
 			ev.fixedMode();
 			ev.fixedMode2();
 			ev.executeAllEvents();
@@ -56,7 +56,7 @@ public class SheepShearer extends Script {
 			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0,
 					login.getUsername());
 			DatabaseUtilities.updateAccountBreakTill(this, getSheepShearer().getEvent().getUsername(), 60);
-			BotCommands.killProcess((MethodProvider)this, (Script) this);
+			BotCommands.killProcess((MethodProvider)this, (Script) this, "ALREADY COMPLETED QUEST SHEEP");
 			return random(500, 600);
 		}
 
@@ -75,6 +75,7 @@ public class SheepShearer extends Script {
 	public void onStart() throws InterruptedException {
 		login = LoginHandler.login(this, getParameters());
 		login.setScript("QUEST_SHEEP_SHEARER");
+		DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN");
 		sheepShearer = new SheepShearerConfiguration(login, (Script) this);
 
 		if (login != null && login.getUsername() != null) {

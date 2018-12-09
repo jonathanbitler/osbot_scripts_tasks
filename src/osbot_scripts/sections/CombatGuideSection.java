@@ -9,6 +9,8 @@ import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.api.ui.Tab;
 
 import osbot_scripts.TutorialScript;
+import osbot_scripts.framework.TabWid;
+import osbot_scripts.framework.Tabs;
 import osbot_scripts.sections.total.progress.MainState;
 import osbot_scripts.util.Sleep;
 
@@ -41,11 +43,13 @@ public class CombatGuideSection extends TutorialSection {
 			break;
 
 		case 390:
-			getTabs().open(Tab.EQUIPMENT);
+//			getTabs().open(Tab.EQUIPMENT);
+			Tabs.openTab(this, TabWid.EQUIPMENT);
 			break;
 
 		case 400:
-			getTabs().open(Tab.EQUIPMENT);
+//			getTabs().open(Tab.EQUIPMENT);
+			Tabs.openTab(this, TabWid.EQUIPMENT);
 			RS2Widget statsWidget = getWidgets().get(387, 18);
 			if (statsWidget != null) {
 				if (statsWidget.interact()) {
@@ -85,7 +89,8 @@ public class CombatGuideSection extends TutorialSection {
 			break;
 
 		case 430:
-			getTabs().open(Tab.ATTACK);
+//			getTabs().open(Tab.ATTACK);
+			Tabs.openTab(this, TabWid.COMBAT);
 			break;
 
 		case 440:

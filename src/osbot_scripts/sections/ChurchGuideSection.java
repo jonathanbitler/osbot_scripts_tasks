@@ -8,6 +8,8 @@ import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.ui.Tab;
 
 import osbot_scripts.TutorialScript;
+import osbot_scripts.framework.TabWid;
+import osbot_scripts.framework.Tabs;
 import osbot_scripts.sections.total.progress.MainState;
 
 public class ChurchGuideSection extends TutorialSection {
@@ -40,7 +42,8 @@ public class ChurchGuideSection extends TutorialSection {
 			break;
 
 		case 560:
-			getTabs().open(Tab.PRAYER);
+//			getTabs().open(Tab.PRAYER);
+			Tabs.openTab(this, TabWid.PRAYER);
 			break;
 
 		case 570:
@@ -48,11 +51,13 @@ public class ChurchGuideSection extends TutorialSection {
 			break;
 
 		case 580:
-			getTabs().open(Tab.FRIENDS);
+//			getTabs().open(Tab.FRIENDS);
+			Tabs.openTab(this, TabWid.FRIENDS);
 			break;
 
 		case 590:
-			getTabs().open(Tab.IGNORES);
+//			getTabs().open(Tab.ACCOUNT_MANAGEMENT);
+			Tabs.openTab(this, TabWid.ACCOUNT_MANAGER);
 			break;
 
 		case 600:

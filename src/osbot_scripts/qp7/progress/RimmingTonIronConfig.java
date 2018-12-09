@@ -20,6 +20,7 @@ import osbot_scripts.framework.ClickObjectTask;
 import osbot_scripts.framework.GrandExchangeTask;
 import osbot_scripts.framework.WalkTask;
 import osbot_scripts.framework.parts.BankItem;
+import osbot_scripts.hopping.WorldHop;
 import osbot_scripts.qp7.progress.entities.Rock;
 import osbot_scripts.sections.total.progress.MainState;
 
@@ -70,8 +71,8 @@ public class RimmingTonIronConfig extends QuestStep {
 	public void onStart() {
 		if (beginTime == -1) {
 			beginTime = System.currentTimeMillis();
-			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new WalkTask("walk to falador bank", -1, -1,
-					getBot().getMethods(), BANK_POSITION, FALADOR_BANK_AREA, getScript(), getEvent(), true, false));//
+			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new WalkTask("walk to falador bank", -1,
+					-1, getBot().getMethods(), BANK_POSITION, FALADOR_BANK_AREA, getScript(), getEvent(), true, false));//
 		}
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
@@ -130,14 +131,30 @@ public class RimmingTonIronConfig extends QuestStep {
 		// resetStage(AccountStage.MINING_LEVEL_TO_15.name());
 		// }
 
-		if (getEvent().hasFinished() && !getClient().isLoggedIn()) {
-			BotCommands.waitBeforeKill();
+		if (getEvent().hasFinished() && !isLoggedIn()) {
+			log("Not logged in.. restarting");
+			BotCommands.waitBeforeKill((MethodProvider)this, "BECAUSE OF NOT LOGGED IN E04");
 		}
+
 		// If the player is fighting or under combat, then reset the stage to prevent
 		// going dead
 		if (getCombat().isFighting() || myPlayer().isUnderAttack()) {
 			log("Under attack! Resetting stage for now and going to bank");
 			resetStage(AccountStage.RIMMINGTON_IRON_ORE.name());
+		}
+
+		// Supporting world hopping when world is too full
+		int threshholdToHop = 10_000;
+		int profit = ((currentAmount - beginAmount) + soldAmount) * 140;
+		long profitPerHour = (long) (profit * (3600000.0 / (System.currentTimeMillis() - beginTime)));
+		if ((profitPerHour > 0) && (profitPerHour < threshholdToHop)
+				&& ((System.currentTimeMillis() - beginTime) > 1_800_000)
+				|| ((System.currentTimeMillis() - beginTime) > 3_600_000)) {
+			if (WorldHop.hop(this)) {
+				beginTime = System.currentTimeMillis();
+				beginAmount = currentAmount;
+				soldAmount = 0;
+			}
 		}
 
 		if (RIMMINGTON_MINING_AREA.contains(myPlayer()) && !getInventory().contains("Bronze pickaxe")
@@ -156,17 +173,17 @@ public class RimmingTonIronConfig extends QuestStep {
 		if (getBank().isOpen() && getBank().getAmount("Iron ore") > 200) {
 			DatabaseUtilities.updateStageProgress((MethodProvider) this, AccountStage.GE_SELL_BUY_MINING.name(), 0,
 					getEvent().getUsername());
-			BotCommands.killProcess((MethodProvider) this, getScript());
+			BotCommands.killProcess((MethodProvider) this, getScript(), "BECAUSE OF SELLING RIGHT NOW TO GE");
 			return;
-//			int amount = (int) (getBank().getAmount("Iron ore"));
-//			int inventory = (int) (getInventory().getAmount("Iron ore"));
-//			setGrandExchangeTask(new GrandExchangeTask(this, new BankItem[] {},
-//					new BankItem[] { new BankItem("Iron ore", 440, amount + inventory, 1, true),
-//							new BankItem("Uncut diamond", 1617, 1000, 1, true),
-//							new BankItem("Uncut emerald", 1621, 1000, 1, true),
-//							new BankItem("Uncut ruby", 1619, 1000, 1, true),
-//							new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
-//					null, getScript()));
+			// int amount = (int) (getBank().getAmount("Iron ore"));
+			// int inventory = (int) (getInventory().getAmount("Iron ore"));
+			// setGrandExchangeTask(new GrandExchangeTask(this, new BankItem[] {},
+			// new BankItem[] { new BankItem("Iron ore", 440, amount + inventory, 1, true),
+			// new BankItem("Uncut diamond", 1617, 1000, 1, true),
+			// new BankItem("Uncut emerald", 1621, 1000, 1, true),
+			// new BankItem("Uncut ruby", 1619, 1000, 1, true),
+			// new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
+			// null, getScript()));
 		}
 
 		int ironAmount = -1;
@@ -183,7 +200,7 @@ public class RimmingTonIronConfig extends QuestStep {
 				// the database
 				if (getEvent() != null && getEvent().getUsername() != null) {
 					DatabaseUtilities.updateStageProgress(this, "MULE_TRADING", 0, getEvent().getUsername());
-					BotCommands.killProcess(this, getScript());
+					BotCommands.killProcess(this, getScript(), "MULE TRADING");
 				}
 			}
 
@@ -214,17 +231,18 @@ public class RimmingTonIronConfig extends QuestStep {
 
 			DatabaseUtilities.updateStageProgress((MethodProvider) this, AccountStage.GE_SELL_BUY_MINING.name(), 0,
 					getEvent().getUsername());
-			BotCommands.killProcess((MethodProvider) this, getScript());
+			BotCommands.killProcess((MethodProvider) this, getScript(), "BECAUSE OF GOING TO THE G.E.");
 			return;
-//			setGrandExchangeTask(
-//					new GrandExchangeTask(this, new BankItem[] { new BankItem("Bronze pickaxe", 1265, 1, 1400, false) },
-//							new BankItem[] { new BankItem("Iron ore", 440, 1000, 1, true),
-//									new BankItem("Clay", 434, 1000, 1, true),
-//									new BankItem("Uncut diamond", 1617, 1000, 1, true),
-//									new BankItem("Uncut emerald", 1621, 1000, 1, true),
-//									new BankItem("Uncut ruby", 1619, 1000, 1, true),
-//									new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
-//							null, getScript()));
+			// setGrandExchangeTask(
+			// new GrandExchangeTask(this, new BankItem[] { new BankItem("Bronze pickaxe",
+			// 1265, 1, 1400, false) },
+			// new BankItem[] { new BankItem("Iron ore", 440, 1000, 1, true),
+			// new BankItem("Clay", 434, 1000, 1, true),
+			// new BankItem("Uncut diamond", 1617, 1000, 1, true),
+			// new BankItem("Uncut emerald", 1621, 1000, 1, true),
+			// new BankItem("Uncut ruby", 1619, 1000, 1, true),
+			// new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
+			// null, getScript()));
 		}
 		// else if (totalAccountValue > 5000 && getBank().isOpen() &&
 		// getSkills().getStatic(Skill.MINING) > 3
@@ -245,18 +263,19 @@ public class RimmingTonIronConfig extends QuestStep {
 
 			DatabaseUtilities.updateStageProgress((MethodProvider) this, AccountStage.GE_SELL_BUY_MINING.name(), 0,
 					getEvent().getUsername());
-			BotCommands.killProcess((MethodProvider) this, getScript());
+			BotCommands.killProcess((MethodProvider) this, getScript(), "BECAUSE OF GOING TO THE G.E. 2");
 			return;
-			
-//			setGrandExchangeTask(
-//					new GrandExchangeTask(this, new BankItem[] { new BankItem("Steel pickaxe", 1269, 1, 5000, false) },
-//							new BankItem[] { new BankItem("Iron ore", 440, 1000, 1, true),
-//									new BankItem("Clay", 434, 1000, 1, true),
-//									new BankItem("Uncut diamond", 1617, 1000, 1, true),
-//									new BankItem("Uncut emerald", 1621, 1000, 1, true),
-//									new BankItem("Uncut ruby", 1619, 1000, 1, true),
-//									new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
-//							null, getScript()));
+
+			// setGrandExchangeTask(
+			// new GrandExchangeTask(this, new BankItem[] { new BankItem("Steel pickaxe",
+			// 1269, 1, 5000, false) },
+			// new BankItem[] { new BankItem("Iron ore", 440, 1000, 1, true),
+			// new BankItem("Clay", 434, 1000, 1, true),
+			// new BankItem("Uncut diamond", 1617, 1000, 1, true),
+			// new BankItem("Uncut emerald", 1621, 1000, 1, true),
+			// new BankItem("Uncut ruby", 1619, 1000, 1, true),
+			// new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
+			// null, getScript()));
 		}
 
 		// else if (totalAccountValue > 15000 && getBank().isOpen() &&
@@ -278,55 +297,58 @@ public class RimmingTonIronConfig extends QuestStep {
 
 			DatabaseUtilities.updateStageProgress((MethodProvider) this, AccountStage.GE_SELL_BUY_MINING.name(), 0,
 					getEvent().getUsername());
-			BotCommands.killProcess((MethodProvider) this, getScript());
+			BotCommands.killProcess((MethodProvider) this, getScript(), "BECAUSE OF GOING TO THE G.E. 3");
 			return;
-			
-//			setGrandExchangeTask(new GrandExchangeTask(this,
-//					new BankItem[] { new BankItem("Adamant pickaxe", 1271, 1, 20000, false) },
-//					new BankItem[] { new BankItem("Iron ore", 440, 1000, 1, true),
-//							new BankItem("Clay", 434, 1000, 1, true),
-//							new BankItem("Uncut diamond", 1617, 1000, 1, true),
-//							new BankItem("Uncut emerald", 1621, 1000, 1, true),
-//							new BankItem("Uncut ruby", 1619, 1000, 1, true),
-//							new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
-//					null, getScript()));
+
+			// setGrandExchangeTask(new GrandExchangeTask(this,
+			// new BankItem[] { new BankItem("Adamant pickaxe", 1271, 1, 20000, false) },
+			// new BankItem[] { new BankItem("Iron ore", 440, 1000, 1, true),
+			// new BankItem("Clay", 434, 1000, 1, true),
+			// new BankItem("Uncut diamond", 1617, 1000, 1, true),
+			// new BankItem("Uncut emerald", 1621, 1000, 1, true),
+			// new BankItem("Uncut ruby", 1619, 1000, 1, true),
+			// new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
+			// null, getScript()));
 		} else if (totalAccountValue > 45000 && getBank().isOpen() && getSkills().getStatic(Skill.MINING) >= 41
 				&& ((!getInventory().contains("Rune pickaxe") && !getBank().contains("Rune pickaxe")))) {
 
 			DatabaseUtilities.updateStageProgress((MethodProvider) this, AccountStage.GE_SELL_BUY_MINING.name(), 0,
 					getEvent().getUsername());
-			BotCommands.killProcess((MethodProvider) this, getScript());
+			BotCommands.killProcess((MethodProvider) this, getScript(), "BECAUSE OF GOING TO THE G.E. 4");
 			return;
-//			setGrandExchangeTask(
-//					new GrandExchangeTask(this, new BankItem[] { new BankItem("Rune pickaxe", 1275, 1, 60000, false) },
-//							new BankItem[] { new BankItem("Iron ore", 440, 1000, 1, true),
-//									new BankItem("Clay", 434, 1000, 1, true),
-//									new BankItem("Uncut diamond", 1617, 1000, 1, true),
-//									new BankItem("Uncut emerald", 1621, 1000, 1, true),
-//									new BankItem("Uncut ruby", 1619, 1000, 1, true),
-//									new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
-//							null, getScript()));
+			// setGrandExchangeTask(
+			// new GrandExchangeTask(this, new BankItem[] { new BankItem("Rune pickaxe",
+			// 1275, 1, 60000, false) },
+			// new BankItem[] { new BankItem("Iron ore", 440, 1000, 1, true),
+			// new BankItem("Clay", 434, 1000, 1, true),
+			// new BankItem("Uncut diamond", 1617, 1000, 1, true),
+			// new BankItem("Uncut emerald", 1621, 1000, 1, true),
+			// new BankItem("Uncut ruby", 1619, 1000, 1, true),
+			// new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
+			// null, getScript()));
 		}
 
-//		log("g.e. running " + getGrandExchangeTask() + " "
-//				+ (getGrandExchangeTask() != null ? getGrandExchangeTask().finished() : "null"));
-//		if (getGrandExchangeTask() != null && getGrandExchangeTask().finished()) {
-//
-//			// Resetting stage, walking back to the bank to deposit everything and setting
-//			// the current grand exchange task to null
-//			resetStage(AccountStage.RIMMINGTON_IRON_ORE.name());
-//			setGrandExchangeTask(null);
-//			log("Finished G.E. task, walking back to varrock bank");
-//		}
+		// log("g.e. running " + getGrandExchangeTask() + " "
+		// + (getGrandExchangeTask() != null ? getGrandExchangeTask().finished() :
+		// "null"));
+		// if (getGrandExchangeTask() != null && getGrandExchangeTask().finished()) {
+		//
+		// // Resetting stage, walking back to the bank to deposit everything and
+		// setting
+		// // the current grand exchange task to null
+		// resetStage(AccountStage.RIMMINGTON_IRON_ORE.name());
+		// setGrandExchangeTask(null);
+		// log("Finished G.E. task, walking back to varrock bank");
+		// }
 		// Looping through the grand exchange task
-//		if (getGrandExchangeTask() != null && !getGrandExchangeTask().finished()) {
-//			getGrandExchangeTask().loop();
-//
-//			if (getQuestStageStep() != 0) {
-//				resetStage(AccountStage.RIMMINGTON_IRON_ORE.name());
-//			}
-//
-//		}
+		// if (getGrandExchangeTask() != null && !getGrandExchangeTask().finished()) {
+		// getGrandExchangeTask().loop();
+		//
+		// if (getQuestStageStep() != 0) {
+		// resetStage(AccountStage.RIMMINGTON_IRON_ORE.name());
+		// }
+		//
+		// }
 	}
 
 	@Override
@@ -344,17 +366,17 @@ public class RimmingTonIronConfig extends QuestStep {
 	/**
 	 * @return the grandExchangeTask
 	 */
-//	public GrandExchangeTask getGrandExchangeTask() {
-//		return grandExchangeTask;
-//	}
-//
-//	/**
-//	 * @param grandExchangeTask
-//	 *            the grandExchangeTask to set
-//	 */
-//	public void setGrandExchangeTask(GrandExchangeTask grandExchangeTask) {
-//		this.grandExchangeTask = grandExchangeTask;
-//	}
+	// public GrandExchangeTask getGrandExchangeTask() {
+	// return grandExchangeTask;
+	// }
+	//
+	// /**
+	// * @param grandExchangeTask
+	// * the grandExchangeTask to set
+	// */
+	// public void setGrandExchangeTask(GrandExchangeTask grandExchangeTask) {
+	// this.grandExchangeTask = grandExchangeTask;
+	// }
 
 	/**
 	 * @return the pickaxe

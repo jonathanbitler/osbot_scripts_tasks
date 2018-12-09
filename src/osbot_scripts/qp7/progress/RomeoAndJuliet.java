@@ -47,8 +47,8 @@ public class RomeoAndJuliet extends QuestStep {
 					new Position(3181, 3429, 0), new Position(3191, 3428, 0), new Position(3201, 3427, 0),
 					new Position(3211, 3426, 0), new Position(3212, 3427, 0)));
 
-	private static final Area VARROCK_SQUARE_AREA = new Area(new int[][] { { 3193, 3449 }, { 3193, 3421 },
-			{ 3207, 3406 }, { 3230, 3411 }, { 3231, 3432 }, { 3222, 3447 } });
+	private static final Area VARROCK_SQUARE_AREA = new Area(new int[][] { { 3208, 3433 }, { 3210, 3422 },
+			{ 3215, 3417 }, { 3220, 3420 }, { 3218, 3431 }, { 3215, 3433 } });
 
 	private static final Area JULIA_FLOOR_0 = new Area(new int[][] { { 3156, 3436 }, { 3156, 3432 }, { 3164, 3432 },
 			{ 3165, 3432 }, { 3165, 3439 }, { 3164, 3440 }, { 3161, 3440 }, { 3161, 3437 }, { 3156, 3437 } });
@@ -110,150 +110,151 @@ public class RomeoAndJuliet extends QuestStep {
 	public void onStart() {
 		log(getQuestProgress());
 
-//		if (getQuestProgress() == 0) {
-			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-					new WalkTask("walk to varrock square", 0, QUEST_CONFIG, getBot().getMethods(),
-							PATH_TO_VARROCK_SQUARE_ONE, VARROCK_SQUARE_AREA, getScript(), getEvent(), true, false));
+		// if (getQuestProgress() == 0) {
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+				new WalkTask("walk to varrock square", 0, QUEST_CONFIG, getBot().getMethods(),
+						PATH_TO_VARROCK_SQUARE_ONE, VARROCK_SQUARE_AREA, getScript(), getEvent(), true, false));
 
-			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-					new DialogueTask("talk with romeo", 0, QUEST_CONFIG, getBot().getMethods(), VARROCK_SQUARE_AREA,
-							5037, 10, new String[] { "Perhaps I could help to find her for you?",
-									"Yes, ok, I'll let her know.", "Ok, thanks." }));
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+				new DialogueTask("talk with romeo", 0, QUEST_CONFIG, getBot().getMethods(), VARROCK_SQUARE_AREA, 5037,
+						10, new String[] { "Perhaps I could help to find her for you?", "Yes, ok, I'll let her know.",
+								"Ok, thanks." }));
 
-//		}
+		// }
 
-//		if (getQuestProgress() <= 10) {
-			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-					new WalkTask("walk to juliet", 10, QUEST_CONFIG, getBot().getMethods(), PATH_TO_JULIET_FLOOR_1,
-							AT_JULIET, getScript(), getEvent(), true, false));
+		// if (getQuestProgress() <= 10) {
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+				new WalkTask("walk to juliet", 10, QUEST_CONFIG, getBot().getMethods(), PATH_TO_JULIET_FLOOR_1,
+						AT_JULIET, getScript(), getEvent(), true, false));
 
-			// new WalkTask("walk to juliet", 10, QUEST_CONFIG, getBot().getMethods(),
-			// PATH_TO_JULIET,
-			// new Area(new int[][] { { 3156, 3436 }, { 3156, 3432 }, { 3164, 3432 }, {
-			// 3165, 3432 },
-			// { 3165, 3439 }, { 3164, 3440 }, { 3161, 3440 }, { 3161, 3437 }, { 3156, 3437
-			// } }),
-			// getScript(), getEvent(), false, false));
+		// new WalkTask("walk to juliet", 10, QUEST_CONFIG, getBot().getMethods(),
+		// PATH_TO_JULIET,
+		// new Area(new int[][] { { 3156, 3436 }, { 3156, 3432 }, { 3164, 3432 }, {
+		// 3165, 3432 },
+		// { 3165, 3439 }, { 3164, 3440 }, { 3161, 3440 }, { 3161, 3437 }, { 3156, 3437
+		// } }),
+		// getScript(), getEvent(), false, false));
 
-			// getTaskHandler().getTasks().put(3, new ClickObjectTask("climb up 2", 10,
-			// QUEST_CONFIG,
-			// getBot().getMethods(), JULIA_FLOOR_0, 11797, "Climb-up", JULIA_FLOOR_1));
-			//
-			// getTaskHandler().getTasks().put(4, new WalkTask("walk to juliet", 10,
-			// QUEST_CONFIG, getBot().getMethods(),
-			// PATH_TO_JULIET_FLOOR_1, AT_JULIET, getScript(), getEvent(), false, false));
+		// getTaskHandler().getTasks().put(3, new ClickObjectTask("climb up 2", 10,
+		// QUEST_CONFIG,
+		// getBot().getMethods(), JULIA_FLOOR_0, 11797, "Climb-up", JULIA_FLOOR_1));
+		//
+		// getTaskHandler().getTasks().put(4, new WalkTask("walk to juliet", 10,
+		// QUEST_CONFIG, getBot().getMethods(),
+		// PATH_TO_JULIET_FLOOR_1, AT_JULIET, getScript(), getEvent(), false, false));
 
-			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-					new DialogueTask("talk with juliet", 10, QUEST_CONFIG, getBot().getMethods(), AT_JULIET, 6268, 20,
-							new String[] { "I guess I could look for him for you.", }));
-//		}
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+				new DialogueTask("talk with juliet", 10, QUEST_CONFIG, getBot().getMethods(), AT_JULIET, 6268, 20,
+						new String[] { "I guess I could look for him for you.", }));
+		// }
 
-//		if (getQuestProgress() <= 20) {
-			// getTaskHandler().getTasks().put(6, new WalkTask("walk to climb down", 20,
-			// QUEST_CONFIG,
-			// getBot().getMethods(),
-			// new ArrayList<Position>(Arrays.asList(new Position(3160, 3425, 1), new
-			// Position(3157, 3428, 1),
-			// new Position(3154, 3432, 1), new Position(3154, 3435, 1))),
-			// new Area(new int[][] { { 3152, 3437 }, { 3152, 3434 }, { 3157, 3434 }, {
-			// 3157, 3438 },
-			// { 3152, 3438 } }).setPlane(1),
-			// getScript(), getEvent(), false, false));
-			//
-			// getTaskHandler().getTasks().put(7, new ClickObjectTask("climb down 2", 20,
-			// QUEST_CONFIG,
-			// getBot().getMethods(), JULIA_FLOOR_1, 11799, "Climb-down", JULIA_FLOOR_0));
+		// if (getQuestProgress() <= 20) {
+		// getTaskHandler().getTasks().put(6, new WalkTask("walk to climb down", 20,
+		// QUEST_CONFIG,
+		// getBot().getMethods(),
+		// new ArrayList<Position>(Arrays.asList(new Position(3160, 3425, 1), new
+		// Position(3157, 3428, 1),
+		// new Position(3154, 3432, 1), new Position(3154, 3435, 1))),
+		// new Area(new int[][] { { 3152, 3437 }, { 3152, 3434 }, { 3157, 3434 }, {
+		// 3157, 3438 },
+		// { 3152, 3438 } }).setPlane(1),
+		// getScript(), getEvent(), false, false));
+		//
+		// getTaskHandler().getTasks().put(7, new ClickObjectTask("climb down 2", 20,
+		// QUEST_CONFIG,
+		// getBot().getMethods(), JULIA_FLOOR_1, 11799, "Climb-down", JULIA_FLOOR_0));
 
-			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-					new WalkTask("walk to varrock square", 20, QUEST_CONFIG, getBot().getMethods(),
-							WALK_TO_ROMEO_FROM_JULIET, VARROCK_SQUARE_AREA, getScript(), getEvent(), true, false));
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+				new WalkTask("walk to varrock square", 20, QUEST_CONFIG, getBot().getMethods(),
+						WALK_TO_ROMEO_FROM_JULIET, VARROCK_SQUARE_AREA, getScript(), getEvent(), true, false));
 
-			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-					new DialogueTask("talk with romeo", 20, QUEST_CONFIG, getBot().getMethods(), VARROCK_SQUARE_AREA,
-							5037, 30, new String[] { "Ok, thanks." }));
-//		}
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new DialogueTask("talk with romeo", 20,
+				QUEST_CONFIG, getBot().getMethods(), VARROCK_SQUARE_AREA, 5037, 30, new String[] { "Ok, thanks." }));
+		// }
 
-//		if (getQuestProgress() <= 30) {
-			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-					new WalkTask("walk to father lawrence", 30, QUEST_CONFIG, getBot().getMethods(),
-							PATH_TO_FATHER_LAWRENCE, FATHER_LAWRENCE_AREA, getScript(), getEvent(), false, true));
+		// if (getQuestProgress() <= 30) {
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+				new WalkTask("walk to father lawrence", 30, QUEST_CONFIG, getBot().getMethods(),
+						PATH_TO_FATHER_LAWRENCE, FATHER_LAWRENCE_AREA, getScript(), getEvent(), false, true));
 
-			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-					new DialogueTask("talk with father lawrence", 30, QUEST_CONFIG, getBot().getMethods(),
-							FATHER_LAWRENCE_AREA, 5038, 40, new String[] { "Ok, thanks." }));
-//		}
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+				new DialogueTask("talk with father lawrence", 30, QUEST_CONFIG, getBot().getMethods(),
+						FATHER_LAWRENCE_AREA, 5038, 40, new String[] { "Ok, thanks." }));
+		// }
 
-//		if (getQuestProgress() <= 40) {
-			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-					new WalkTask("walk to berries", 40, QUEST_CONFIG, getBot().getMethods(), PATH_TO_BERRIES,
-							BERRIES_AREA, getScript(), getEvent(), false, true));
+		// if (getQuestProgress() <= 40) {
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+				new WalkTask("walk to berries", 40, QUEST_CONFIG, getBot().getMethods(), PATH_TO_BERRIES, BERRIES_AREA,
+						getScript(), getEvent(), false, true));
 
-			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new ClickObjectTask("take cadava", 40,
-					QUEST_CONFIG, getBot().getMethods(), BERRIES_AREA, 23625, "Pick-from", "Cadava berries"));
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new ClickObjectTask("take cadava", 40,
+				QUEST_CONFIG, getBot().getMethods(), BERRIES_AREA, 23625, "Pick-from", "Cadava berries"));
 
-			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-					new WalkTask("walk to apothecary", 40, QUEST_CONFIG, getBot().getMethods(), PATH_TO_APOTHECARY,
-							APOTHECARY_AREA, getScript(), getEvent(), false, false));
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+				new WalkTask("walk to apothecary", 40, QUEST_CONFIG, getBot().getMethods(), PATH_TO_APOTHECARY,
+						APOTHECARY_AREA, getScript(), getEvent(), false, true));
 
-//			public DialogueTask(String scriptName, int questProgress, int questConfig, MethodProvider prov, Area area,
-//					int npcId, String waitForItem, int questPointsFinished, String... selections) {
-			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-					new DialogueTask("talk with father lawrence", 40, QUEST_CONFIG, getBot().getMethods(),
-							APOTHECARY_AREA, 5036, "Cadava potion", 50,
-							new String[] { "Talk about something else.", "Talk about Romeo & Juliet." }));
-//		}
+		// public DialogueTask(String scriptName, int questProgress, int questConfig,
+		// MethodProvider prov, Area area,
+		// int npcId, String waitForItem, int questPointsFinished, String... selections)
+		// {
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+				new DialogueTask("talk with father lawrence", 40, QUEST_CONFIG, getBot().getMethods(), APOTHECARY_AREA,
+						5036, "Cadava potion", 50,
+						new String[] { "Talk about something else.", "Talk about Romeo & Juliet." }));
+		// }
 
-//		if (getQuestProgress() <= 50) {
+		// if (getQuestProgress() <= 50) {
 
-			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-					new WalkTask("walk to juliet", 50, QUEST_CONFIG, getBot().getMethods(), PATH_TO_JULIET_FLOOR_1,
-							AT_JULIET, getScript(), getEvent(), true, false));
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+				new WalkTask("walk to juliet", 50, QUEST_CONFIG, getBot().getMethods(), PATH_TO_JULIET_FLOOR_1,
+						AT_JULIET, getScript(), getEvent(), true, false));
 
-			// getTaskHandler().getTasks().put(16,
-			// new WalkTask("walk to juliet", 50, QUEST_CONFIG, getBot().getMethods(),
-			// PATH_TO_JULIET,
-			// new Area(new int[][] { { 3156, 3436 }, { 3156, 3432 }, { 3164, 3432 }, {
-			// 3165, 3432 },
-			// { 3165, 3439 }, { 3164, 3440 }, { 3161, 3440 }, { 3161, 3437 }, { 3156, 3437
-			// } }),
-			// getScript(), getEvent(), false, false));
-			//
-			// getTaskHandler().getTasks().put(17, new ClickObjectTask("climb up 2", 50,
-			// QUEST_CONFIG,
-			// getBot().getMethods(), JULIA_FLOOR_0, 11797, "Climb-up", JULIA_FLOOR_1));
-			//
-			// getTaskHandler().getTasks().put(18, new WalkTask("walk to juliet", 50,
-			// QUEST_CONFIG, getBot().getMethods(),
-			// PATH_TO_JULIET_FLOOR_1, AT_JULIET, getScript(), getEvent(), false, false));
+		// getTaskHandler().getTasks().put(16,
+		// new WalkTask("walk to juliet", 50, QUEST_CONFIG, getBot().getMethods(),
+		// PATH_TO_JULIET,
+		// new Area(new int[][] { { 3156, 3436 }, { 3156, 3432 }, { 3164, 3432 }, {
+		// 3165, 3432 },
+		// { 3165, 3439 }, { 3164, 3440 }, { 3161, 3440 }, { 3161, 3437 }, { 3156, 3437
+		// } }),
+		// getScript(), getEvent(), false, false));
+		//
+		// getTaskHandler().getTasks().put(17, new ClickObjectTask("climb up 2", 50,
+		// QUEST_CONFIG,
+		// getBot().getMethods(), JULIA_FLOOR_0, 11797, "Climb-up", JULIA_FLOOR_1));
+		//
+		// getTaskHandler().getTasks().put(18, new WalkTask("walk to juliet", 50,
+		// QUEST_CONFIG, getBot().getMethods(),
+		// PATH_TO_JULIET_FLOOR_1, AT_JULIET, getScript(), getEvent(), false, false));
 
-			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-					new DialogueTask("talk with juliet", 50, QUEST_CONFIG, getBot().getMethods(), AT_JULIET, 6268, 60,
-							new String[] { "I guess I could look for him for you.", }));
-//		}
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+				new DialogueTask("talk with juliet", 50, QUEST_CONFIG, getBot().getMethods(), AT_JULIET, 6268, 60,
+						new String[] { "I guess I could look for him for you.", }));
+		// }
 
-//		if (getQuestProgress() <= 60) {
-			// getTaskHandler().getTasks().put(20, new WalkTask("walk to climb down", 60,
-			// QUEST_CONFIG,
-			// getBot().getMethods(),
-			// new ArrayList<Position>(Arrays.asList(new Position(3160, 3425, 1), new
-			// Position(3157, 3428, 1),
-			// new Position(3154, 3432, 1), new Position(3154, 3435, 1))),
-			// new Area(new int[][] { { 3152, 3437 }, { 3152, 3434 }, { 3157, 3434 }, {
-			// 3157, 3438 },
-			// { 3152, 3438 } }).setPlane(1),
-			// getScript(), getEvent(), false, false));
-			//
-			// getTaskHandler().getTasks().put(21, new ClickObjectTask("climb down 2", 60,
-			// QUEST_CONFIG,
-			// getBot().getMethods(), JULIA_FLOOR_1, 11799, "Climb-down", JULIA_FLOOR_0));
+		// if (getQuestProgress() <= 60) {
+		// getTaskHandler().getTasks().put(20, new WalkTask("walk to climb down", 60,
+		// QUEST_CONFIG,
+		// getBot().getMethods(),
+		// new ArrayList<Position>(Arrays.asList(new Position(3160, 3425, 1), new
+		// Position(3157, 3428, 1),
+		// new Position(3154, 3432, 1), new Position(3154, 3435, 1))),
+		// new Area(new int[][] { { 3152, 3437 }, { 3152, 3434 }, { 3157, 3434 }, {
+		// 3157, 3438 },
+		// { 3152, 3438 } }).setPlane(1),
+		// getScript(), getEvent(), false, false));
+		//
+		// getTaskHandler().getTasks().put(21, new ClickObjectTask("climb down 2", 60,
+		// QUEST_CONFIG,
+		// getBot().getMethods(), JULIA_FLOOR_1, 11799, "Climb-down", JULIA_FLOOR_0));
 
-			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-					new WalkTask("walk to varrock square", 60, QUEST_CONFIG, getBot().getMethods(),
-							WALK_TO_ROMEO_FROM_JULIET, VARROCK_SQUARE_AREA, getScript(), getEvent(), true, false));
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+				new WalkTask("walk to varrock square", 60, QUEST_CONFIG, getBot().getMethods(),
+						WALK_TO_ROMEO_FROM_JULIET, VARROCK_SQUARE_AREA, getScript(), getEvent(), true, false));
 
-			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new DialogueTask("talk with romeo", 60, QUEST_CONFIG,
-					getBot().getMethods(), VARROCK_SQUARE_AREA, 5037, 100, new String[] { "Ok, thanks." }));
-//		}
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new DialogueTask("talk with romeo", 60,
+				QUEST_CONFIG, getBot().getMethods(), VARROCK_SQUARE_AREA, 5037, 100, new String[] { "Ok, thanks." }));
+		// }
 	}
 
 	@Override

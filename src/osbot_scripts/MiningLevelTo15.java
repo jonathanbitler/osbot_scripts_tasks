@@ -11,6 +11,7 @@ import org.osbot.rs07.script.ScriptManifest;
 import osbot_scripts.bot.utils.BotCommands;
 import osbot_scripts.bot.utils.Coordinates;
 import osbot_scripts.bot.utils.RandomUtil;
+import osbot_scripts.config.Config;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.events.MandatoryEventsExecution;
@@ -24,7 +25,7 @@ public class MiningLevelTo15 extends Script {
 
 	private LoginEvent login;
 
-	private MandatoryEventsExecution ev = new MandatoryEventsExecution(this);
+	private MandatoryEventsExecution ev = new MandatoryEventsExecution(this, login);
 
 	@Override
 	public int onLoop() throws InterruptedException {
@@ -33,7 +34,7 @@ public class MiningLevelTo15 extends Script {
 			getDialogues().clickContinue();
 		}
 
-		if (getClient().isLoggedIn()) {
+		if (getGoldfarmMining().isLoggedIn()) {
 			ev.fixedMode();
 			ev.fixedMode2();
 			ev.executeAllEvents();
@@ -41,14 +42,14 @@ public class MiningLevelTo15 extends Script {
 
 		if (Coordinates.isOnTutorialIsland(this)) {
 			DatabaseUtilities.updateStageProgress(this, "TUT_ISLAND", 0, login.getUsername());
-			BotCommands.killProcess((MethodProvider) this, (Script) this);
+			BotCommands.killProcess((MethodProvider) this, (Script) this, "SHOULD BE ON TUT ISLAND MINING 15");
 		}
 
 		// Account must have atleast 7 quest points, otherwise set it back to quesiton
 		if (getQuests().getQuestPoints() < 7) {
 			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0,
 					login.getUsername());
-			BotCommands.killProcess((MethodProvider) this, (Script) this);
+			BotCommands.killProcess((MethodProvider) this, (Script) this, "LESS THAN 7 QP MINING 15");
 		}
 
 		// If mining is equals or bigger than 15, then it can proceed to mining iron
@@ -56,7 +57,7 @@ public class MiningLevelTo15 extends Script {
 			Thread.sleep(5000);
 			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0,
 					login.getUsername());
-			BotCommands.killProcess((MethodProvider) this, (Script) this);
+			BotCommands.killProcess((MethodProvider) this, (Script) this, "HIGHER THAN 15 MINING MINING 15");
 		}
 
 		// Breaking for set amount of minutes because has done a few laps
@@ -67,16 +68,6 @@ public class MiningLevelTo15 extends Script {
 		// getGoldfarmMining().getEvent().getUsername(), 30);
 		// BotCommands.killProcess((MethodProvider)this, (Script) this);
 		// }
-
-		// The loop for other stuff than tasks
-		// getGoldfarmMining().onLoop();
-
-		// The loop for tasks, may only loop when a grand exchange task
-		// is not active at the moment
-		// if (getGoldfarmMining().getGrandExchangeTask() == null) {
-		getGoldfarmMining().getTaskHandler().taskLoop();
-		// }
-
 		return random(20, 80);
 	}
 
@@ -87,21 +78,38 @@ public class MiningLevelTo15 extends Script {
 
 	@Override
 	public void onStart() throws InterruptedException {
-		login = LoginHandler.login(this, getParameters());
-		login.setScript("MINING_LEVEL_TO_15");
+		if (!Config.NO_LOGIN) {
+			login = LoginHandler.login(this, getParameters());
+			login.setScript("MINING_LEVEL_TO_15");
+			DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN");
+		}
 		goldfarmMining = new MiningLevelTo15Configuration(login, (Script) this);
 		getGoldfarmMining().setQuest(false);
 
-		if (login != null && login.getUsername() != null) {
-			getGoldfarmMining().setQuestStageStep(0);
-			// Integer.parseInt(DatabaseUtilities.getQuestProgress(this,
-			// login.getUsername())));
+		if (!Config.NO_LOGIN) {
+			if (login != null && login.getUsername() != null) {
+				getGoldfarmMining().setQuestStageStep(0);
+				// Integer.parseInt(DatabaseUtilities.getQuestProgress(this,
+				// login.getUsername())));
+
+				DatabaseUtilities.updateStageProgress(this, "MINING_LEVEL_TO_15", 0,
+						getGoldfarmMining().getEvent().getUsername());
+			}
 		}
 
 		getGoldfarmMining().exchangeContext(getBot());
 		getGoldfarmMining().onStart();
-		DatabaseUtilities.updateStageProgress(this, "MINING_LEVEL_TO_15", 0,
-				getGoldfarmMining().getEvent().getUsername());
+
+		log("G.E. task: "
+				+ (getGoldfarmMining().getGrandExchangeTask() != null ? getGoldfarmMining().getGrandExchangeTask()
+						: "NULL"));
+
+		if (getGoldfarmMining().getGrandExchangeTask() == null) {
+			getGoldfarmMining().getTaskHandler().taskLoop();
+		} else {
+			getGoldfarmMining().onLoop();
+		}
+
 	}
 
 	/**

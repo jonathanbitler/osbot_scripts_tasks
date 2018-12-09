@@ -15,9 +15,15 @@ public class Coordinates {
 	private static final Area TUT_ISLAND_UPPER = new Area(
 			new int[][] { { 3047, 3140 }, { 3045, 3052 }, { 3179, 3070 }, { 3170, 3133 } });
 
+	private static final Area TUT_ISLAND_UPPER_2 = new Area(
+			new int[][] { { 3062, 3135 }, { 3064, 3073 }, { 3151, 3073 }, { 3143, 3138 } }).setPlane(1);
+
 	public static boolean isOnTutorialIsland(MethodProvider api) {
+		if (!api.getClient().isLoggedIn()) {
+			return false;
+		}
 		if (TUT_ISLAND_AREA.contains(api.myPlayer()) || TUT_ISLAND_AREA_CAVE.contains(api.myPlayer())
-				|| TUT_ISLAND_UPPER.contains(api.myPlayer())) {
+				|| TUT_ISLAND_UPPER.contains(api.myPlayer()) || TUT_ISLAND_UPPER_2.contains(api.myPlayer())) {
 			return true;
 		}
 		return false;

@@ -2,7 +2,10 @@ package osbot_scripts.login;
 
 import org.osbot.rs07.script.MethodProvider;
 
+import osbot_scripts.database.DatabaseTest;
+import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
+import osbot_scripts.framework.AccountStage;
 import osbot_scripts.qp7.progress.ThreadDemo;
 
 public class LoginHandler {
@@ -34,7 +37,7 @@ public class LoginHandler {
 				p.log(username + " " + password);
 
 			}
-			loginEvent = new LoginEvent(username, password, pid, accountStage);
+			loginEvent = new LoginEvent(username, password, pid, accountStage, p);
 			if (actualUsername != null) {
 				loginEvent.setActualUsername(actualUsername);
 			}
@@ -42,13 +45,17 @@ public class LoginHandler {
 				loginEvent.setTradeWith(tradeWith);
 				loginEvent.setEmailTradeWith(emailTradeWith);
 			}
+			
 			p.getBot().addLoginListener(loginEvent);
 			p.execute(loginEvent);
 		}
+
 		
 		demo = new ThreadDemo();
 		demo.exchangeContext(p.getBot());
 		demo.setLoginEvent(loginEvent);
+		demo.paramaters = parameters;
+		
 		new Thread(demo).start();
 		
 		return loginEvent;

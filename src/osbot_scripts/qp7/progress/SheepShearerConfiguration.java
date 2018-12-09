@@ -88,7 +88,7 @@ public class SheepShearerConfiguration extends QuestStep {
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("walk to sheeps", 1, QUEST_CONFIG, getBot().getMethods(), PATH_TO_SHEEPS,
-						PATH_TO_SHEEPS_AREA, getScript(), getEvent(), false, false));
+						PATH_TO_SHEEPS_AREA, getScript(), getEvent(), false, true));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new DropItemTask("drop items", 1, QUEST_CONFIG, getBot().getMethods(), "Drop",

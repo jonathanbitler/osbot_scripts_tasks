@@ -21,6 +21,7 @@ import osbot_scripts.framework.ClickObjectTask;
 import osbot_scripts.framework.GrandExchangeTask;
 import osbot_scripts.framework.WalkTask;
 import osbot_scripts.framework.parts.BankItem;
+import osbot_scripts.hopping.WorldHop;
 import osbot_scripts.qp7.progress.entities.Rock;
 import osbot_scripts.sections.total.progress.MainState;
 import osbot_scripts.util.Sleep;
@@ -115,11 +116,26 @@ public class IronMinerConfiguration extends QuestStep {
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("walk to varrock west bank 2", -1, -1, getBot().getMethods(), MINING_AREA_TO_BANK,
-						BANK_VARROCK_EAST_AREA, getScript(), getEvent(), false, false));
+						BANK_VARROCK_EAST_AREA, getScript(), getEvent(), false, true));
 
 	}
 
-	private GrandExchangeTask grandExchangeTask = null;
+	private Ge2 grandExchangeActions;
+
+	/**
+	 * @return the grandExchangeActions
+	 */
+	public Ge2 getGrandExchangeTask() {
+		return grandExchangeActions;
+	}
+
+	/**
+	 * @param grandExchangeActions
+	 *            the grandExchangeActions to set
+	 */
+	public void setGrandExchangeActions(Ge2 grandExchangeActions) {
+		this.grandExchangeActions = grandExchangeActions;
+	}
 
 	@Override
 	public void onLoop() throws InterruptedException {
@@ -132,8 +148,23 @@ public class IronMinerConfiguration extends QuestStep {
 		// resetStage(AccountStage.MINING_LEVEL_TO_15.name());
 		// }
 
-		if (getEvent().hasFinished() && !getClient().isLoggedIn()) {
-			BotCommands.waitBeforeKill();
+		if (getEvent().hasFinished() && !isLoggedIn()) {
+			log("Not logged in.. restarting");
+			BotCommands.waitBeforeKill((MethodProvider) this, "BECAUSE OF NOT LOGGED IN E01");
+		}
+
+		// Supporting world hopping when world is too full
+		int threshholdToHop = 10_000;
+		int profit = ((currentAmount - beginAmount) + soldAmount) * 140;
+		long profitPerHour = (long) (profit * (3600000.0 / (System.currentTimeMillis() - beginTime)));
+		if ((profitPerHour > 0) && (profitPerHour < threshholdToHop)
+				&& ((System.currentTimeMillis() - beginTime) > 1_800_000)
+				|| ((System.currentTimeMillis() - beginTime) > 3_600_000)) {
+			if (WorldHop.hop(this)) {
+				beginTime = System.currentTimeMillis();
+				beginAmount = currentAmount;
+				soldAmount = 0;
+			}
 		}
 
 		// If the player is fighting or under combat, then reset the stage to prevent
@@ -169,6 +200,9 @@ public class IronMinerConfiguration extends QuestStep {
 
 		// When having more than 200 clay, then go to the g.e. and sell it
 		if (getBank().isOpen() && getBank().getAmount("Iron ore") > 200) {
+
+			setGrandExchangeActions(new Ge2(getEvent()));
+
 			// int amount = (int) (getBank().getAmount("Iron ore"));
 			// setGrandExchangeTask(new GrandExchangeTask(this, new BankItem[] {}, new
 			// BankItem[] {
@@ -179,10 +213,11 @@ public class IronMinerConfiguration extends QuestStep {
 			// new BankItem("Uncut sapphire", 1623, 1000, 1, true), new BankItem("Clay",
 			// 434, 1000, 1, true) },
 			// null, getScript()));
-			DatabaseUtilities.updateStageProgress((MethodProvider) this, AccountStage.GE_SELL_BUY_MINING.name(), 0,
-					getEvent().getUsername());
-			BotCommands.killProcess((MethodProvider) this, getScript());
-			return;
+			// DatabaseUtilities.updateStageProgress((MethodProvider) this,
+			// AccountStage.GE_SELL_BUY_MINING.name(), 0,
+			// getEvent().getUsername());
+			// BotCommands.killProcess((MethodProvider) this, getScript());
+			// return;
 		}
 
 		int ironAmount = -1;
@@ -199,7 +234,7 @@ public class IronMinerConfiguration extends QuestStep {
 				// the database
 				if (getEvent() != null && getEvent().getUsername() != null) {
 					DatabaseUtilities.updateStageProgress(this, "MULE_TRADING", 0, getEvent().getUsername());
-					BotCommands.killProcess(this, getScript());
+					BotCommands.killProcess((MethodProvider) this, getScript(), "BECAUSE OF GOING TO MULE TRADING");
 				}
 			}
 
@@ -228,10 +263,12 @@ public class IronMinerConfiguration extends QuestStep {
 		if (totalAccountValue > 3000 && getBank().isOpen() && getSkills().getStatic(Skill.MINING) <= 3
 				&& ((!getInventory().contains("Bronze pickaxe") && !getBank().contains("Bronze pickaxe")))) {
 
-			DatabaseUtilities.updateStageProgress((MethodProvider) this, AccountStage.GE_SELL_BUY_MINING.name(), 0,
-					getEvent().getUsername());
-			BotCommands.killProcess((MethodProvider) this, getScript());
-			return;
+			setGrandExchangeActions(new Ge2(getEvent()));
+			// DatabaseUtilities.updateStageProgress((MethodProvider) this,
+			// AccountStage.GE_SELL_BUY_MINING.name(), 0,
+			// getEvent().getUsername());
+			// BotCommands.killProcess((MethodProvider) this, getScript());
+			// return;
 			// setGrandExchangeTask(
 			// new GrandExchangeTask(this, new BankItem[] { new BankItem("Bronze pickaxe",
 			// 1265, 1, 1400, false) },
@@ -246,10 +283,12 @@ public class IronMinerConfiguration extends QuestStep {
 				&& getSkills().getStatic(Skill.MINING) < 6
 				&& ((!getInventory().contains("Iron pickaxe") && !getBank().contains("Iron pickaxe")))) {
 
-			DatabaseUtilities.updateStageProgress((MethodProvider) this, AccountStage.GE_SELL_BUY_MINING.name(), 0,
-					getEvent().getUsername());
-			BotCommands.killProcess((MethodProvider) this, getScript());
-			return;
+			setGrandExchangeActions(new Ge2(getEvent()));
+			// DatabaseUtilities.updateStageProgress((MethodProvider) this,
+			// AccountStage.GE_SELL_BUY_MINING.name(), 0,
+			// getEvent().getUsername());
+			// BotCommands.killProcess((MethodProvider) this, getScript());
+			// return;
 
 			// setGrandExchangeTask(
 			// new GrandExchangeTask(this, new BankItem[] { new BankItem("Iron pickaxe",
@@ -265,10 +304,12 @@ public class IronMinerConfiguration extends QuestStep {
 				&& getSkills().getStatic(Skill.MINING) < 21
 				&& ((!getInventory().contains("Steel pickaxe") && !getBank().contains("Steel pickaxe")))) {
 
-			DatabaseUtilities.updateStageProgress((MethodProvider) this, AccountStage.GE_SELL_BUY_MINING.name(), 0,
-					getEvent().getUsername());
-			BotCommands.killProcess((MethodProvider) this, getScript());
-			return;
+			setGrandExchangeActions(new Ge2(getEvent()));
+			// DatabaseUtilities.updateStageProgress((MethodProvider) this,
+			// AccountStage.GE_SELL_BUY_MINING.name(), 0,
+			// getEvent().getUsername());
+			// BotCommands.killProcess((MethodProvider) this, getScript());
+			// return;
 
 			// setGrandExchangeTask(
 			// new GrandExchangeTask(this, new BankItem[] { new BankItem("Steel pickaxe",
@@ -284,10 +325,12 @@ public class IronMinerConfiguration extends QuestStep {
 				&& getSkills().getStatic(Skill.MINING) < 31
 				&& ((!getInventory().contains("Mithril pickaxe") && !getBank().contains("Mithril pickaxe")))) {
 
-			DatabaseUtilities.updateStageProgress((MethodProvider) this, AccountStage.GE_SELL_BUY_MINING.name(), 0,
-					getEvent().getUsername());
-			BotCommands.killProcess((MethodProvider) this, getScript());
-			return;
+			setGrandExchangeActions(new Ge2(getEvent()));
+			// DatabaseUtilities.updateStageProgress((MethodProvider) this,
+			// AccountStage.GE_SELL_BUY_MINING.name(), 0,
+			// getEvent().getUsername());
+			// BotCommands.killProcess((MethodProvider) this, getScript());
+			// return;
 
 			// setGrandExchangeTask(new GrandExchangeTask(this,
 			// new BankItem[] { new BankItem("Mithril pickaxe", 1273, 1, 10000, false) },
@@ -302,10 +345,12 @@ public class IronMinerConfiguration extends QuestStep {
 				&& getSkills().getStatic(Skill.MINING) < 41
 				&& ((!getInventory().contains("Adamant pickaxe") && !getBank().contains("Adamant pickaxe")))) {
 
-			DatabaseUtilities.updateStageProgress((MethodProvider) this, AccountStage.GE_SELL_BUY_MINING.name(), 0,
-					getEvent().getUsername());
-			BotCommands.killProcess((MethodProvider) this, getScript());
-			return;
+			setGrandExchangeActions(new Ge2(getEvent()));
+			// DatabaseUtilities.updateStageProgress((MethodProvider) this,
+			// AccountStage.GE_SELL_BUY_MINING.name(), 0,
+			// getEvent().getUsername());
+			// BotCommands.killProcess((MethodProvider) this, getScript());
+			// return;
 
 			// setGrandExchangeTask(new GrandExchangeTask(this,
 			// new BankItem[] { new BankItem("Adamant pickaxe", 1271, 1, 20000, false) },
@@ -319,10 +364,12 @@ public class IronMinerConfiguration extends QuestStep {
 		} else if (totalAccountValue > 45000 && getBank().isOpen() && getSkills().getStatic(Skill.MINING) >= 41
 				&& ((!getInventory().contains("Rune pickaxe") && !getBank().contains("Rune pickaxe")))) {
 
-			DatabaseUtilities.updateStageProgress((MethodProvider) this, AccountStage.GE_SELL_BUY_MINING.name(), 0,
-					getEvent().getUsername());
-			BotCommands.killProcess((MethodProvider) this, getScript());
-			return;
+			setGrandExchangeActions(new Ge2(getEvent()));
+			// DatabaseUtilities.updateStageProgress((MethodProvider) this,
+			// AccountStage.GE_SELL_BUY_MINING.name(), 0,
+			// getEvent().getUsername());
+			// BotCommands.killProcess((MethodProvider) this, getScript());
+			// return;
 
 			// setGrandExchangeTask(
 			// new GrandExchangeTask(this, new BankItem[] { new BankItem("Rune pickaxe",
@@ -336,27 +383,33 @@ public class IronMinerConfiguration extends QuestStep {
 			// null, getScript()));
 		}
 
-		// log("g.e. running " + getGrandExchangeTask() + " "
-		// + (getGrandExchangeTask() != null ? getGrandExchangeTask().finished() :
-		// "null"));
-		// if (getGrandExchangeTask() != null && getGrandExchangeTask().finished()) {
-		//
-		// // Resetting stage, walking back to the bank to deposit everything and
-		// setting
-		// // the current grand exchange task to null
-		// resetStage(AccountStage.MINING_IRON_ORE.name());
-		// setGrandExchangeTask(null);
-		// log("Finished G.E. task, walking back to varrock bank");
-		// }
+		log("g.e. running " + getGrandExchangeTask() + " "
+				+ (getGrandExchangeTask() != null && getGrandExchangeTask().getTask() != null
+						? getGrandExchangeTask().getTask().finished()
+						: "null"));
+
+		// Setting a G.E. task
+		if (getGrandExchangeTask() != null && getGrandExchangeTask().getTask() == null) {
+			getGrandExchangeTask().exchangeContext(getBot());
+			getGrandExchangeTask().setTask();
+		}
+
+		if (getGrandExchangeTask() != null && getGrandExchangeTask().getTask() != null
+				&& getGrandExchangeTask().getTask().finished()) {
+			// the current grand exchange task to null
+			resetStage(AccountStage.MINING_IRON_ORE.name());
+			setGrandExchangeActions(null);
+			log("Finished G.E. task, walking back to varrock bank");
+		}
+
 		// Looping through the grand exchange task
-		// if (getGrandExchangeTask() != null && !getGrandExchangeTask().finished()) {
-		// getGrandExchangeTask().loop();
-		//
-		// if (getQuestStageStep() != 0) {
-		// resetStage(AccountStage.MINING_IRON_ORE.name());
-		// }
-		//
-		// }
+		if (getGrandExchangeTask() != null && getGrandExchangeTask().getTask() != null
+				&& !getGrandExchangeTask().getTask().finished()) {
+			getGrandExchangeTask().getTask().loop();
+
+			resetStage(AccountStage.MINING_IRON_ORE.name());
+
+		}
 	}
 
 	@Override

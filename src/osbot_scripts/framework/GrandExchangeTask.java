@@ -14,6 +14,7 @@ import org.osbot.rs07.script.Script;
 import org.osbot.rs07.utility.ConditionalSleep;
 
 import osbot_scripts.bot.utils.BotCommands;
+import osbot_scripts.bot.utils.RandomUtil;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.events.MandatoryEventsExecution;
@@ -314,7 +315,7 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 
 		if (getApi() != null && getApi().getClient() != null && getApi().getClient().isLoggedIn() && login != null
 				&& login.hasFinished()) {
-			MandatoryEventsExecution ev = new MandatoryEventsExecution(getApi());
+			MandatoryEventsExecution ev = new MandatoryEventsExecution(getApi(), login);
 			ev.fixedMode();
 			ev.fixedMode2();
 			// ev.executeAllEvents();
@@ -515,7 +516,7 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 
 			while (!finished) {
 
-				if (!getApi().getInventory().contains("Coins")) {
+				if (getApi().getInventory().getAmount(995) < (buy.getAmount() * buy.getPrice())) {
 					getApi().log("not enough coins, closing g.e. and opening bank!");
 					ge.closeGE();
 
@@ -528,6 +529,16 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 					withdrawAllItemsNeeded();
 
 					Thread.sleep(2500);
+
+					tries++;
+
+					getApi().log("current tries: " + tries);
+					if (tries > 20) {
+						DatabaseUtilities.updateStageProgress(getApi(), AccountStage.OUT_OF_MONEY.name(), 0,
+								login.getUsername());
+						getApi().log("Not enough money.. closing for next stage");
+						BotCommands.waitBeforeKill(getApi(), "BECAUSE OF NOT HAVING ENOUGH MONEY");
+					}
 
 					continue;
 				}

@@ -8,6 +8,7 @@ import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 
 import osbot_scripts.bot.utils.BotCommands;
+import osbot_scripts.config.Config;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.EnableFixedModeEvent;
 import osbot_scripts.events.LoginEvent;
@@ -102,7 +103,7 @@ public class TutorialScript extends Script {
 	private static final Area TUT_ISLAND_AREA_CAVE = new Area(new int[][] { { 3067, 9521 }, { 3096, 9540 },
 			{ 3128, 9540 }, { 3125, 9498 }, { 3085, 9482 }, { 3062, 9500 } });
 
-	private MandatoryEventsExecution events = new MandatoryEventsExecution(this);
+	private MandatoryEventsExecution events = new MandatoryEventsExecution(this, null);
 
 	private LoginEvent login;
 
@@ -111,6 +112,10 @@ public class TutorialScript extends Script {
 	 */
 	@Override
 	public int onLoop() throws InterruptedException {
+
+		if (!getClient().isLoggedIn()) {
+			return 1000;
+		}
 
 		if (mainState == null) {
 			mainState = CheckInWhatArea.getState(this);
@@ -121,7 +126,7 @@ public class TutorialScript extends Script {
 		if ((!getClient().isLoggedIn()) && (System.currentTimeMillis() - getLogin().getStartTime() > 200_000)) {
 			log("Person wasn't logged in anymore, logging out!");
 			Thread.sleep(5000);
-			BotCommands.waitBeforeKill();
+			BotCommands.waitBeforeKill((MethodProvider) this, "WASN'T LOGGED IN ANYMORE, LOGGING OUT TUTORIAL ISLAND");
 		}
 
 		if (getClient().isLoggedIn() && getConfigs().get(281) >= 3 && getConfigs().get(281) < 650) {
@@ -131,13 +136,13 @@ public class TutorialScript extends Script {
 			if (!EnableFixedModeEvent.isFixedModeEnabled(this)) {
 				if (execute(new EnableFixedModeEvent()).hasFinished()) {
 					System.out.println("Set client to fixed mode, finished");
-					BotCommands.waitBeforeKill();
+					BotCommands.waitBeforeKill((MethodProvider) this, "SET CLIENT TO FIXED MODE TUTORIAL ISLAND");
 				}
 			}
 		}
 
 		if (!getClient().isLoggedIn() && getConfigs().get(281) > 0) {
-			BotCommands.killProcess((MethodProvider) this, (Script) this);
+			BotCommands.killProcess((MethodProvider) this, (Script) this, "");
 		}
 
 		if ((!TUT_ISLAND_AREA.contains(myPlayer()) && !TUT_ISLAND_AREA_CAVE.contains(myPlayer()))
@@ -146,7 +151,8 @@ public class TutorialScript extends Script {
 			log("Succesfully completed!");
 			DatabaseUtilities.updateStageProgress(this, AccountStage.QUEST_COOK_ASSISTANT.name(), 0,
 					getLogin().getUsername());
-			BotCommands.killProcess((MethodProvider) this, (Script) this);
+			BotCommands.killProcess((MethodProvider) this, (Script) this,
+					"BECAUSE PLAYER IS NOT ON TUTORIAL ISLAND, SETTING TO COOKS ASSISTANT");
 		}
 
 		log(mainState);
@@ -184,17 +190,22 @@ public class TutorialScript extends Script {
 	}
 
 	private ThreadDemo demo;
-	
+
 	@Override
 	public void onStart() throws InterruptedException {
-		login = LoginHandler.login(this, getParameters());
-		login.setScript("TUT_ISLAND");
+		if (!Config.NO_LOGIN) {
+			login = LoginHandler.login(this, getParameters());
+			login.setScript("TUT_ISLAND");
+		}
+		if (events.getLogin() == null) {
+			events.setLogin(login);
+		}
 		getCharacterCreationSection().login = login;
-		
-//		demo = new ThreadDemo();
-//		demo.exchangeContext(this.getBot());
-//		demo.setLoginEvent(getLogin());
-//		new Thread(demo).start();
+
+		// demo = new ThreadDemo();
+		// demo.exchangeContext(this.getBot());
+		// demo.setLoginEvent(getLogin());
+		// new Thread(demo).start();
 
 		getCharacterCreationSection().exchangeContext(getBot());
 		getGuilinorGuideSection().exchangeContext(getBot());

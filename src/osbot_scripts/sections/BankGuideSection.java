@@ -10,6 +10,8 @@ import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.api.ui.Tab;
 
 import osbot_scripts.TutorialScript;
+import osbot_scripts.framework.TabWid;
+import osbot_scripts.framework.Tabs;
 import osbot_scripts.sections.total.progress.MainState;
 import osbot_scripts.util.Sleep;
 
@@ -89,7 +91,8 @@ public class BankGuideSection extends TutorialSection {
 
 		case 531:
 			isInInstrucorRoom();
-			getTabs().open(Tab.IGNORES);
+			Tabs.openTab(this, TabWid.ACCOUNT_MANAGER);
+//			getTabs().open(Tab.ACCOUNT_MANAGEMENT);
 			break;
 
 		case 532:

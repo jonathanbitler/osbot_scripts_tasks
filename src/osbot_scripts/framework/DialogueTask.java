@@ -32,7 +32,7 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 	private String waitForItem;
 
 	private int questPointsFinished;
-	
+
 	private QuestStep quest;
 
 	public DialogueTask(String scriptName, int questProgress, int questConfig, MethodProvider prov, Area area,
@@ -70,7 +70,7 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 		setConfigQuestId(questConfig);
 		setQuest(quest);
 	}
-	
+
 	public DialogueTask(String scriptName, int questProgress, int questConfig, MethodProvider prov, Area area,
 			int npcId, String waitForItem, String... selections) {
 		setScriptName(scriptName);
@@ -155,13 +155,12 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 			onStart();
 		}
 
-		getApi().log("quest finished: " + (getQuestProgress() >= getQuestPointsFinished()) + " "
-				+ !pendingContinue() + " " + " " + spokenTo + " " + !isInQuestCutscene() + " "
-				+ getQuestPointsFinished() + " " + getQuestProgress() + " " + "in cutscene: "
-				+ getApi().getMap().isMinimapLocked() + " " + getApi().getWidgets().get(548, 51) == null + " "
-						+ getApi().getWidgets().get(231, 1) + " " + (getApi().getCamera().getPitchAngle() == 22
-								&& getApi().getCamera().getYawAngle() == 191));
-		
+		getApi().log("quest finished: " + (getQuestProgress() >= getQuestPointsFinished()) + " " + !pendingContinue()
+				+ " " + " " + spokenTo + " " + !isInQuestCutscene() + " " + getQuestPointsFinished() + " "
+				+ getQuestProgress() + " " + "in cutscene: " + getApi().getMap().isMinimapLocked() + " "
+				+ getApi().getWidgets().get(548, 51) == null + " " + getApi().getWidgets().get(231, 1) + " "
+						+ (getApi().getCamera().getPitchAngle() == 22 && getApi().getCamera().getYawAngle() == 191));
+
 		// testing TODO: find out if cares
 
 		// if (getArea() != null && !pendingContinue() &&
@@ -174,7 +173,7 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 		} else if (getApi().getDialogues().isPendingOption()) {
 			getApi().getDialogues().selectOption(getDialogueSelections());
 		}
-		
+
 		if (getQuest() != null) {
 			// Also looping with quest
 			try {
@@ -183,6 +182,12 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		}
+
+		attempts++;
+
+		if (attempts > 50 && getArea() != null) {
+			getApi().getWalking().webWalk(getArea());
 		}
 
 		if (!isInQuestCutscene()) {
@@ -217,9 +222,11 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 
 	}
 
+	private int attempts = 0;
+
 	@Override
 	public boolean finished() {
-		// TODO Auto-generated method stu	
+		// TODO Auto-generated method stu
 		if (getWaitForItem() != null && getWaitForItem().length() > 0) {
 			return !pendingContinue() && !getApi().getDialogues().isPendingOption() && spokenTo && !isInQuestCutscene()
 					&& getApi().getInventory().contains(getWaitForItem())
@@ -244,10 +251,10 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 
 		return
 		// getProv().getConfigs().get(1021) == 192 &&
-		getApi().getMap().isMinimapLocked() || 
-//		getApi().getWidgets().get(548, 51) == null
-//				|| getApi().getWidgets().get(231, 1) != null
-//				|| 
+		getApi().getMap().isMinimapLocked() ||
+		// getApi().getWidgets().get(548, 51) == null
+		// || getApi().getWidgets().get(231, 1) != null
+		// ||
 				(getApi().getCamera().getPitchAngle() == 22 && getApi().getCamera().getYawAngle() == 191);
 	}
 
@@ -378,7 +385,8 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 	}
 
 	/**
-	 * @param quest the quest to set
+	 * @param quest
+	 *            the quest to set
 	 */
 	public void setQuest(QuestStep quest) {
 		this.quest = quest;

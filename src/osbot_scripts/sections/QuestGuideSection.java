@@ -6,6 +6,8 @@ import org.osbot.rs07.api.model.RS2Object;
 import org.osbot.rs07.api.ui.Tab;
 
 import osbot_scripts.TutorialScript;
+import osbot_scripts.framework.TabWid;
+import osbot_scripts.framework.Tabs;
 import osbot_scripts.sections.total.progress.MainState;
 
 public class QuestGuideSection extends TutorialSection {
@@ -42,7 +44,8 @@ public class QuestGuideSection extends TutorialSection {
 			break;
 
 		case 230:
-			getTabs().open(Tab.QUEST);
+//			getTabs().open(Tab.QUEST);
+			Tabs.openTab(this, TabWid.QUEST);
 			break;
 
 		case 240:

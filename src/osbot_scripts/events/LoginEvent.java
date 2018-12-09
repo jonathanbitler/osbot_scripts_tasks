@@ -7,6 +7,7 @@ import org.osbot.rs07.constants.ResponseCode;
 import org.osbot.rs07.event.Event;
 import org.osbot.rs07.input.mouse.RectangleDestination;
 import org.osbot.rs07.listener.LoginResponseCodeListener;
+import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.utility.ConditionalSleep;
 
 import osbot_scripts.bot.utils.BotCommands;
@@ -23,12 +24,15 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 	private int pid;
 	
 	private String script;
+	
+	private MethodProvider api;
 
-	public LoginEvent(final String username, final String password, int pid, String accountStage) {
+	public LoginEvent(final String username, final String password, int pid, String accountStage, MethodProvider api) {
 		this.username = username;
 		this.password = password;
 		this.pid = pid;
 		this.accountStage = accountStage;
+		this.api = api;
 		this.setAsync();
 	}
 
@@ -43,7 +47,7 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 			return 1000;
 		} else if ((getClient().isLoggedIn() && getLobbyButton() == null)) {
 			getBot().getScriptExecutor().resume();
-			DatabaseUtilities.updateLoginStatus(username, "LOGGED_IN");
+			DatabaseUtilities.updateLoginStatus(null, username, "LOGGED_IN");
 			setFinished();
 		} else if (getClient().isLoggedIn() && getLobbyButton() != null) {
 			clickHereToPlayButton();
@@ -131,15 +135,15 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 		if (isLocked()) {
 			log("Account is locked, setting to locked");
 			DatabaseUtilities.updateAccountStatusInDatabase(this, "LOCKED", this.username);
-			BotCommands.waitBeforeKill();
+			BotCommands.waitBeforeKill(api, "BECAUSE OF ACCOUNT IS LOCKED");
 		} else if (isDisabledMessageVisible()) {
 			log("Account is banned, setting to locked");
 			DatabaseUtilities.updateAccountStatusInDatabase(this, "BANNED", this.username);
-			BotCommands.waitBeforeKill();
+			BotCommands.waitBeforeKill(api, "BECAUSE OF ACCOUNT IS BANNED");
 		} else if (isWrongEmail()) {
 			log("Account password is wrong, setting to invalid password");
 			DatabaseUtilities.updateAccountStatusInDatabase(this, "INVALID_PASSWORD", this.username);
-			BotCommands.waitBeforeKill();
+			BotCommands.waitBeforeKill(api, "BECAUSE OF PASSWORD IS WRONG");
 		}
 
 		if (isAlreadyLoggedInLocked()) {
@@ -150,7 +154,7 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			BotCommands.waitBeforeKill();
+			BotCommands.waitBeforeKill(api, "BECAUSE OF ALREADY LOGGED IN");
 		}
 
 		if (!getClient().isLoggedIn()) {
@@ -225,7 +229,7 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 			log("Login failed, account is disabled");
 			DatabaseUtilities.updateAccountStatusInDatabase(this, "BANNED", this.username);
 			setFailed();
-			BotCommands.waitBeforeKill();
+			BotCommands.waitBeforeKill(api, "BECAUSE OF ACCOUNT IS DISABELD");
 			return;
 		}
 
@@ -233,7 +237,7 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 			log("Connection error, attempts exceeded");
 			DatabaseUtilities.updateAccountStatusInDatabase(this, "AVAILABLE", this.username);
 			setFailed();
-			BotCommands.waitBeforeKill();
+			BotCommands.waitBeforeKill(api, "BECAUSE OF CONNECTION ERROR");
 			return;
 		}
 
@@ -257,26 +261,26 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 		case 26:
 		case 27:
 			setFailed();
-			BotCommands.waitBeforeKill();
+			BotCommands.waitBeforeKill(api, "NULL");
 			break;
 
 		case 11:
 		case 18:
 			log("Account is locked, setting to locked");
 			DatabaseUtilities.updateAccountStatusInDatabase(this, "LOCKED", this.username);
-			BotCommands.waitBeforeKill();
+			BotCommands.waitBeforeKill(api, "NULL");
 			break;
 
 		case 3:
 			log("Account password is wrong, setting to invalid password");
 			DatabaseUtilities.updateAccountStatusInDatabase(this, "INVALID_PASSWORD", this.username);
-			BotCommands.waitBeforeKill();
+			BotCommands.waitBeforeKill(api, "NULL");
 			break;
 
 		case 4:
 			log("Account is banned, setting to locked");
 			DatabaseUtilities.updateAccountStatusInDatabase(this, "BANNED", this.username);
-			BotCommands.waitBeforeKill();
+			BotCommands.waitBeforeKill(api, "NULL");
 			break;
 		}
 
@@ -389,6 +393,20 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 	 */
 	public void setScript(String script) {
 		this.script = script;
+	}
+
+	/**
+	 * @return the api
+	 */
+	public MethodProvider getApi() {
+		return api;
+	}
+
+	/**
+	 * @param api the api to set
+	 */
+	public void setApi(MethodProvider api) {
+		this.api = api;
 	}
 
 }

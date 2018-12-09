@@ -34,8 +34,8 @@ public class RomeoAndJulietQuest extends Script {
 			getDialogues().clickContinue();
 		}
 
-		if (getClient().isLoggedIn()) {
-			MandatoryEventsExecution ev = new MandatoryEventsExecution(this);
+		if (getRomeoAndJuliet().isLoggedIn()) {
+			MandatoryEventsExecution ev = new MandatoryEventsExecution(this, login);
 			ev.fixedMode();
 			ev.fixedMode2();
 			ev.executeAllEvents();
@@ -43,7 +43,7 @@ public class RomeoAndJulietQuest extends Script {
 		
 		if (Coordinates.isOnTutorialIsland(this)) {
 			DatabaseUtilities.updateStageProgress(this, "TUT_ISLAND", 0, login.getUsername());
-			BotCommands.killProcess((MethodProvider)this, (Script) this);
+			BotCommands.killProcess((MethodProvider)this, (Script) this, "SHOULD BE ON TUTORIAL ISLAND ROMEO");
 		}
 		
 		RS2Widget closeQuestCompleted = getWidgets().get(277, 15);
@@ -56,7 +56,7 @@ public class RomeoAndJulietQuest extends Script {
 			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0, login.getUsername());
 			DatabaseUtilities.updateAccountBreakTill(this, getRomeoAndJuliet().getEvent().getUsername(), 60);
 
-			BotCommands.killProcess((MethodProvider)this, (Script) this);
+			BotCommands.killProcess((MethodProvider)this, (Script) this, "ALREADY COMPLETED QUEST ROMEO");
 			return random(500, 600);
 		}
 
@@ -78,6 +78,7 @@ public class RomeoAndJulietQuest extends Script {
 		// TODO Auto-generated method stub
 		login = LoginHandler.login(this, getParameters());
 		login.setScript("QUEST_ROMEO_AND_JULIET");
+		DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN");
 		romeoAndJuliet = new RomeoAndJuliet(login, (Script)this);
 
 		if (login != null && login.getUsername() != null) {

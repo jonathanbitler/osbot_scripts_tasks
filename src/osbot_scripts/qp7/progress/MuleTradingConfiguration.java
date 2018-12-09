@@ -73,7 +73,7 @@ public class MuleTradingConfiguration extends QuestStep {
 							RandomUtil.gextNextAccountStage(this).name().toUpperCase(), 0, getEvent().getUsername());
 					DatabaseUtilities.updateStageProgress(this, "UNKNOWN", 0, getEvent().getEmailTradeWith());
 				}
-				BotCommands.killProcess(this, getScript());
+				BotCommands.killProcess(this, getScript(), "BECAUSE OF DONE WITH MULE TRADING");
 			} else {
 				if (update) {
 					DatabaseUtilities.updateStageProgress(this,
@@ -81,7 +81,7 @@ public class MuleTradingConfiguration extends QuestStep {
 							getEvent().getEmailTradeWith());
 					DatabaseUtilities.updateStageProgress(this, "UNKNOWN", 0, getEvent().getUsername());
 				}
-				BotCommands.killProcess(this, getScript());
+				BotCommands.killProcess(this, getScript(), "BECAUSE OF DONE WITH UNKNOWN TRADING");
 			}
 			getScript().stop();
 			return;

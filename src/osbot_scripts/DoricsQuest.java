@@ -10,6 +10,7 @@ import org.osbot.rs07.script.ScriptManifest;
 import osbot_scripts.bot.utils.BotCommands;
 import osbot_scripts.bot.utils.Coordinates;
 import osbot_scripts.bot.utils.RandomUtil;
+import osbot_scripts.config.Config;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.events.MandatoryEventsExecution;
@@ -31,8 +32,8 @@ public class DoricsQuest extends Script {
 			getDialogues().clickContinue();
 		}
 
-		if (getClient().isLoggedIn()) {
-			MandatoryEventsExecution ev = new MandatoryEventsExecution(this);
+		if (getGoblinsDiplomacy().isLoggedIn()) {
+			MandatoryEventsExecution ev = new MandatoryEventsExecution(this, login);
 			ev.fixedMode();
 			ev.fixedMode2();
 			ev.executeAllEvents();
@@ -40,7 +41,7 @@ public class DoricsQuest extends Script {
 
 		if (Coordinates.isOnTutorialIsland(this)) {
 			DatabaseUtilities.updateStageProgress(this, "TUT_ISLAND", 0, login.getUsername());
-			BotCommands.killProcess((MethodProvider) this, (Script) this);
+			BotCommands.killProcess((MethodProvider) this, (Script) this, "SHOULD BE ON TUT ISLAND DORICS");
 		}
 
 		RS2Widget closeQuestCompleted = getWidgets().get(277, 15);
@@ -55,10 +56,11 @@ public class DoricsQuest extends Script {
 			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0,
 					login.getUsername());
 			DatabaseUtilities.updateAccountBreakTill(this, getGoblinsDiplomacy().getEvent().getUsername(), 60);
-			BotCommands.killProcess((MethodProvider) this, (Script) this);
+			BotCommands.killProcess((MethodProvider) this, (Script) this, "ALREADY COMPLETED THE QUEST DORICS");
 			return random(500, 600);
 		}
 
+		getGoblinsDiplomacy().onLoop();
 		getGoblinsDiplomacy().getTaskHandler().taskLoop();
 
 		return random(500, 600);
@@ -69,12 +71,15 @@ public class DoricsQuest extends Script {
 		login = LoginHandler.login(this, getParameters());
 		if (login != null) {
 			login.setScript("QUEST_DORICS_QUEST");
+			DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN");
 		}
 		goblinsDiplomacy = new DoricsQuestConfig(3893, 31, login, (Script) this);
 
 		if (login != null && login.getUsername() != null) {
+			// if (!Config.TEST) {
 			getGoblinsDiplomacy()
 					.setQuestStageStep(Integer.parseInt(DatabaseUtilities.getQuestProgress(this, login.getUsername())));
+			// }
 		}
 
 		log("Quest progress: " + getGoblinsDiplomacy().getQuestStageStep());

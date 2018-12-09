@@ -23,8 +23,8 @@ public class IronMiner extends Script {
 	private IronMinerConfiguration goldfarmMining;
 
 	private LoginEvent login;
-	
-	private MandatoryEventsExecution ev = new MandatoryEventsExecution(this);
+
+	private MandatoryEventsExecution ev = new MandatoryEventsExecution(this, login);
 
 	@Override
 	public int onLoop() throws InterruptedException {
@@ -33,7 +33,7 @@ public class IronMiner extends Script {
 			getDialogues().clickContinue();
 		}
 
-		if (getClient().isLoggedIn()) {
+		if (getGoldfarmMining().isLoggedIn()) {
 			ev.fixedMode();
 			ev.fixedMode2();
 			ev.executeAllEvents();
@@ -41,14 +41,14 @@ public class IronMiner extends Script {
 
 		if (Coordinates.isOnTutorialIsland(this)) {
 			DatabaseUtilities.updateStageProgress(this, "TUT_ISLAND", 0, login.getUsername());
-			BotCommands.killProcess((MethodProvider) this, (Script) this);
+			BotCommands.killProcess((MethodProvider) this, (Script) this, "SHOULD BE ON TUT ISLAND IRON MINER");
 		}
 
 		// Account must have atleast 7 quest points, otherwise set it back to quesiton
 		if (getQuests().getQuestPoints() < 7) {
 			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0,
 					login.getUsername());
-			BotCommands.killProcess((MethodProvider) this, (Script) this);
+			BotCommands.killProcess((MethodProvider) this, (Script) this, "NOT ENOUGH QUEST POINTS IRON MINER");
 		}
 
 		// Breaking for 30 minutes because has done a few laps
@@ -64,17 +64,18 @@ public class IronMiner extends Script {
 		if (getSkills().getStatic(Skill.MINING) < 15) {
 			DatabaseUtilities.updateStageProgress(this, "MINING_LEVEL_TO_15", 0,
 					getGoldfarmMining().getEvent().getUsername());
-			BotCommands.killProcess((MethodProvider) this, (Script) this);
+			BotCommands.killProcess((MethodProvider) this, (Script) this, "NOT HIGH ENOUGH LEVEL IRON MINER");
 		}
 
-		// The loop for other stuff than tasks
-//		getGoldfarmMining().onLoop();
+		log("G.E. task: "
+				+ (getGoldfarmMining().getGrandExchangeTask() != null ? getGoldfarmMining().getGrandExchangeTask()
+						: "NULL"));
 
-		// The loop for tasks, may only loop when a grand exchange task
-		// is not active at the moment
-		// if (getGoldfarmMining().getGrandExchangeTask() == null) {
-		getGoldfarmMining().getTaskHandler().taskLoop();
-		// }
+		if (getGoldfarmMining().getGrandExchangeTask() == null) {
+			getGoldfarmMining().getTaskHandler().taskLoop();
+		} else {
+			getGoldfarmMining().onLoop();
+		}
 
 		return random(20, 80);
 	}
@@ -88,13 +89,14 @@ public class IronMiner extends Script {
 	public void onStart() throws InterruptedException {
 		login = LoginHandler.login(this, getParameters());
 		login.setScript("MINING_IRON_ORE");
+		DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN");
 		goldfarmMining = new IronMinerConfiguration(login, (Script) this);
 
 		getGoldfarmMining().setQuest(false);
 		if (login != null && login.getUsername() != null) {
-			getGoldfarmMining()
-			.setQuestStageStep(0);
-//					Integer.parseInt(DatabaseUtilities.getQuestProgress(this, login.getUsername())));
+			getGoldfarmMining().setQuestStageStep(0);
+			// Integer.parseInt(DatabaseUtilities.getQuestProgress(this,
+			// login.getUsername())));
 		}
 
 		getGoldfarmMining().exchangeContext(getBot());

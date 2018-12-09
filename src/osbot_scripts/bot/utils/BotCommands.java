@@ -5,51 +5,56 @@ import java.util.Set;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 
+import osbot_scripts.database.DatabaseConnection;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.util.Sleep;
 
 public class BotCommands {
 
-//	public static boolean threadAlive() {
-//		Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
-//		for (Thread t : threadSet) {
-//			if (t.getName().equalsIgnoreCase(DatabaseUtilities.DATABASE_THREAD_NAME)) {
-//				return t.isAlive();
-//			}
-//		}
-//		return true;
-//	}
+	// public static boolean threadAlive() {
+	// Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
+	// for (Thread t : threadSet) {
+	// if (t.getName().equalsIgnoreCase(DatabaseUtilities.DATABASE_THREAD_NAME)) {
+	// return t.isAlive();
+	// }
+	// }
+	// return true;
+	// }
 
-	public static void waitBeforeKill() {
+	public static void waitBeforeKill(MethodProvider api, String reason) {
 		try {
-			Thread.sleep(7_000);
+			api.log("QUITING BECAUSE OF: " + reason);
+			DatabaseConnection.getDatabase().disconnect();
+			Thread.sleep(30_000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.exit(1);
+//		System.exit(1);
 	}
 
-	
 	/**
 	 * 
 	 * @param pid
 	 */
-	public static void killProcess(MethodProvider api, Script bot) {
+	public static void killProcess(MethodProvider api, Script bot, String reason) {
 		try {
-			DatabaseUtilities.updateLoginStatus(api.getBot().getUsername(), "DEFAULT");
+			// DatabaseUtilities.updateLoginStatus(api, api.getBot().getUsername(),
+			// "DEFAULT");
+			api.log("QUITING BECAUSE OF: " + reason);
 			UsernameCheck.checkUsername(api);
 
-			api.log("Waiting 7 seconds for get request to send!");
+			api.log("Waiting 30 seconds for get request to send!");
 			try {
-				Thread.sleep(7_000);
+				DatabaseConnection.getDatabase().disconnect();
+				Thread.sleep(30_000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
 			bot.stop();
-			System.exit(1);
+//			System.exit(1);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

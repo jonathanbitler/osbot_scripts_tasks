@@ -5,15 +5,20 @@ import java.awt.Color;
 import org.osbot.rs07.api.Client.LoginState;
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.script.MethodProvider;
+import org.osbot.rs07.script.Script;
 
 import osbot_scripts.bot.utils.BotCommands;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.events.MandatoryEventsExecution;
+import osbot_scripts.login.LoginHandler;
+import osbot_scripts.util.Sleep;
 
 public class ThreadDemo extends MethodProvider implements Runnable {
 
 	private boolean run = true;
+
+	public String paramaters;
 
 	private LoginEvent loginEvent;
 
@@ -37,7 +42,7 @@ public class ThreadDemo extends MethodProvider implements Runnable {
 				getClient().isLoggedIn() || //
 				isLoading();
 	}
-	
+
 	public boolean isHopping() {
 		return //
 		getClient().getLoginStateValue() == 45 || //
@@ -49,46 +54,70 @@ public class ThreadDemo extends MethodProvider implements Runnable {
 		getClient().getLoginState() == LoginState.LOADING || //
 				getClient().getLoginState() == LoginState.LOADING_MAP;
 	}
-	
+
 	// private final CachedWidget isDeadInterface = new CachedWidget("Never show me
 	// this again");
+
+	private boolean relog = false;
 
 	@Override
 	public void run() {
 		while (run) {
 			try {
 
-				if (loginEvent != null) {
-					if (loginEvent.getScript() != null) {
-						log("Seperate thread is currently running.. " + loginEvent.getScript());
-					}
-
-					if (getClient().isLoggedIn() && loginEvent.hasFinished() && loginEvent.getScript() != null
-							&& !loginEvent.getScript().equalsIgnoreCase("TUT_ISLAND")) {
-						MandatoryEventsExecution ev = new MandatoryEventsExecution(this);
-						ev.fixedMode();
-						ev.fixedMode2();
-						// ev.executeAllEvents();
-					}
-				}
-
-				if (!getClient().isLoggedIn() && isWrongEmail()) {
+				// Account password is wrong when not logged in
+				if (!isLoggedIn() && isWrongEmail()) {
 					log("Account password is wrong, setting to invalid password");
 					DatabaseUtilities.updateAccountStatusInDatabase(this, "INVALID_PASSWORD",
 							getLoginEvent().getUsername());
-					BotCommands.waitBeforeKill();
+					BotCommands.waitBeforeKill(this, "BECAUSE OF INVALID PASSWORD");
 				}
 
-				if (loginEvent != null && loginEvent.hasFinished() && !isLoggedIn()) {
-					log("Isn't logged in!?");
-					BotCommands.waitBeforeKill();
-				}
-
-				// if (isDeadInterface != null && getWidgets() != null &&
-				// isDeadInterface.get(getWidgets()).isPresent()) {
-				// isDeadInterface.get(getWidgets()).get().interact();
+				// if (!isLoggedIn() && !relog) {
+				// relog = true;
+				//// if (paramaters != null) {
+				//// loginEvent = LoginHandler.login(this, paramaters);
+				//// }
+				// getBot().addLoginListener(loginEvent);
+				// execute(loginEvent);
 				// }
+				//
+				// Is logged in and loginevent finished
+				if (isLoggedIn() && loginEvent != null && loginEvent.getUsername() != null
+						&& loginEvent.hasFinished()) {
 
+					if (loginEvent.getScript() != null) {
+						log("Seperate thread is currently running.. " + loginEvent.getScript());
+
+						// Resizable mode when logged in
+						if (!loginEvent.getScript().equalsIgnoreCase("TUT_ISLAND")) {
+							MandatoryEventsExecution ev = new MandatoryEventsExecution(this, getLoginEvent());
+							ev.fixedMode();
+							ev.fixedMode2();
+						}
+
+						// if
+						// (loginEvent.getScript().equalsIgnoreCase(AccountStage.MINING_IRON_ORE.name())
+						// ||
+						// loginEvent.getScript().equalsIgnoreCase(AccountStage.MINING_LEVEL_TO_15.name()))
+						// {
+						// if (!MiningLevelTo15Configuration.MINING_ZONE.contains(myPlayer())
+						// && !MiningLevelTo15Configuration.WHOLE_ACTION_AREA.contains(myPlayer())) {
+						// log("Isn't at correct position!? Restarting..");
+						// BotCommands.waitBeforeKill();
+						// }
+						// }
+					}
+
+				}
+
+				// Prevent stuck on login
+				if (loginEvent != null && loginEvent.hasFinished() && !isLoggedIn()) {
+					// log("Isn't logged in!?");
+					BotCommands.waitBeforeKill(this, "BECAUSE OF NOT LOGGED IN RIGHT NOW E01");
+				}
+
+				// Death interface click
 				if (getWidgets() != null && getClient().isLoggedIn()) {
 					RS2Widget close = getWidgets().get(153, 71);
 					if (close != null && close.isVisible()) {
@@ -116,4 +145,5 @@ public class ThreadDemo extends MethodProvider implements Runnable {
 	public void stop() {
 		run = false;
 	}
+
 }

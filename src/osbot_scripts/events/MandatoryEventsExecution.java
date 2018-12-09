@@ -9,15 +9,25 @@ import org.osbot.rs07.event.Event;
 import org.osbot.rs07.script.MethodProvider;
 
 import osbot_scripts.bot.utils.BotCommands;
+import osbot_scripts.qp7.progress.QuestStep;
 import osbot_scripts.util.Sleep;
 
 public class MandatoryEventsExecution {
 
-	public MandatoryEventsExecution(MethodProvider provider) {
+	public MandatoryEventsExecution(MethodProvider provider, LoginEvent login) {
 		this.setProvider(provider);
+		this.setLogin(login);
 	}
 
 	private MethodProvider provider;
+
+	private LoginEvent login;
+
+	public boolean isLoggedIn() {
+		return //
+		provider.getClient().getLoginStateValue() == 30 || //
+				provider.getClient().isLoggedIn();
+	}
 
 	private boolean isAudioDisabled = false, isFixedMode = false;
 
@@ -39,12 +49,17 @@ public class MandatoryEventsExecution {
 
 	public void fixedMode() throws InterruptedException {
 		boolean loop = true;
+
+		if (!isLoggedIn() || getProvider() == null || getProvider().getWidgets() == null || !getLogin().hasFinished()) {
+			return;
+		}
+
 		RS2Widget isResizable = getProvider().getWidgets().get(164, 32);
 
 		if ((isResizable != null && !isResizable.isVisible()) || (isResizable == null)) {
 			return;
 		}
-		
+
 		// Has the resizable screen active
 		while (loop) {
 			if (isResizable != null && isResizable.isVisible()) {
@@ -62,7 +77,7 @@ public class MandatoryEventsExecution {
 
 					getProvider().log("Couldn't fix itself, restarting");
 					Thread.sleep(5000);
-					BotCommands.waitBeforeKill();
+					BotCommands.waitBeforeKill(getProvider(), "BECAUSE OF FIXED MODE");
 				}
 				failed++;
 
@@ -87,7 +102,7 @@ public class MandatoryEventsExecution {
 							getProvider().log("Successfully resized");
 							loop = false;
 							Thread.sleep(5000);
-							BotCommands.waitBeforeKill();
+							BotCommands.waitBeforeKill(getProvider(), "BECAUSE OF FIXED MODE");
 						}
 
 					}
@@ -101,17 +116,21 @@ public class MandatoryEventsExecution {
 		if (!EnableFixedModeEvent.isFixedModeEnabled(getProvider())) {
 			if (getProvider().execute(new EnableFixedModeEvent()).hasFinished()) {
 				System.out.println("Set client to fixed mode, finished");
-				BotCommands.waitBeforeKill();
+				BotCommands.waitBeforeKill(getProvider(), "BECAUSE OF FIXED MODE");
 			}
+		}
+
+		if (!isLoggedIn() || getProvider() == null || getProvider().getWidgets() == null || !getLogin().hasFinished()) {
+			return;
 		}
 
 		boolean loop = true;
 		RS2Widget isResizable = getProvider().getWidgets().get(164, 34);
-		
+
 		if ((isResizable != null && !isResizable.isVisible()) || (isResizable == null)) {
 			return;
 		}
-		
+
 		// Has the resizable screen active
 		while (loop) {
 			// Has the resizable screen active
@@ -129,7 +148,7 @@ public class MandatoryEventsExecution {
 				if (failed > 5) {
 					getProvider().log("Couldn't fix itself, restarting");
 					Thread.sleep(5000);
-					BotCommands.waitBeforeKill();
+					BotCommands.waitBeforeKill(getProvider(), "BECAUSE OF FIXED MODE");
 				}
 				failed++;
 
@@ -155,7 +174,7 @@ public class MandatoryEventsExecution {
 							getProvider().log("Successfully resized");
 							loop = false;
 							Thread.sleep(5000);
-							BotCommands.waitBeforeKill();
+							BotCommands.waitBeforeKill(getProvider(), "BECAUSE OF FIXED MODE");
 						}
 
 					}
@@ -168,7 +187,7 @@ public class MandatoryEventsExecution {
 			new int[][] { { 3220, 3236 }, { 3247, 3236 }, { 3246, 3211 }, { 3203, 3204 }, { 3200, 3234 } });
 
 	public void executeAllEvents() {
-		
+
 		// Continueing when has a dialogue to prevent getting stuck
 		if (pendingContinue()) {
 			selectContinue();
@@ -246,6 +265,21 @@ public class MandatoryEventsExecution {
 	 */
 	public void setProvider(MethodProvider provider) {
 		this.provider = provider;
+	}
+
+	/**
+	 * @return the login
+	 */
+	public LoginEvent getLogin() {
+		return login;
+	}
+
+	/**
+	 * @param login
+	 *            the login to set
+	 */
+	public void setLogin(LoginEvent login) {
+		this.login = login;
 	}
 
 }

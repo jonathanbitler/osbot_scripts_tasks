@@ -3,6 +3,7 @@ package osbot_scripts.qp7.progress;
 import java.awt.event.KeyEvent;
 import java.util.List;
 
+import org.osbot.rs07.api.Client.LoginState;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.model.GroundItem;
@@ -75,6 +76,25 @@ public abstract class QuestStep extends MethodProvider {
 
 	protected long beginTime = -1;
 
+	public boolean isLoggedIn() {
+		return //
+		isHopping() || //
+				getClient().getLoginStateValue() == 30 || //
+				getClient().isLoggedIn() || //
+				isLoading();
+	}
+
+	public boolean isHopping() {
+		return //
+		getClient().getLoginStateValue() == 45 || //
+				getClient().getLoginStateValue() == 25;//
+	}
+
+	public boolean isLoading() {
+		return //
+		getClient().getLoginState() == LoginState.LOADING || //
+				getClient().getLoginState() == LoginState.LOADING_MAP;
+	}
 	/**
 	 * Formatting time to be HOUR:MINUTE:SECONDS
 	 * 

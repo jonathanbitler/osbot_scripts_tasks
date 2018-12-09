@@ -12,12 +12,16 @@ public class EnableFixedModeEvent extends Event {
 	private final CachedWidget displaySettingsWidget = new CachedWidget(new WidgetActionFilter("Display"));
 
 	public static boolean isFixedModeEnabled(final MethodProvider methods) {
-		return methods.getWidgets().isVisible(378) || methods.getWidgets().isVisible(548)
-				|| !methods.myPlayer().isVisible();
+		return (methods.getClient().isLoggedIn()) && (methods.getWidgets().isVisible(378) || methods.getWidgets().isVisible(548)
+				|| !methods.myPlayer().isVisible());
 	}
 
 	@Override
 	public int execute() throws InterruptedException {
+		if (!getClient().isLoggedIn()) {
+			return 200;
+		}
+		
 		if (isFixedModeEnabled(this)) {
 			setFinished();
 		} else if (!optionsWidget.get(getWidgets()).isPresent()) {

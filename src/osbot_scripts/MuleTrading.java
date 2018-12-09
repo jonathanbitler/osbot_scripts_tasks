@@ -32,15 +32,15 @@ public class MuleTrading extends Script {
 		
 		if (Coordinates.isOnTutorialIsland(this)) {
 			DatabaseUtilities.updateStageProgress(this, "TUT_ISLAND", 0, login.getUsername());
-			BotCommands.killProcess((MethodProvider)this, (Script) this);
+			BotCommands.killProcess((MethodProvider)this, (Script) this, "SHOULD BE ON TUT ISLAND, MULE TRADING");
 		}
 
 		if (login.hasFinished() && !getClient().isLoggedIn()) {
-			BotCommands.waitBeforeKill();
+			BotCommands.waitBeforeKill((MethodProvider)this, "NOT LOGGED IN, MULE TRADING");
 		}
 
 		if (getClient().isLoggedIn() && !getTrade().isCurrentlyTrading()) {
-			MandatoryEventsExecution ev = new MandatoryEventsExecution(this);
+			MandatoryEventsExecution ev = new MandatoryEventsExecution(this, login);
 			ev.fixedMode();
 			ev.fixedMode2();
 			if (login.getAccountStage().equalsIgnoreCase("MULE-TRADING")) {
@@ -73,6 +73,7 @@ public class MuleTrading extends Script {
 	public void onStart() throws InterruptedException {
 		login = LoginHandler.login(this, getParameters());
 		login.setScript("MULE_TRADING");
+		DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN");
 		muleTrading = new MuleTradingConfiguration(login, (Script) this);
 
 		if (login != null && login.getUsername() != null) {

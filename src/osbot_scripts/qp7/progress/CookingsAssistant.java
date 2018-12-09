@@ -191,7 +191,7 @@ public class CookingsAssistant extends QuestStep {
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("path to cook from mill", 1, QUEST_CONFIG, getBot().getMethods(), PATH_TO_COOK_FROM_MILL,
-						COOKS_AREA, getScript(), getEvent(), true, false));
+						WHEAT_FLOOR_0, COOKS_AREA, getScript(), getEvent(), false, true));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new DialogueTask("talk with cook final", 1,
 				QUEST_CONFIG, getBot().getMethods(), COOKS_AREA, 4626, 2, new String[] { "" }));

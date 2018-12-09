@@ -6,6 +6,8 @@ import org.osbot.rs07.api.ui.Tab;
 
 import osbot_scripts.TutorialScript;
 import osbot_scripts.events.MandatoryEventsExecution;
+import osbot_scripts.framework.TabWid;
+import osbot_scripts.framework.Tabs;
 import osbot_scripts.sections.total.progress.MainState;
 import osbot_scripts.util.Sleep;
 
@@ -39,9 +41,9 @@ public class GuilinorGuideSection extends TutorialSection {
 			break;
 
 		case 3:
-			new MandatoryEventsExecution(this).fixedMode();
-			new MandatoryEventsExecution(this).fixedMode2();
-			getTabs().open(Tab.SETTINGS);
+			new MandatoryEventsExecution(this, login).fixedMode();
+			new MandatoryEventsExecution(this, login).fixedMode2();
+			Tabs.openTab(this, TabWid.SETTINGS);
 			break;
 
 		case 7:

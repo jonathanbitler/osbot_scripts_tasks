@@ -7,6 +7,8 @@ import org.osbot.rs07.api.ui.Spells;
 import org.osbot.rs07.api.ui.Tab;
 import org.osbot.rs07.event.WalkingEvent;
 
+import osbot_scripts.framework.TabWid;
+import osbot_scripts.framework.Tabs;
 import osbot_scripts.sections.total.progress.MainState;
 import osbot_scripts.util.Sleep;
 
@@ -36,7 +38,8 @@ public class WizardGuideSection extends TutorialSection {
 			break;
 
 		case 630:
-			getTabs().open(Tab.MAGIC);
+			// getTabs().open(Tab.MAGIC);
+			Tabs.openTab(this, TabWid.MAGIC);
 			break;
 		case 640:
 			talkAndContinueWithInstructor();
@@ -44,10 +47,10 @@ public class WizardGuideSection extends TutorialSection {
 
 		case 650:
 			if (!CHICKEN_AREA.contains(myPosition())) {
-                walkToChickenArea();
-            } else {
-                attackChicken();
-            }
+				walkToChickenArea();
+			} else {
+				attackChicken();
+			}
 			break;
 
 		case 670:
@@ -62,17 +65,17 @@ public class WizardGuideSection extends TutorialSection {
 		}
 
 	}
-	
-	private boolean walkToChickenArea() {
-        WalkingEvent walkingEvent = new WalkingEvent(CHICKEN_AREA);
-        walkingEvent.setMinDistanceThreshold(0);
-        walkingEvent.setMiniMapDistanceThreshold(0);
-        execute(walkingEvent);
-        return walkingEvent.hasFinished();
-    }
 
-	
-    private static final Area CHICKEN_AREA = new Area(3139, 3091, 3140, 3090);
+	private boolean walkToChickenArea() {
+		WalkingEvent walkingEvent = new WalkingEvent(CHICKEN_AREA);
+		walkingEvent.setMinDistanceThreshold(0);
+		walkingEvent.setMiniMapDistanceThreshold(0);
+		execute(walkingEvent);
+		return walkingEvent.hasFinished();
+	}
+
+	private static final Area CHICKEN_AREA = new Area(
+			new int[][] { { 3139, 3089 }, { 3141, 3090 }, { 3141, 3092 }, { 3138, 3091 } });
 
 	private boolean attackChicken() {
 		NPC chicken = getNpcs().closest("Chicken");

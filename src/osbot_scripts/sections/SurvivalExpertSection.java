@@ -15,6 +15,8 @@ import org.osbot.rs07.api.ui.Tab;
 import org.osbot.rs07.event.WalkingEvent;
 
 import osbot_scripts.TutorialScript;
+import osbot_scripts.framework.TabWid;
+import osbot_scripts.framework.Tabs;
 import osbot_scripts.sections.total.progress.MainState;
 import osbot_scripts.util.Sleep;
 
@@ -62,6 +64,7 @@ public class SurvivalExpertSection extends TutorialSection {
 			}
 			break;
 		case 30:
+			Tabs.openTab(this, TabWid.INVENTORY);
 			Sleep.sleepUntil(() -> getTabs().open(Tab.INVENTORY), 10000, 1000);
 			break;
 		case 40:
@@ -69,6 +72,7 @@ public class SurvivalExpertSection extends TutorialSection {
 			// chopTree();
 			break;
 		case 50:
+			Tabs.openTab(this, TabWid.SKILLS);
 			Sleep.sleepUntil(() -> getTabs().open(Tab.SKILLS), 10000, 1000);
 			// lightFire();
 			break;

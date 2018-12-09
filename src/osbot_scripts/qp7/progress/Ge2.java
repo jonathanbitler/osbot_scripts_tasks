@@ -22,6 +22,10 @@ import osbot_scripts.util.Sleep;
 @ScriptManifest(author = "pim97@github & dormic@osbot", info = "ge", logo = "", name = "GE_SELL_BUY_MINING", version = 0)
 public class Ge2 extends Script {
 
+	public Ge2(LoginEvent login) {
+		this.login = login;
+	}
+
 	private GrandExchangeTask task;
 
 	private LoginEvent login;
@@ -34,6 +38,18 @@ public class Ge2 extends Script {
 	@Override
 	public int onLoop() throws InterruptedException {
 
+		// if (demo == null) {
+		// log("Started new thread demo!");
+		// demo = new ThreadDemo();
+		// demo.exchangeContext(this.getBot());
+		// demo.setLoginEvent(login);
+		// new Thread(demo).start();
+		// }
+
+		if (getTask() == null) {
+			sideLoop();
+		}
+
 		tries++;
 
 		log("current tries: " + tries);
@@ -43,13 +59,27 @@ public class Ge2 extends Script {
 				DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0,
 						login.getUsername());
 			}
-			BotCommands.killProcess((MethodProvider) this, (Script) this);
+			BotCommands.killProcess((MethodProvider) this, (Script) this, "BECAUSE OF FAILED GE2 TASK");
 		}
 
 		if (!getClient().isLoggedIn() && login.hasFinished()) {
 			log("Isn't logged in!?");
 			Thread.sleep(5000);
-			BotCommands.waitBeforeKill();
+			BotCommands.waitBeforeKill((MethodProvider) this, "BECAUSE OF NOT LOGGED IN RIGHT NOW");
+		}
+
+		// Fixed mode
+		MandatoryEventsExecution ev = new MandatoryEventsExecution(this, login);
+		ev.fixedMode();
+		ev.fixedMode2();
+
+		// If the player is not in the grand exchange area, then walk to it
+		if (myPlayer() != null
+				&& !new Area(new int[][] { { 3144, 3508 }, { 3144, 3471 }, { 3183, 3470 }, { 3182, 3509 } })
+						.contains(myPlayer())) {
+			getWalking()
+					.webWalk(new Area(new int[][] { { 3160, 3494 }, { 3168, 3494 }, { 3168, 3485 }, { 3160, 3485 } }));
+			log("The player has a grand exchange task but isn't there, walking to there");
 		}
 
 		log("task: " + getTask());
@@ -57,17 +87,15 @@ public class Ge2 extends Script {
 			getTask().loop();
 
 		} else if (getTask() != null && getTask().finished()) {
-			log("Task has finished!");
-			if (login != null) {
-				DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0,
-						login.getUsername());
-			}
-			BotCommands.killProcess((MethodProvider) this, (Script) this);
+			// log("Task has finished!");
+			// if (login != null) {
+			// DatabaseUtilities.updateStageProgress(this,
+			// RandomUtil.gextNextAccountStage(this).name(), 0,
+			// login.getUsername());
+			// }
+			// BotCommands.killProcess((MethodProvider) this, (Script) this);
 		}
 
-		if (getTask() == null) {
-			sideLoop();
-		}
 		return random(800, 1600);
 	}
 
@@ -75,10 +103,6 @@ public class Ge2 extends Script {
 		log("Running the side loop..");
 
 		if (getClient().isLoggedIn() && myPlayer() != null && myPlayer().isVisible()) {
-
-			MandatoryEventsExecution ev = new MandatoryEventsExecution(this);
-			ev.fixedMode();
-			ev.fixedMode2();
 
 			if (tries > 15 && getTask() == null) {
 				if (!getBank().isOpen()) {
@@ -110,17 +134,8 @@ public class Ge2 extends Script {
 									new BankItem("Uncut ruby", 1619, 1000, 1, true),
 									new BankItem("Uncut sapphire", 1623, 1000, 1, true),
 									new BankItem("Clay", 434, clayAmount, 1, true) },
-							null, (Script) this));
+							login, (Script) this));
 				}
-			}
-
-			// If the player is not in the grand exchange area, then walk to it
-			if (myPlayer() != null
-					&& !new Area(new int[][] { { 3144, 3508 }, { 3144, 3471 }, { 3183, 3470 }, { 3182, 3509 } })
-							.contains(myPlayer())) {
-				getWalking().webWalk(
-						new Area(new int[][] { { 3160, 3494 }, { 3168, 3494 }, { 3168, 3485 }, { 3160, 3485 } }));
-				log("The player has a grand exchange task but isn't there, walking to there");
 			}
 
 			if (!getBank().isOpen()) {
@@ -138,7 +153,7 @@ public class Ge2 extends Script {
 								new BankItem("Uncut ruby", 1619, 1000, 1, true),
 								new BankItem("Uncut sapphire", 1623, 1000, 1, true),
 								new BankItem("Clay", 434, clayAmount, 1, true) },
-						null, (Script) this));
+						login, (Script) this));
 			}
 
 			int ironAmount = -1;
@@ -175,7 +190,7 @@ public class Ge2 extends Script {
 								new BankItem("Uncut ruby", 1619, 1000, 1, true),
 								new BankItem("Uncut sapphire", 1623, 1000, 1, true),
 								new BankItem("Clay", 434, 1000, 1, true) },
-						null, (Script) this));
+						login, (Script) this));
 			} else if (totalAccountValue > 5000 && getBank().isOpen() && getSkills().getStatic(Skill.MINING) > 3
 					&& getSkills().getStatic(Skill.MINING) < 6
 					&& ((!getInventory().contains("Iron pickaxe") && !getBank().contains("Iron pickaxe")))) {
@@ -188,7 +203,7 @@ public class Ge2 extends Script {
 								new BankItem("Uncut emerald", 1621, 1000, 1, true),
 								new BankItem("Uncut ruby", 1619, 1000, 1, true),
 								new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
-						null, (Script) this));
+						login, (Script) this));
 			} else if (totalAccountValue > 8000 && getBank().isOpen() && getSkills().getStatic(Skill.MINING) >= 6
 					&& getSkills().getStatic(Skill.MINING) < 21
 					&& ((!getInventory().contains("Steel pickaxe") && !getBank().contains("Steel pickaxe")))) {
@@ -201,7 +216,7 @@ public class Ge2 extends Script {
 								new BankItem("Uncut emerald", 1621, 1000, 1, true),
 								new BankItem("Uncut ruby", 1619, 1000, 1, true),
 								new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
-						null, (Script) this));
+						login, (Script) this));
 			} else if (totalAccountValue > 15000 && getBank().isOpen() && getSkills().getStatic(Skill.MINING) >= 21
 					&& getSkills().getStatic(Skill.MINING) < 31
 					&& ((!getInventory().contains("Mithril pickaxe") && !getBank().contains("Mithril pickaxe")))) {
@@ -214,7 +229,7 @@ public class Ge2 extends Script {
 								new BankItem("Uncut ruby", 1619, 1000, 1, true),
 								new BankItem("Uncut sapphire", 1623, 1000, 1, true),
 								new BankItem("Clay", 434, 1000, 1, true) },
-						null, (Script) this));
+						login, (Script) this));
 			} else if (totalAccountValue > 30000 && getBank().isOpen() && getSkills().getStatic(Skill.MINING) >= 31
 					&& getSkills().getStatic(Skill.MINING) < 41
 					&& ((!getInventory().contains("Adamant pickaxe") && !getBank().contains("Adamant pickaxe")))) {
@@ -227,7 +242,7 @@ public class Ge2 extends Script {
 								new BankItem("Uncut ruby", 1619, 1000, 1, true),
 								new BankItem("Uncut sapphire", 1623, 1000, 1, true),
 								new BankItem("Clay", 434, 1000, 1, true) },
-						null, (Script) this));
+						login, (Script) this));
 			} else if (totalAccountValue > 45000 && getBank().isOpen() && getSkills().getStatic(Skill.MINING) >= 41
 					&& ((!getInventory().contains("Rune pickaxe") && !getBank().contains("Rune pickaxe")))) {
 
@@ -239,22 +254,32 @@ public class Ge2 extends Script {
 								new BankItem("Uncut emerald", 1621, 1000, 1, true),
 								new BankItem("Uncut ruby", 1619, 1000, 1, true),
 								new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
-						null, (Script) this));
+						login, (Script) this));
 			}
 		}
 	}
 
-	@Override
-	public void onStart() throws InterruptedException {
-		login = LoginHandler.login(this, getParameters());
-
-		demo = new ThreadDemo();
-		demo.exchangeContext(this.getBot());
-		demo.setLoginEvent(login);
-		new Thread(demo).start();
+	public void setTask() throws InterruptedException {
+		log("Trying to set a task!");
+		onLoop();
 	}
 
-	private ThreadDemo demo;
+	@Override
+	public void onStart() throws InterruptedException {
+		// while (!getBank().isOpen()) {
+		// getBank().open();
+		//
+		// log("Waiting for bank to open..");
+		// Thread.sleep(1000);
+		// }
+		if (getTask() == null) {
+			sideLoop();
+		}
+		// login = LoginHandler.login(this, getParameters());
+		// DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN");
+	}
+
+	// private ThreadDemo demo;
 
 	@Override
 	public void onExit() throws InterruptedException {

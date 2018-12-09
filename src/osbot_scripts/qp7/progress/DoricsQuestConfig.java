@@ -198,7 +198,7 @@ public class DoricsQuestConfig extends QuestStep {
 								new BankItem("Uncut emerald", 1621, 1000, 1, true),
 								new BankItem("Uncut ruby", 1619, 1000, 1, true),
 								new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
-						null, getScript(), this));
+						getEvent(), getScript(), this));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new BankTask("withdraw items for quest", 0, getBot().getMethods(), true,
@@ -214,8 +214,8 @@ public class DoricsQuestConfig extends QuestStep {
 		// TODO wrong npc id and dialogue & dialogue step after talk
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new DialogueTask("talk with doric", 0, QUEST_CONFIG, getBot().getMethods(), DORIC_QUEST_START_AREA,
-						3893, 1, this, new String[] { "I wanted to use your anvils.", "Yes, I will get you the materials.",
-								"Certainly, I'll be right back!" }));
+						3893, 1, this, new String[] { "I wanted to use your anvils.",
+								"Yes, I will get you the materials.", "Certainly, I'll be right back!" }));
 
 		/**
 		 * incorrect
@@ -324,6 +324,17 @@ public class DoricsQuestConfig extends QuestStep {
 
 	}
 
+	private void resetQuestScript() {
+		log("Restarting because of restarting script");
+		try {
+			Thread.sleep(15000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.exit(1);
+	}
+
 	@Override
 	public void onLoop() throws InterruptedException {
 		if (getCombat().isFighting() || myPlayer().isUnderAttack()) {
@@ -356,7 +367,8 @@ public class DoricsQuestConfig extends QuestStep {
 
 	private boolean inventoryContainsAllItems() {
 		return (getInventory().getAmount("Iron ore") >= 2 && getInventory().getAmount("Clay") >= 6
-				&& getInventory().getAmount("Copper ore") >= 4);
+				&& getInventory().getAmount("Copper ore") >= 4 && getInventory().getAmount(437) <= 0)
+				&& (getInventory().getAmount(441) <= 0) && (getInventory().getAmount(435) <= 0);
 	}
 
 	@Override

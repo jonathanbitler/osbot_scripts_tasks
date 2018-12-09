@@ -12,6 +12,7 @@ import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 
 import osbot_scripts.bot.utils.BotCommands;
+import osbot_scripts.config.Config;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.framework.AccountStage;
@@ -20,6 +21,7 @@ import osbot_scripts.framework.ClickObjectTask;
 import osbot_scripts.framework.GrandExchangeTask;
 import osbot_scripts.framework.WalkTask;
 import osbot_scripts.framework.parts.BankItem;
+import osbot_scripts.hopping.WorldHop;
 import osbot_scripts.qp7.progress.entities.Rock;
 import osbot_scripts.sections.total.progress.MainState;
 import osbot_scripts.util.Sleep;
@@ -62,7 +64,12 @@ public class MiningLevelTo15Configuration extends QuestStep {
 			new int[][] { { 3187, 3449 }, { 3163, 3447 }, { 3145, 3415 }, { 3149, 3380 }, { 3173, 3344 },
 					{ 3210, 3358 }, { 3232, 3387 }, { 3230, 3438 }, { 3227, 3456 } });
 
+	public static final Area WHOLE_ACTION_AREA = new Area(
+			new int[][] { { 2942, 3519 }, { 3332, 3519 }, { 3335, 3328 }, { 3250, 3175 }, { 2934, 3294 } });
+
 	private String pickaxe;
+
+	private Ge2 grandExchangeActions;
 
 	@Override
 	public void onStart() {
@@ -103,8 +110,6 @@ public class MiningLevelTo15Configuration extends QuestStep {
 
 	}
 
-	private GrandExchangeTask grandExchangeTask = null;
-
 	public void onPaint(Graphics2D g) {
 		g.setColor(Color.WHITE);
 		int profit = ((currentAmount - beginAmount) + soldAmount) * 140;
@@ -128,8 +133,25 @@ public class MiningLevelTo15Configuration extends QuestStep {
 		// resetStage(AccountStage.MINING_LEVEL_TO_15.name());
 		// }
 
-		if (getEvent().hasFinished() && !getClient().isLoggedIn()) {
-			BotCommands.waitBeforeKill();
+		if (!Config.NO_LOGIN) {
+			if (getEvent().hasFinished() && !isLoggedIn()) {
+				log("Not logged in.. restarting");
+				BotCommands.waitBeforeKill((MethodProvider)this, "BECAUSE OF NOT LOGGED IN ATM E02");
+			}
+		}
+
+		// Supporting world hopping when world is too full
+		int threshholdToHop = 10_000;
+		int profit = ((currentAmount - beginAmount) + soldAmount) * 140;
+		long profitPerHour = (long) (profit * (3600000.0 / (System.currentTimeMillis() - beginTime)));
+		if ((profitPerHour > 0) && (profitPerHour < threshholdToHop)
+				&& ((System.currentTimeMillis() - beginTime) > 1_800_000)
+				|| ((System.currentTimeMillis() - beginTime) > 3_600_000)) {
+			if (WorldHop.hop(this)) {
+				beginTime = System.currentTimeMillis();
+				beginAmount = currentAmount;
+				soldAmount = 0;
+			}
 		}
 
 		// If the player is fighting or under combat, then reset the stage to prevent
@@ -168,15 +190,12 @@ public class MiningLevelTo15Configuration extends QuestStep {
 
 		// When having more than 200 clay, then go to the g.e. and sell it
 		if (getBank().isOpen() && getBank().getAmount("Clay") > 200) {
-			// int amount = (int) (getBank().getAmount("Clay"));
-
-			DatabaseUtilities.updateStageProgress((MethodProvider) this, AccountStage.GE_SELL_BUY_MINING.name(), 0,
-					getEvent().getUsername());
-			BotCommands.killProcess((MethodProvider) this, getScript());
-			return;
-			// setGrandExchangeTask(new GrandExchangeTask(this, new BankItem[] {},
-			// new BankItem[] { new BankItem("Clay", 434, amount, 1, true) }, null,
-			// getScript()));
+			// DatabaseUtilities.updateStageProgress((MethodProvider) this,
+			// AccountStage.GE_SELL_BUY_MINING.name(), 0,
+			// getEvent().getUsername());
+			// BotCommands.killProcess((MethodProvider) this, getScript());
+			// return;
+			setGrandExchangeActions(new Ge2(getEvent()));
 		}
 
 		int clayAmount = -1;
@@ -204,7 +223,7 @@ public class MiningLevelTo15Configuration extends QuestStep {
 				// the database
 				if (getEvent() != null && getEvent().getUsername() != null) {
 					DatabaseUtilities.updateStageProgress(this, "MULE_TRADING", 0, getEvent().getUsername());
-					BotCommands.killProcess(this, getScript());
+					BotCommands.killProcess(this, getScript(), "BECAUSE WANTING TO GO TO MULE TRADING");
 				}
 			}
 
@@ -219,10 +238,14 @@ public class MiningLevelTo15Configuration extends QuestStep {
 		if (totalAccountValue > 3000 && getBank().isOpen() && getSkills().getStatic(Skill.MINING) <= 3
 				&& ((!getInventory().contains("Bronze pickaxe") && !getBank().contains("Bronze pickaxe")))) {
 
-			DatabaseUtilities.updateStageProgress((MethodProvider) this, AccountStage.GE_SELL_BUY_MINING.name(), 0,
-					getEvent().getUsername());
-			BotCommands.killProcess((MethodProvider) this, getScript());
-			return;
+			setGrandExchangeActions(new Ge2(getEvent()));
+
+			// DatabaseUtilities.updateStageProgress((MethodProvider) this,
+			// AccountStage.GE_SELL_BUY_MINING.name(), 0,
+			// getEvent().getUsername());
+			// BotCommands.killProcess((MethodProvider) this, getScript());
+			// return;
+
 			// setGrandExchangeTask(
 			// new GrandExchangeTask(this, new BankItem[] { new BankItem("Bronze pickaxe",
 			// 1265, 1, 1400, false) },
@@ -236,10 +259,13 @@ public class MiningLevelTo15Configuration extends QuestStep {
 				&& getSkills().getStatic(Skill.MINING) < 6
 				&& ((!getInventory().contains("Iron pickaxe") && !getBank().contains("Iron pickaxe")))) {
 
-			DatabaseUtilities.updateStageProgress((MethodProvider) this, AccountStage.GE_SELL_BUY_MINING.name(), 0,
-					getEvent().getUsername());
-			BotCommands.killProcess((MethodProvider) this, getScript());
-			return;
+			setGrandExchangeActions(new Ge2(getEvent()));
+
+			// DatabaseUtilities.updateStageProgress((MethodProvider) this,
+			// AccountStage.GE_SELL_BUY_MINING.name(), 0,
+			// getEvent().getUsername());
+			// BotCommands.killProcess((MethodProvider) this, getScript());
+			// return;
 			// setGrandExchangeTask(
 			// new GrandExchangeTask(this, new BankItem[] { new BankItem("Iron pickaxe",
 			// 1267, 1, 1400, false) },
@@ -253,10 +279,13 @@ public class MiningLevelTo15Configuration extends QuestStep {
 				&& getSkills().getStatic(Skill.MINING) < 21
 				&& ((!getInventory().contains("Steel pickaxe") && !getBank().contains("Steel pickaxe")))) {
 
-			DatabaseUtilities.updateStageProgress((MethodProvider) this, AccountStage.GE_SELL_BUY_MINING.name(), 0,
-					getEvent().getUsername());
-			BotCommands.killProcess((MethodProvider) this, getScript());
-			return;
+			setGrandExchangeActions(new Ge2(getEvent()));
+
+			// DatabaseUtilities.updateStageProgress((MethodProvider) this,
+			// AccountStage.GE_SELL_BUY_MINING.name(), 0,
+			// getEvent().getUsername());
+			// BotCommands.killProcess((MethodProvider) this, getScript());
+			// return;
 			// setGrandExchangeTask(
 			// new GrandExchangeTask(this, new BankItem[] { new BankItem("Steel pickaxe",
 			// 1269, 1, 5000, false) },
@@ -269,10 +298,13 @@ public class MiningLevelTo15Configuration extends QuestStep {
 		} else if (totalAccountValue > 15000 && getBank().isOpen() && getSkills().getStatic(Skill.MINING) >= 21
 				&& ((!getInventory().contains("Mithril pickaxe") && !getBank().contains("Mithril pickaxe")))) {
 
-			DatabaseUtilities.updateStageProgress((MethodProvider) this, AccountStage.GE_SELL_BUY_MINING.name(), 0,
-					getEvent().getUsername());
-			BotCommands.killProcess((MethodProvider) this, getScript());
-			return;
+			setGrandExchangeActions(new Ge2(getEvent()));
+
+			// DatabaseUtilities.updateStageProgress((MethodProvider) this,
+			// AccountStage.GE_SELL_BUY_MINING.name(), 0,
+			// getEvent().getUsername());
+			// BotCommands.killProcess((MethodProvider) this, getScript());
+			// return;
 			// setGrandExchangeTask(new GrandExchangeTask(this,
 			// new BankItem[] { new BankItem("Mithril pickaxe", 1273, 1, 10000, false) },
 			// new BankItem[] { new BankItem("Clay", 434, 1000, 1, true),
@@ -282,27 +314,35 @@ public class MiningLevelTo15Configuration extends QuestStep {
 			// new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
 			// null, getScript()));
 		}
-		// log("g.e. running " + getGrandExchangeTask() + " "
-		// + (getGrandExchangeTask() != null ? getGrandExchangeTask().finished() :
-		// "null"));
-		// if (getGrandExchangeTask() != null && getGrandExchangeTask().finished()) {
-		//
-		// // Resetting stage, walking back to the bank to deposit everything and
-		// setting
-		// // the current grand exchange task to null
-		// resetStage(AccountStage.MINING_LEVEL_TO_15.name());
-		// setGrandExchangeTask(null);
-		// log("Finished G.E. task, walking back to varrock bank");
-		// }
-		// // Looping through the grand exchange task
-		// if (getGrandExchangeTask() != null && !getGrandExchangeTask().finished()) {
-		// getGrandExchangeTask().loop();
-		//
-		// if (getQuestStageStep() != 0) {
-		// resetStage(AccountStage.MINING_LEVEL_TO_15.name());
-		// }
-		//
-		// }
+
+		log("g.e. running " + getGrandExchangeTask() + " "
+				+ (getGrandExchangeTask() != null && getGrandExchangeTask().getTask() != null
+						? getGrandExchangeTask().getTask().finished()
+						: "null"));
+
+		// Setting a G.E. task
+		if (getGrandExchangeTask() != null && getGrandExchangeTask().getTask() == null) {
+			getGrandExchangeTask().exchangeContext(getBot());
+			getGrandExchangeTask().setTask();
+		}
+
+		if (getGrandExchangeTask() != null && getGrandExchangeTask().getTask() != null
+				&& getGrandExchangeTask().getTask().finished()) {
+			// the current grand exchange task to null
+			resetStage(AccountStage.MINING_IRON_ORE.name());
+			setGrandExchangeActions(null);
+			log("Finished G.E. task, walking back to varrock bank");
+		}
+
+		// Looping through the grand exchange task
+		if (getGrandExchangeTask() != null && getGrandExchangeTask().getTask() != null
+				&& !getGrandExchangeTask().getTask().finished()) {
+			getGrandExchangeTask().getTask().loop();
+
+			resetStage(AccountStage.MINING_IRON_ORE.name());
+
+		}
+
 	}
 
 	@Override
@@ -345,6 +385,21 @@ public class MiningLevelTo15Configuration extends QuestStep {
 	 */
 	public void setPickaxe(String pickaxe) {
 		this.pickaxe = pickaxe;
+	}
+
+	/**
+	 * @return the grandExchangeActions
+	 */
+	public Ge2 getGrandExchangeTask() {
+		return grandExchangeActions;
+	}
+
+	/**
+	 * @param grandExchangeActions
+	 *            the grandExchangeActions to set
+	 */
+	public void setGrandExchangeActions(Ge2 grandExchangeActions) {
+		this.grandExchangeActions = grandExchangeActions;
 	}
 
 }

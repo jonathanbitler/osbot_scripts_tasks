@@ -113,9 +113,9 @@ public class Test extends QuestStep {
 	@Override
 	public void onStart() {
 
-		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-				new WalkTask("walk to chickens", 1, QUEST_CONFIG, getBot().getMethods(), PATH_TO_CHICKENS,
-						CHICKENS_AREA, getScript(), getEvent(), true, false));
+//		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+//				new WalkTask("walk to chickens", 1, QUEST_CONFIG, getBot().getMethods(), PATH_TO_CHICKENS,
+//						CHICKENS_AREA, getScript(), getEvent(), true));
 
 
 	}

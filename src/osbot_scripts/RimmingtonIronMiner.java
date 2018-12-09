@@ -25,7 +25,7 @@ public class RimmingtonIronMiner extends Script {
 
 	private LoginEvent login;
 
-	private MandatoryEventsExecution ev = new MandatoryEventsExecution(this);
+	private MandatoryEventsExecution ev = new MandatoryEventsExecution(this, login);
 
 	@Override
 	public int onLoop() throws InterruptedException {
@@ -36,10 +36,10 @@ public class RimmingtonIronMiner extends Script {
 
 		if (Coordinates.isOnTutorialIsland(this)) {
 			DatabaseUtilities.updateStageProgress(this, "TUT_ISLAND", 0, login.getUsername());
-			BotCommands.killProcess((MethodProvider) this, (Script) this);
+			BotCommands.killProcess((MethodProvider) this, (Script) this, "SHOULD BE ON TUTORIAL ISLAND RIMMINGTON MINER");
 		}
 
-		if (getClient().isLoggedIn()) {
+		if (getGoldfarmMining().isLoggedIn()) {
 			ev.fixedMode();
 			ev.fixedMode2();
 			ev.executeAllEvents();
@@ -49,7 +49,7 @@ public class RimmingtonIronMiner extends Script {
 		if (getQuests().getQuestPoints() < 7) {
 			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0,
 					login.getUsername());
-			BotCommands.killProcess((MethodProvider) this, (Script) this);
+			BotCommands.killProcess((MethodProvider) this, (Script) this, "NOT ENOUGH QUEST POINTS RIMMINGTON MINER");
 		}
 
 		// Breaking for 30 minutes because has done a few laps
@@ -65,7 +65,7 @@ public class RimmingtonIronMiner extends Script {
 		if (getSkills().getStatic(Skill.MINING) < 15) {
 			DatabaseUtilities.updateStageProgress(this, "MINING_LEVEL_TO_15", 0,
 					getGoldfarmMining().getEvent().getUsername());
-			BotCommands.killProcess((MethodProvider) this, (Script) this);
+			BotCommands.killProcess((MethodProvider) this, (Script) this, "NOT LEVEL 15 MINING YET RIMMINGONT");
 		}
 
 		// The loop for other stuff than tasks
@@ -89,6 +89,7 @@ public class RimmingtonIronMiner extends Script {
 	public void onStart() throws InterruptedException {
 		login = LoginHandler.login(this, getParameters());
 		login.setScript("RIMMINGTON_IRON_ORE");
+		DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN");
 		goldfarmMining = new RimmingTonIronConfig(login, (Script) this);
 
 		getGoldfarmMining().setQuest(false);

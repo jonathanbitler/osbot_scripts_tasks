@@ -6,4 +6,6 @@ public class Config {
 
 	public static final boolean TEST = false;
 	
+	public static final boolean NO_LOGIN = false;
+	
 }

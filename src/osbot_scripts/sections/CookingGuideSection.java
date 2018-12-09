@@ -10,6 +10,8 @@ import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.api.ui.Tab;
 
 import osbot_scripts.TutorialScript;
+import osbot_scripts.framework.TabWid;
+import osbot_scripts.framework.Tabs;
 import osbot_scripts.sections.total.progress.MainState;
 import osbot_scripts.util.Sleep;
 
@@ -57,12 +59,12 @@ public class CookingGuideSection extends TutorialSection {
 	}
 
 	private void clickingEmotes() {
-		if (getTabs().open(Tab.EMOTES)) {
+		if (Tabs.openTab(this, TabWid.EMOTES)) {
 			RS2Widget emoteWidget = getWidgets().get(216, 1, new Random().nextInt(20));
 			if (emoteWidget != null) {
 				emoteWidget.interact();
 				Sleep.sleepUntil(() -> !myPlayer().isAnimating(), 3000, 1000);
-				if (getTabs().open(Tab.SETTINGS)) {
+				if (Tabs.openTab(this, TabWid.SETTINGS)) {
 					if (!getSettings().isRunning()) {
 						getSettings().setRunning(true);
 						Sleep.sleepUntil(() -> getSettings().isRunning(), 3000, 1000);

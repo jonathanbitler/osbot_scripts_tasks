@@ -2,6 +2,7 @@ package osbot_scripts.taskhandling;
 
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.map.Position;
@@ -10,11 +11,13 @@ import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 
 import osbot_scripts.bot.utils.BotCommands;
+import osbot_scripts.bot.utils.Coordinates;
 import osbot_scripts.bot.utils.RandomUtil;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.events.MandatoryEventsExecution;
 import osbot_scripts.framework.AccountStage;
+import osbot_scripts.hopping.WorldHop;
 import osbot_scripts.qp7.progress.QuestStep;
 import osbot_scripts.task.Task;
 
@@ -25,7 +28,7 @@ public class TaskHandler {
 		this.quest = quest;
 		this.event = event;
 		this.script = script;
-		this.setEvents(new MandatoryEventsExecution(provider));
+		this.setEvents(new MandatoryEventsExecution(provider, event));
 	}
 
 	private HashMap<Integer, Task> tasks = new HashMap<Integer, Task>();
@@ -55,41 +58,20 @@ public class TaskHandler {
 			new int[][] { { 3212, 3246 }, { 3273, 3246 }, { 3272, 3190 }, { 3212, 3190 } });
 
 	public void taskLoop() throws InterruptedException {
-		
-		getProvider().log("1");
-		
-		if (getProvider().getClient().isLoggedIn()) {
 
-			// Checking if acc is on tutorial island
-			if (TUT_ISLAND_AREA.contains(getProvider().myPlayer())
-					|| TUT_ISLAND_AREA_CAVE.contains(getProvider().myPlayer())) {
-				if (getEvent() != null && getEvent().getUsername() != null) {
-					DatabaseUtilities.updateStageProgress(getProvider(), AccountStage.TUT_ISLAND.name(), 0,
-							getEvent().getUsername());
-					BotCommands.killProcess(getProvider(), getScript());
-					getProvider().log("Account didn't belong here, sending back to tutorial island");
-				}
-			}
-
-			// Checking if he account is not fixed mode (client)
+		if (!getQuest().isLoggedIn() && getQuest().getEvent() != null && getQuest().getEvent().hasFinished()) {
+			BotCommands.killProcess(getProvider(), getScript(), "BECAUSE OF NOT BEING LOGGED IN ANYMORE E02");
 		}
 
-		getProvider().log("2");
-		
+		// Checking if acc is on tutorial island
+		if (Coordinates.isOnTutorialIsland(getProvider())) {
+			DatabaseUtilities.updateStageProgress(getProvider(), "TUT_ISLAND", 0, getEvent().getUsername());
+			BotCommands.killProcess(getProvider(), getScript(), "BECAUSE SHOULD BE ON TUTORIAL ISLAND E01");
+		}
+
 		// Checking if at task is resizable or no
 		getEvents().fixedMode();
 		getEvents().fixedMode2();
-		
-		getProvider().log("3");
-
-		// Checking is the account is not logged in
-		if (!getProvider().getClient().isLoggedIn()) {
-			// DatabaseUtilities.updateAccountStatusInDatabase(getProvider(), "TIMEOUT",
-			// getEvent().getUsername());
-			BotCommands.killProcess(getProvider(), getScript());
-		}
-
-		getProvider().log("4");
 
 		// Is the account too long logged in without doing anything? Set it to
 		// stuck/timeout, it will run the client again with WebWalking enabled to
@@ -113,32 +95,26 @@ public class TaskHandler {
 						getEvent().getAccountStage().equalsIgnoreCase("WALKING-STUCK") ? "WALKING_STUCK" : "TIMEOUT",
 						getEvent().getUsername());
 			}
-			BotCommands.waitBeforeKill();
+			BotCommands.waitBeforeKill(getProvider(), "BECAUSE IS WALKING STUCK");
 		} else if (!getQuest().isQuest() && lastTask != 0 && currentTask - lastTask > 800_000) {
 			getProvider().log("Took too much time, proably stuck!");
-			BotCommands.waitBeforeKill();
+			BotCommands.waitBeforeKill(getProvider(), "BECAUSE TASKS TOOK TOO MUCH TIME BETWEEN");
 		}
 
-		getProvider().log("5");
-
-		// Onloop for the quest itself
-		getQuest().onLoop();
-		
-		getProvider().log("6");
+		// Quest loop
+		// getQuest().onLoop();
 
 		// Has the task corresponding with the character been found or not?
 		boolean foundTask = false;
 
-		// Looping over all the tasks
-		for (Entry<Integer, Task> entry : getTasks().entrySet()) {
+		HashMap<Integer, Task> copyTasks = new HashMap<Integer, Task>(getTasks());
 
-			getProvider().log("7");
+		// Looping over all the tasks
+		for (Entry<Integer, Task> entry : copyTasks.entrySet()) {
 
 			int taskAttempts = 0;
 			int questStepRequired = entry.getKey();
 			Task task = entry.getValue();
-			
-			getProvider().log("at task: " + task.scriptName());
 
 			// Finding new task out of the database (the number) when starting
 			if (getCurrentTask() == null
@@ -169,31 +145,27 @@ public class TaskHandler {
 				break;
 			}
 
-			getProvider().log("8");
-
 			if ((task.requiredConfigQuestStep() == getQuest().getQuestProgress() || !getQuest().isQuest())
 					&& (questStepRequired == getQuest().getQuestStageStep()
 							|| questStepRequired == getQuest().getQuestStageStep() - 1
 							|| (currentTask - lastTask) > 30_000)) {
 
-				getProvider().log("9");
-
 				// Waiting for task to finish
-				getProvider().log("finish: " + getCurrentTask().finished());
 
 				// If null current task, then continue
 				if (getCurrentTask() == null) {
+					getProvider().log("System couldnt find a next action, logging out");
 					break;
 				}
+				getProvider().log("finish: " + getCurrentTask().finished());
 
 				// Waiting on task to get finished
 				while (!getCurrentTask().finished()) {
 					// If null current task, then continue
 					if (getCurrentTask() == null) {
+						getProvider().log("System couldnt find a next action, logging out");
 						break;
 					}
-					
-					getProvider().log("10");
 
 					// If the person is not logged in anymore, but the client is still open, then
 					// exit the client
@@ -201,7 +173,7 @@ public class TaskHandler {
 							&& (System.currentTimeMillis() - getEvent().getStartTime() > 200_000)) {
 						getProvider().log("Person wasn't logged in anymore, logging out!");
 						Thread.sleep(5000);
-						BotCommands.waitBeforeKill();
+						BotCommands.waitBeforeKill(getProvider(), "BECAUSE OF NOT LOGGED IN ANYMORE E01");
 					}
 
 					// Sometimes dialogue pops up without a dialoguetask and could get stuck because
@@ -211,10 +183,6 @@ public class TaskHandler {
 					} else {
 						// Task loop
 						getCurrentTask().loop();
-
-						getProvider().log("11");
-						// Side loop for other events
-						// getQuest().onLoop();
 					}
 
 					// Sometimes the script can't perform the task correctly and will get stuck
@@ -233,39 +201,23 @@ public class TaskHandler {
 							&& !getCurrentTask().getClass().getSimpleName().equalsIgnoreCase("ClickObjectTask")) {
 						DatabaseUtilities.updateAccountStatusInDatabase(getProvider(), "TASK_TIMEOUT",
 								getEvent().getUsername());
-						BotCommands.killProcess(getProvider(), getScript());
+						BotCommands.killProcess(getProvider(), getScript(), "BECAUSE TASK TIMEOUT ON ATTEMPTS");
 					}
-
-					getProvider().log("12");
-
-					// else if (!getQuest().isQuest() && taskAttempts > 1500) {
-					// DatabaseUtilities.updateAccountStatusInDatabase(getProvider(),
-					// "TASK_TIMEOUT",
-					// getEvent().getUsername());
-					// BotCommands.killProcess(getProvider(), getScript());
-					// // Change world or something
-					//
-					// // DatabaseUtilities.updateAccountStatusInDatabase(getProvider(),
-					// // "TASK_TIMEOUT",
-					// // getEvent().getUsername());
-					// // BotCommands.killProcess(getProvider(), getScript());
-					// }
 
 					// If null current task, then continue
 					if (getCurrentTask() == null) {
+						getProvider().log("System couldnt find a next action, logging out");
 						break;
 					}
 					getProvider().log("performing task" + getCurrentTask().getClass().getSimpleName() + " attempt: "
 							+ taskAttempts);
-
-					getProvider().log("13");
 
 					// Checking if at task is resizable or no
 					getEvents().fixedMode();
 					getEvents().fixedMode2();
 					getEvents().executeAllEvents();
 
-					getProvider().log("14");
+					// getProvider().log("14");
 
 					if (getQuest().isQuest()) {
 						Thread.sleep(1000, 1500);
@@ -274,8 +226,6 @@ public class TaskHandler {
 					}
 				}
 
-				getProvider().log("15");
-				
 				// Task is finished, go to the next one
 				getProvider().log("On next task: " + task.scriptName());
 				setCurrentTask(task);
@@ -292,21 +242,17 @@ public class TaskHandler {
 							getQuest().getQuestStageStep(), getEvent().getUsername());
 				}
 
-				getProvider().log("16");
-
 				// Step increased with 1 in database
 				getQuest().setQuestStageStep(questStepRequired + 1);
 			}
 		}
+
 		// When all the tasks are complete, start with a new one with fresh variables
 		if (!getQuest().isQuest()
 				&& getQuest().getQuestStageStep() >= (getQuest().getTaskHandler().getTasks().size() - 1)) {
 			getQuest().resetStage(null);
 			getProvider().log("[TASKHANDLER] Clearing & restarting all tasks");
-		} else {
-			// getProvider().log("[TASKHANDLER] Couldn't clear tasks");
 		}
-		getProvider().log("17");
 	}
 
 	public HashMap<Integer, Task> getTasks() {

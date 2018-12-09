@@ -11,9 +11,11 @@ import org.osbot.rs07.script.ScriptManifest;
 import osbot_scripts.bot.utils.BotCommands;
 import osbot_scripts.bot.utils.Coordinates;
 import osbot_scripts.bot.utils.RandomUtil;
+import osbot_scripts.database.DatabaseTest;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.events.MandatoryEventsExecution;
+import osbot_scripts.framework.AccountStage;
 import osbot_scripts.login.LoginHandler;
 import osbot_scripts.qp7.progress.CookingsAssistant;
 
@@ -31,8 +33,8 @@ public class CookingAssistantQuest extends Script {
 			getDialogues().clickContinue();
 		}
 
-		if (getClient().isLoggedIn()) {
-			MandatoryEventsExecution ev = new MandatoryEventsExecution(this);
+		if (getCooksAssistant().isLoggedIn()) {
+			MandatoryEventsExecution ev = new MandatoryEventsExecution(getCooksAssistant(), login);
 			ev.fixedMode();
 			ev.fixedMode2();
 			ev.executeAllEvents();
@@ -40,7 +42,7 @@ public class CookingAssistantQuest extends Script {
 
 		if (Coordinates.isOnTutorialIsland(this)) {
 			DatabaseUtilities.updateStageProgress(this, "TUT_ISLAND", 0, login.getUsername());
-			BotCommands.killProcess((MethodProvider)this, (Script) this);
+			BotCommands.killProcess((MethodProvider) this, (Script) this, "SHOULD BE ON TUT ISLAND COOKS");
 		}
 
 		// TODO Auto-generated method stub
@@ -55,7 +57,7 @@ public class CookingAssistantQuest extends Script {
 			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0,
 					login.getUsername());
 			DatabaseUtilities.updateAccountBreakTill(this, getCooksAssistant().getEvent().getUsername(), 60);
-			BotCommands.killProcess((MethodProvider)this, (Script) this);
+			BotCommands.killProcess((MethodProvider) this, (Script) this, "ALREADY COMPLETED THE QUEST COOKS");
 			return random(500, 600);
 		}
 
@@ -69,12 +71,13 @@ public class CookingAssistantQuest extends Script {
 		login = LoginHandler.login(this, getParameters());
 		login.setScript("QUEST_COOK_ASSISTANT");
 		cooksAssistant = new CookingsAssistant(4626, 29, login, (Script) this);
+		DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN");
 
 		if (login != null && login.getUsername() != null) {
 			getCooksAssistant()
 					.setQuestStageStep(Integer.parseInt(DatabaseUtilities.getQuestProgress(this, login.getUsername())));
 		}
-		
+
 		log("Quest progress: " + getCooksAssistant().getQuestStageStep());
 
 		getCooksAssistant().exchangeContext(getBot());

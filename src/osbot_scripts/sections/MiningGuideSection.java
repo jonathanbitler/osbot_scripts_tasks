@@ -9,6 +9,8 @@ import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.api.ui.Tab;
 
 import osbot_scripts.TutorialScript;
+import osbot_scripts.framework.TabWid;
+import osbot_scripts.framework.Tabs;
 import osbot_scripts.sections.total.progress.MainState;
 import osbot_scripts.util.Sleep;
 
@@ -22,7 +24,7 @@ public class MiningGuideSection extends TutorialSection {
 	@Override
 	public void onLoop() throws InterruptedException {
 		log(getProgress());
-		
+
 		if (pendingContinue()) {
 			selectContinue();
 			return;
@@ -51,7 +53,8 @@ public class MiningGuideSection extends TutorialSection {
 			break;
 
 		case 290:
-			getTabs().open(Tab.INVENTORY);
+			// getTabs().open(Tab.INVENTORY);
+			Tabs.openTab(this, TabWid.INVENTORY);
 			break;
 
 		case 300:
@@ -91,7 +94,9 @@ public class MiningGuideSection extends TutorialSection {
 			break;
 
 		case 340:
-			if (getTabs().open(Tab.INVENTORY)) {
+			if (!getTabs().isOpen(Tab.INVENTORY)) {
+				Tabs.openTab(this, TabWid.INVENTORY);
+			} else {
 				smith();
 			}
 			break;

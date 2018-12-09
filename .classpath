@@ -2,10 +2,9 @@
 <classpath>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="C:/Users/pim/eclipse-workspace1/osbot/osbot.jar"/>
-	<classpathentry kind="lib" path="C:/Users/pim/Desktop/mysql-connector-java-8.0.11.jar"/>
 	<classpathentry kind="lib" path="C:/Users/pim/Desktop/OS-War development/Server/deps/org.json.jar"/>
 	<classpathentry kind="lib" path="C:/Users/pim/Desktop/OS-War development/Server/deps/commons-lang3-3.3.2.jar"/>
 	<classpathentry kind="lib" path="C:/Users/pim/Desktop/OS-War development/Server/deps/commons-io-2.4.jar"/>
-	<classpathentry kind="output" path="bin/Scripts2/osbot_scripts2"/>
+	<classpathentry kind="lib" path="C:/Users/pim/Dropbox/osbot/osbot.jar"/>
+	<classpathentry kind="output" path="bin/Scripts2/dropbox"/>
 </classpath>
