@@ -40,8 +40,8 @@ public class DoricsQuest extends Script {
 		}
 
 		if (Coordinates.isOnTutorialIsland(this)) {
-			DatabaseUtilities.updateStageProgress(this, "TUT_ISLAND", 0, login.getUsername());
-			BotCommands.killProcess((MethodProvider) this, (Script) this, "SHOULD BE ON TUT ISLAND DORICS");
+			DatabaseUtilities.updateStageProgress(this, "TUT_ISLAND", 0, login.getUsername(), login);
+			BotCommands.killProcess((MethodProvider) this, (Script) this, "SHOULD BE ON TUT ISLAND DORICS", login);
 		}
 
 		RS2Widget closeQuestCompleted = getWidgets().get(277, 15);
@@ -54,14 +54,16 @@ public class DoricsQuest extends Script {
 			}
 
 			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0,
-					login.getUsername());
-			DatabaseUtilities.updateAccountBreakTill(this, getGoblinsDiplomacy().getEvent().getUsername(), 60);
-			BotCommands.killProcess((MethodProvider) this, (Script) this, "ALREADY COMPLETED THE QUEST DORICS");
+					login.getUsername(), login);
+			DatabaseUtilities.updateAccountBreakTill(this, getGoblinsDiplomacy().getEvent().getUsername(), 60, login);
+			BotCommands.killProcess((MethodProvider) this, (Script) this, "ALREADY COMPLETED THE QUEST DORICS", login);
 			return random(500, 600);
 		}
 
-		getGoblinsDiplomacy().onLoop();
-		getGoblinsDiplomacy().getTaskHandler().taskLoop();
+		if (login.hasFinished()) {
+			getGoblinsDiplomacy().onLoop();
+			getGoblinsDiplomacy().getTaskHandler().taskLoop();
+		}
 
 		return random(500, 600);
 	}
@@ -71,14 +73,14 @@ public class DoricsQuest extends Script {
 		login = LoginHandler.login(this, getParameters());
 		if (login != null) {
 			login.setScript("QUEST_DORICS_QUEST");
-			DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN");
+			DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN", login);
 		}
 		goblinsDiplomacy = new DoricsQuestConfig(3893, 31, login, (Script) this);
 
 		if (login != null && login.getUsername() != null) {
 			// if (!Config.TEST) {
-			getGoblinsDiplomacy()
-					.setQuestStageStep(Integer.parseInt(DatabaseUtilities.getQuestProgress(this, login.getUsername())));
+			getGoblinsDiplomacy().setQuestStageStep(
+					Integer.parseInt(DatabaseUtilities.getQuestProgress(this, login.getUsername(), login)));
 			// }
 		}
 

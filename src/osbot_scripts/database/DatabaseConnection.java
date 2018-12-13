@@ -5,9 +5,10 @@ import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Properties;
 
 import org.osbot.rs07.script.MethodProvider;
+
+import osbot_scripts.events.LoginEvent;
 
 public class DatabaseConnection {
 
@@ -21,11 +22,11 @@ public class DatabaseConnection {
 
 	public Connection conn;
 
-	public Connection getConnection(MethodProvider api) {
+	public Connection getConnection(MethodProvider api, LoginEvent login) {
 		// if (conn == null || conn.isClosed()) {
 		DatabaseConnection con = new DatabaseConnection();
 		con.setApi(api);
-		return conn = con.connect();
+		return conn = con.connect(login);
 	}
 
 	// public ResultSet getResult(String query) {
@@ -42,12 +43,18 @@ public class DatabaseConnection {
 	// }
 
 	// connect database
-	public Connection connect() {
+	public Connection connect(LoginEvent login) {
 		if (conn == null) {
 			String host = "salusscape.eu:3306";
-			String db = "saluss1q_001_dragon";
-			String user = "saluss1q_osbot";
-			String pass = "pB4864EnHMcVJt9PiycLYq6U7e6ZUjc5VYn1vrBe";
+			String db = login.getDbName().replaceAll("%", "_");
+			getApi().log("db: " + db);
+			// "saluss1q_001_dragon";
+			String user = login.getDbUsername().replaceAll("%", "_");
+			getApi().log("user: " + user);
+			// "saluss1q_osbot";
+			String pass = login.getDbPassword().replaceAll("%", "_");
+			getApi().log("pass: " + pass);
+			// "pB4864EnHMcVJt9PiycLYq6U7e6ZUjc5VYn1vrBe";
 
 			String connStr = String.format(
 					"jdbc:mysql://%s/%s?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC",

@@ -28,10 +28,10 @@ public class MuleTradingConfiguration extends QuestStep {
 	public void onStart() {
 		timeout = System.currentTimeMillis();
 
-		// demo = new ThreadDemo();
-		// demo.exchangeContext(this.getBot());
-		// demo.setLoginEvent(getEvent());
-		// new Thread(demo).start();
+		demo = new ThreadDemo();
+		demo.exchangeContext(this.getBot());
+		demo.setLoginEvent(getEvent());
+		new Thread(demo).start();
 	}
 
 	private ThreadDemo demo;
@@ -52,9 +52,7 @@ public class MuleTradingConfiguration extends QuestStep {
 
 	@Override
 	public void onLoop() throws InterruptedException {
-		if (!getClient().isLoggedIn()) {
-			return;
-		}
+		
 		log("Running the side loop..");
 
 		// If the player is not in the grand exchange area, then walk to it
@@ -62,7 +60,7 @@ public class MuleTradingConfiguration extends QuestStep {
 				.contains(myPlayer())) {
 			getWalking()
 					.webWalk(new Area(new int[][] { { 3161, 3492 }, { 3168, 3492 }, { 3168, 3485 }, { 3161, 3485 } }));
-			 log("The player has a grand exchange task but isn't there, walking to there");
+			log("The player has a grand exchange task but isn't there, walking to there");
 		}
 		// Not the mule
 
@@ -70,18 +68,20 @@ public class MuleTradingConfiguration extends QuestStep {
 			if (getEvent().getAccountStage().equalsIgnoreCase("MULE-TRADING")) {
 				if (update) {
 					DatabaseUtilities.updateStageProgress(this,
-							RandomUtil.gextNextAccountStage(this).name().toUpperCase(), 0, getEvent().getUsername());
-					DatabaseUtilities.updateStageProgress(this, "UNKNOWN", 0, getEvent().getEmailTradeWith());
+							RandomUtil.gextNextAccountStage(this).name().toUpperCase(), 0, getEvent().getUsername(),
+							getEvent());
+					DatabaseUtilities.updateStageProgress(this, "UNKNOWN", 0, getEvent().getEmailTradeWith(),
+							getEvent());
 				}
-				BotCommands.killProcess(this, getScript(), "BECAUSE OF DONE WITH MULE TRADING");
+				BotCommands.killProcess(this, getScript(), "BECAUSE OF DONE WITH MULE TRADING", getEvent());
 			} else {
 				if (update) {
 					DatabaseUtilities.updateStageProgress(this,
 							RandomUtil.gextNextAccountStage(this).name().toUpperCase(), 0,
-							getEvent().getEmailTradeWith());
-					DatabaseUtilities.updateStageProgress(this, "UNKNOWN", 0, getEvent().getUsername());
+							getEvent().getEmailTradeWith(), getEvent());
+					DatabaseUtilities.updateStageProgress(this, "UNKNOWN", 0, getEvent().getUsername(), getEvent());
 				}
-				BotCommands.killProcess(this, getScript(), "BECAUSE OF DONE WITH UNKNOWN TRADING");
+				BotCommands.killProcess(this, getScript(), "BECAUSE OF DONE WITH UNKNOWN TRADING", getEvent());
 			}
 			getScript().stop();
 			return;
@@ -91,7 +91,7 @@ public class MuleTradingConfiguration extends QuestStep {
 
 		tries++;
 
-		if (tries > (getEvent().getAccountStage().equalsIgnoreCase("MULE-TRADING") ? 30 : 80)) {
+		if (tries > (getEvent().getAccountStage().equalsIgnoreCase("MULE-TRADING") ? 100 : 50)) {
 			tradingDone = true;
 			update = false;
 			log("Failed to trade it over");
@@ -186,7 +186,8 @@ public class MuleTradingConfiguration extends QuestStep {
 
 					log("[ESTIMATED MULE VALUE] account value is: " + totalAccountValue);
 					if (getEvent() != null && getEvent().getUsername() != null && totalAccountValue > 0) {
-						DatabaseUtilities.updateAccountValue(this, getEvent().getUsername(), totalAccountValue);
+						DatabaseUtilities.updateAccountValue(this, getEvent().getUsername(), totalAccountValue,
+								getEvent());
 					}
 
 					// Depositing the cash from the bank

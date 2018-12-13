@@ -18,6 +18,7 @@ import java.util.Date;
 import org.osbot.rs07.script.MethodProvider;
 
 import osbot_scripts.config.Config;
+import osbot_scripts.events.LoginEvent;
 
 public class DatabaseUtilities {
 
@@ -27,10 +28,11 @@ public class DatabaseUtilities {
 
 	public static final String DATABASE_THREAD_NAME = "DB_THREAD";
 
-	public static boolean updateAccountStatusInDatabase(MethodProvider api, String status, String email) {
+	public static boolean updateAccountStatusInDatabase(MethodProvider api, String status, String email,
+			LoginEvent login) {
 		try {
 			String query = "UPDATE account SET status = ? WHERE email=?";
-			Connection conn = DatabaseConnection.getDatabase().getConnection(api);
+			Connection conn = DatabaseConnection.getDatabase().getConnection(api, login);
 			PreparedStatement preparedStmt = conn.prepareStatement(query);
 			preparedStmt.setString(1, status);
 			preparedStmt.setString(2, email);
@@ -50,10 +52,10 @@ public class DatabaseUtilities {
 		}
 	}
 
-	public static boolean updateAccountValue(MethodProvider api, String email, int value) {
+	public static boolean updateAccountValue(MethodProvider api, String email, int value, LoginEvent login) {
 		try {
 			String query = "UPDATE account SET account_value = ? WHERE email=?";
-			Connection conn = DatabaseConnection.getDatabase().getConnection(api);
+			Connection conn = DatabaseConnection.getDatabase().getConnection(api, login);
 			PreparedStatement preparedStmt = conn.prepareStatement(query);
 			preparedStmt.setString(1, Integer.toString(value));
 			preparedStmt.setString(2, email);
@@ -73,10 +75,10 @@ public class DatabaseUtilities {
 		}
 	}
 
-	public static boolean updateAccountUsername(MethodProvider api, String email, String ingameName) {
+	public static boolean updateAccountUsername(MethodProvider api, String email, String ingameName, LoginEvent login) {
 		try {
 			String query = "UPDATE account SET name = ? WHERE email=?";
-			Connection conn = DatabaseConnection.getDatabase().getConnection(api);
+			Connection conn = DatabaseConnection.getDatabase().getConnection(api, login);
 			PreparedStatement preparedStmt = conn.prepareStatement(query);
 			preparedStmt.setString(1, ingameName);
 			preparedStmt.setString(2, email);
@@ -96,10 +98,11 @@ public class DatabaseUtilities {
 		}
 	}
 
-	public static boolean updateLoginStatus(MethodProvider api, String email, String loginStatus) {
+	public static boolean updateLoginStatus(MethodProvider api, String email, String loginStatus, LoginEvent login) {
 		try {
+			api.log("log email and login status: " + email + " status " + loginStatus);
 			String query = "UPDATE account SET login_status = ? WHERE email=?";
-			Connection conn = DatabaseConnection.getDatabase().getConnection(api);
+			Connection conn = DatabaseConnection.getDatabase().getConnection(api, login);
 			PreparedStatement preparedStmt = conn.prepareStatement(query);
 			preparedStmt.setString(1, loginStatus);
 			preparedStmt.setString(2, email);
@@ -114,15 +117,20 @@ public class DatabaseUtilities {
 			return true;
 
 		} catch (Exception e) {
-			api.log(exceptionToString(e));
+			if (api == null) {
+				e.printStackTrace();
+			} else {
+				api.log(exceptionToString(e));
+			}
 			return false;
 		}
 	}
 
-	public static boolean updateStageProgress(MethodProvider api, String accountStage, int number, String email) {
+	public static boolean updateStageProgress(MethodProvider api, String accountStage, int number, String email,
+			LoginEvent login) {
 		try {
 			String query = "UPDATE account SET account_stage = ?, account_stage_progress = ? WHERE email=?";
-			Connection conn = DatabaseConnection.getDatabase().getConnection(api);
+			Connection conn = DatabaseConnection.getDatabase().getConnection(api, login);
 			PreparedStatement preparedStmt = conn.prepareStatement(query);
 			preparedStmt.setString(1, accountStage);
 			preparedStmt.setInt(2, number);
@@ -143,7 +151,7 @@ public class DatabaseUtilities {
 		}
 	}
 
-	public static boolean updateAccountBreakTill(MethodProvider api, String email, int minutesBreak) {
+	public static boolean updateAccountBreakTill(MethodProvider api, String email, int minutesBreak, LoginEvent login) {
 		try {
 			if (!Config.NO_BREAK) {
 				Calendar calendar = Calendar.getInstance();
@@ -155,7 +163,7 @@ public class DatabaseUtilities {
 				String dateTime = sdf.format(calendar.getTime());
 
 				String query = "UPDATE account SET break_till = ? WHERE email=?";
-				Connection conn = DatabaseConnection.getDatabase().getConnection(api);
+				Connection conn = DatabaseConnection.getDatabase().getConnection(api, login);
 				PreparedStatement preparedStmt = conn.prepareStatement(query);
 				preparedStmt.setString(1, dateTime);
 				preparedStmt.setString(2, email);
@@ -229,12 +237,38 @@ public class DatabaseUtilities {
 		return sw.toString();
 	}
 
-	public static String getQuestProgress(MethodProvider api, String email) {
+	public static int getMuleTradingFreeAccounts(MethodProvider api, LoginEvent login) {
+		String sql = "SELECT COUNT(*) as count FROM account WHERE status=\"MULE\" AND trade_with_other IS NULL";
+		int freeAmount = -1;
+
+		try {
+			Connection conn = DatabaseConnection.getDatabase().getConnection(api, login);
+			ResultSet results = conn.createStatement().executeQuery(sql);
+
+			while (results.next()) {
+				try {
+					freeAmount = results.getInt("count");
+
+					api.log("mule count:  " + freeAmount);
+					return freeAmount;
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					api.log(exceptionToString(e));
+				}
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			api.log(exceptionToString(e));
+		}
+		return -1;
+	}
+
+	public static String getQuestProgress(MethodProvider api, String email, LoginEvent login) {
 		String sql = "SELECT account_stage_progress FROM account WHERE email='" + email + "'";
 		String progress = "";
 
 		try {
-			Connection conn = DatabaseConnection.getDatabase().getConnection(api);
+			Connection conn = DatabaseConnection.getDatabase().getConnection(api, login);
 			ResultSet results = conn.createStatement().executeQuery(sql);
 
 			while (results.next()) {

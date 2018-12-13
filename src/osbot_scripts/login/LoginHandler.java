@@ -11,7 +11,7 @@ import osbot_scripts.qp7.progress.ThreadDemo;
 public class LoginHandler {
 
 	private static ThreadDemo demo;
-	
+
 	public static LoginEvent login(MethodProvider p, String parameters) {
 		LoginEvent loginEvent = null;
 
@@ -22,22 +22,51 @@ public class LoginHandler {
 			String tradeWith = null;
 			String emailTradeWith = null;
 			String actualUsername = null;
+
+			String dbUsername = null, dbName = null, dbPassword = null;
 			int pid = 0;
 			if (parameters != null) {
 				String[] params = parameters.split("_"); // split the _ character!!!!!!
+				
+				//Email and password
 				username = params[0];
 				password = params[1];
+				
+				//Pid
 				pid = Integer.parseInt(params[2]);
+				
+				//Account stage
 				accountStage = params[3];
+				
+				//Username and NOT e-mail
 				actualUsername = params[4];
-				if (params.length > 5) {
-					tradeWith = params[4];
-					emailTradeWith = params[5];
+
+				//DB
+				dbUsername = params[5];
+				dbName = params[6];
+				dbPassword = params[7];
+
+				//For muling, person to trade with
+				if (params.length >= 9) {
+					//DB
+					dbUsername = params[4];
+					dbName = params[5];
+					dbPassword = params[6];
+					
+					//Mule trading
+					tradeWith = params[7];
+					emailTradeWith = params[8];
 				}
 				p.log(username + " " + password);
 
 			}
 			loginEvent = new LoginEvent(username, password, pid, accountStage, p);
+			
+			//Database settings
+			loginEvent.setDbName(dbName);
+			loginEvent.setDbPassword(dbPassword);
+			loginEvent.setDbUsername(dbUsername);
+			
 			if (actualUsername != null) {
 				loginEvent.setActualUsername(actualUsername);
 			}
@@ -45,19 +74,18 @@ public class LoginHandler {
 				loginEvent.setTradeWith(tradeWith);
 				loginEvent.setEmailTradeWith(emailTradeWith);
 			}
-			
+
 			p.getBot().addLoginListener(loginEvent);
 			p.execute(loginEvent);
 		}
 
-		
 		demo = new ThreadDemo();
 		demo.exchangeContext(p.getBot());
 		demo.setLoginEvent(loginEvent);
 		demo.paramaters = parameters;
-		
+
 		new Thread(demo).start();
-		
+
 		return loginEvent;
 	}
 }

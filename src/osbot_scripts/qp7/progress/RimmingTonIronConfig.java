@@ -133,7 +133,7 @@ public class RimmingTonIronConfig extends QuestStep {
 
 		if (getEvent().hasFinished() && !isLoggedIn()) {
 			log("Not logged in.. restarting");
-			BotCommands.waitBeforeKill((MethodProvider)this, "BECAUSE OF NOT LOGGED IN E04");
+			BotCommands.waitBeforeKill((MethodProvider) this, "BECAUSE OF NOT LOGGED IN E04");
 		}
 
 		// If the player is fighting or under combat, then reset the stage to prevent
@@ -172,8 +172,9 @@ public class RimmingTonIronConfig extends QuestStep {
 		// When having more than 200 iron ore, then go to the g.e. and sell it
 		if (getBank().isOpen() && getBank().getAmount("Iron ore") > 200) {
 			DatabaseUtilities.updateStageProgress((MethodProvider) this, AccountStage.GE_SELL_BUY_MINING.name(), 0,
-					getEvent().getUsername());
-			BotCommands.killProcess((MethodProvider) this, getScript(), "BECAUSE OF SELLING RIGHT NOW TO GE");
+					getEvent().getUsername(), getEvent());
+			BotCommands.killProcess((MethodProvider) this, getScript(), "BECAUSE OF SELLING RIGHT NOW TO GE",
+					getEvent());
 			return;
 			// int amount = (int) (getBank().getAmount("Iron ore"));
 			// int inventory = (int) (getInventory().getAmount("Iron ore"));
@@ -199,8 +200,9 @@ public class RimmingTonIronConfig extends QuestStep {
 				// Setting the status of the account that it wants to mule to another account in
 				// the database
 				if (getEvent() != null && getEvent().getUsername() != null) {
-					DatabaseUtilities.updateStageProgress(this, "MULE_TRADING", 0, getEvent().getUsername());
-					BotCommands.killProcess(this, getScript(), "MULE TRADING");
+					DatabaseUtilities.updateStageProgress(this, "MULE_TRADING", 0, getEvent().getUsername(),
+							getEvent());
+					BotCommands.killProcess(this, getScript(), "MULE TRADING", getEvent());
 				}
 			}
 
@@ -218,7 +220,7 @@ public class RimmingTonIronConfig extends QuestStep {
 		}
 		log("[ESTIMATED] account value is: " + totalAccountValue);
 		if (getEvent() != null && getEvent().getUsername() != null && totalAccountValue > 0) {
-			DatabaseUtilities.updateAccountValue(this, getEvent().getUsername(), totalAccountValue);
+			DatabaseUtilities.updateAccountValue(this, getEvent().getUsername(), totalAccountValue, getEvent());
 		}
 
 		// The tasks of getting new pickaxes, looking for the skill and then the pickaxe
@@ -230,8 +232,8 @@ public class RimmingTonIronConfig extends QuestStep {
 				&& ((!getInventory().contains("Bronze pickaxe") && !getBank().contains("Bronze pickaxe")))) {
 
 			DatabaseUtilities.updateStageProgress((MethodProvider) this, AccountStage.GE_SELL_BUY_MINING.name(), 0,
-					getEvent().getUsername());
-			BotCommands.killProcess((MethodProvider) this, getScript(), "BECAUSE OF GOING TO THE G.E.");
+					getEvent().getUsername(), getEvent());
+			BotCommands.killProcess((MethodProvider) this, getScript(), "BECAUSE OF GOING TO THE G.E.", getEvent());
 			return;
 			// setGrandExchangeTask(
 			// new GrandExchangeTask(this, new BankItem[] { new BankItem("Bronze pickaxe",
@@ -262,8 +264,8 @@ public class RimmingTonIronConfig extends QuestStep {
 				&& ((!getInventory().contains("Steel pickaxe") && !getBank().contains("Steel pickaxe")))) {
 
 			DatabaseUtilities.updateStageProgress((MethodProvider) this, AccountStage.GE_SELL_BUY_MINING.name(), 0,
-					getEvent().getUsername());
-			BotCommands.killProcess((MethodProvider) this, getScript(), "BECAUSE OF GOING TO THE G.E. 2");
+					getEvent().getUsername(), getEvent());
+			BotCommands.killProcess((MethodProvider) this, getScript(), "BECAUSE OF GOING TO THE G.E. 2", getEvent());
 			return;
 
 			// setGrandExchangeTask(
@@ -296,8 +298,8 @@ public class RimmingTonIronConfig extends QuestStep {
 				&& ((!getInventory().contains("Adamant pickaxe") && !getBank().contains("Adamant pickaxe")))) {
 
 			DatabaseUtilities.updateStageProgress((MethodProvider) this, AccountStage.GE_SELL_BUY_MINING.name(), 0,
-					getEvent().getUsername());
-			BotCommands.killProcess((MethodProvider) this, getScript(), "BECAUSE OF GOING TO THE G.E. 3");
+					getEvent().getUsername(), getEvent());
+			BotCommands.killProcess((MethodProvider) this, getScript(), "BECAUSE OF GOING TO THE G.E. 3", getEvent());
 			return;
 
 			// setGrandExchangeTask(new GrandExchangeTask(this,
@@ -313,8 +315,8 @@ public class RimmingTonIronConfig extends QuestStep {
 				&& ((!getInventory().contains("Rune pickaxe") && !getBank().contains("Rune pickaxe")))) {
 
 			DatabaseUtilities.updateStageProgress((MethodProvider) this, AccountStage.GE_SELL_BUY_MINING.name(), 0,
-					getEvent().getUsername());
-			BotCommands.killProcess((MethodProvider) this, getScript(), "BECAUSE OF GOING TO THE G.E. 4");
+					getEvent().getUsername(), getEvent());
+			BotCommands.killProcess((MethodProvider) this, getScript(), "BECAUSE OF GOING TO THE G.E. 4", getEvent());
 			return;
 			// setGrandExchangeTask(
 			// new GrandExchangeTask(this, new BankItem[] { new BankItem("Rune pickaxe",

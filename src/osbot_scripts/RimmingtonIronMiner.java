@@ -35,8 +35,9 @@ public class RimmingtonIronMiner extends Script {
 		}
 
 		if (Coordinates.isOnTutorialIsland(this)) {
-			DatabaseUtilities.updateStageProgress(this, "TUT_ISLAND", 0, login.getUsername());
-			BotCommands.killProcess((MethodProvider) this, (Script) this, "SHOULD BE ON TUTORIAL ISLAND RIMMINGTON MINER");
+			DatabaseUtilities.updateStageProgress(this, "TUT_ISLAND", 0, login.getUsername(), login);
+			BotCommands.killProcess((MethodProvider) this, (Script) this,
+					"SHOULD BE ON TUTORIAL ISLAND RIMMINGTON MINER", login);
 		}
 
 		if (getGoldfarmMining().isLoggedIn()) {
@@ -48,8 +49,8 @@ public class RimmingtonIronMiner extends Script {
 		// Account must have atleast 7 quest points, otherwise set it back to quesiton
 		if (getQuests().getQuestPoints() < 7) {
 			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0,
-					login.getUsername());
-			BotCommands.killProcess((MethodProvider) this, (Script) this, "NOT ENOUGH QUEST POINTS RIMMINGTON MINER");
+					login.getUsername(), login);
+			BotCommands.killProcess((MethodProvider) this, (Script) this, "NOT ENOUGH QUEST POINTS RIMMINGTON MINER", login);
 		}
 
 		// Breaking for 30 minutes because has done a few laps
@@ -62,10 +63,10 @@ public class RimmingtonIronMiner extends Script {
 		// }
 
 		// When skilling isn't 15 yet, and thus can't mine iron
-		if (getSkills().getStatic(Skill.MINING) < 15) {
+		if (getSkills().getStatic(Skill.MINING) < 30) {
 			DatabaseUtilities.updateStageProgress(this, "MINING_LEVEL_TO_15", 0,
-					getGoldfarmMining().getEvent().getUsername());
-			BotCommands.killProcess((MethodProvider) this, (Script) this, "NOT LEVEL 15 MINING YET RIMMINGONT");
+					getGoldfarmMining().getEvent().getUsername(), login);
+			BotCommands.killProcess((MethodProvider) this, (Script) this, "NOT LEVEL 15 MINING YET RIMMINGONT", login);
 		}
 
 		// The loop for other stuff than tasks
@@ -74,7 +75,10 @@ public class RimmingtonIronMiner extends Script {
 		// The loop for tasks, may only loop when a grand exchange task
 		// is not active at the moment
 		// if (getGoldfarmMining().getGrandExchangeTask() == null) {
-		getGoldfarmMining().getTaskHandler().taskLoop();
+
+		if (login.hasFinished()) {
+			getGoldfarmMining().getTaskHandler().taskLoop();
+		}
 		// }
 
 		return random(20, 80);
@@ -89,7 +93,7 @@ public class RimmingtonIronMiner extends Script {
 	public void onStart() throws InterruptedException {
 		login = LoginHandler.login(this, getParameters());
 		login.setScript("RIMMINGTON_IRON_ORE");
-		DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN");
+		DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN", login);
 		goldfarmMining = new RimmingTonIronConfig(login, (Script) this);
 
 		getGoldfarmMining().setQuest(false);
@@ -102,7 +106,7 @@ public class RimmingtonIronMiner extends Script {
 		getGoldfarmMining().exchangeContext(getBot());
 		getGoldfarmMining().onStart();
 		DatabaseUtilities.updateStageProgress(this, "RIMMINGTON_IRON_ORE", 0,
-				getGoldfarmMining().getEvent().getUsername());
+				getGoldfarmMining().getEvent().getUsername(), login);
 	}
 
 	/**

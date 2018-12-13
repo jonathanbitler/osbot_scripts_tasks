@@ -29,14 +29,15 @@ public class MuleTrading extends Script {
 		if (getDialogues().isPendingContinuation()) {
 			getDialogues().clickContinue();
 		}
-		
+
 		if (Coordinates.isOnTutorialIsland(this)) {
-			DatabaseUtilities.updateStageProgress(this, "TUT_ISLAND", 0, login.getUsername());
-			BotCommands.killProcess((MethodProvider)this, (Script) this, "SHOULD BE ON TUT ISLAND, MULE TRADING");
+			DatabaseUtilities.updateStageProgress(this, "TUT_ISLAND", 0, login.getUsername(), login);
+			BotCommands.killProcess((MethodProvider) this, (Script) this, "SHOULD BE ON TUT ISLAND, MULE TRADING",
+					login);
 		}
 
 		if (login.hasFinished() && !getClient().isLoggedIn()) {
-			BotCommands.waitBeforeKill((MethodProvider)this, "NOT LOGGED IN, MULE TRADING");
+			BotCommands.waitBeforeKill((MethodProvider) this, "NOT LOGGED IN, MULE TRADING");
 		}
 
 		if (getClient().isLoggedIn() && !getTrade().isCurrentlyTrading()) {
@@ -46,6 +47,10 @@ public class MuleTrading extends Script {
 			if (login.getAccountStage().equalsIgnoreCase("MULE-TRADING")) {
 				ev.executeAllEvents();
 			}
+		}
+
+		if (!getClient().isLoggedIn()) {
+			BotCommands.waitBeforeKill(this, "BECAUSE MULING AND ACCOUNT IS LOGGED OFF");
 		}
 
 		// Account must have atleast 7 quest points, otherwise set it back to quesiton
@@ -73,14 +78,14 @@ public class MuleTrading extends Script {
 	public void onStart() throws InterruptedException {
 		login = LoginHandler.login(this, getParameters());
 		login.setScript("MULE_TRADING");
-		DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN");
+		DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN", login);
 		muleTrading = new MuleTradingConfiguration(login, (Script) this);
 
 		if (login != null && login.getUsername() != null) {
-			getMuleTrading()
-					.setQuestStageStep(Integer.parseInt(DatabaseUtilities.getQuestProgress(this, login.getUsername())));
+			getMuleTrading().setQuestStageStep(
+					Integer.parseInt(DatabaseUtilities.getQuestProgress(this, login.getUsername(), login)));
 		}
-		
+
 		getMuleTrading().exchangeContext(getBot());
 		getMuleTrading().onStart();
 	}

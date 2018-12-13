@@ -139,8 +139,8 @@ public class BankTask extends TaskSkeleton implements Task {
 							&& getApi().getBank().contains("Rune pickaxe")) {
 						withdraw.setName("Rune pickaxe");
 					}
-					
-					//If couldn't find it, then take the best pickaxe it has
+
+					// If couldn't find it, then take the best pickaxe it has
 					if (withdraw.getName().equalsIgnoreCase("pickaxe")) {
 						if (getApi().getBank().contains("Bronze pickaxe")) {
 							withdraw.setName("Bronze pickaxe");
@@ -291,6 +291,16 @@ public class BankTask extends TaskSkeleton implements Task {
 		return done;
 	}
 
+	public boolean withdrawnAll() {
+		boolean withdrawnAll = true;
+		for (BankItem withdraw : itemsToWithdraw) {
+			if (!getApi().getInventory().contains(withdraw.getName())) {
+				withdrawnAll = false;
+			}
+		}
+		return withdrawnAll;
+	}
+
 	/**
 	 * Deposited all?
 	 * 
@@ -315,7 +325,7 @@ public class BankTask extends TaskSkeleton implements Task {
 	public boolean finished() {
 		getApi().log("log: " + depositingFinished() + " " + withdrawingFinished() + " " + !getApi().getBank().isOpen());
 		return (depositingFinished() && withdrawingFinished() && !getApi().getBank().isOpen() && allDeposited()
-				&& allWithdrawn());
+				&& allWithdrawn() && withdrawnAll());
 	}
 
 	@Override

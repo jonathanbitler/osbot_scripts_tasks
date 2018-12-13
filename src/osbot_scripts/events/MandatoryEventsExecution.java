@@ -50,7 +50,8 @@ public class MandatoryEventsExecution {
 	public void fixedMode() throws InterruptedException {
 		boolean loop = true;
 
-		if (!isLoggedIn() || getProvider() == null || getProvider().getWidgets() == null || !getLogin().hasFinished()) {
+		if (!isLoggedIn() || getProvider() == null || getProvider().getWidgets() == null || getLogin() == null
+				|| !getLogin().hasFinished()) {
 			return;
 		}
 
@@ -77,7 +78,7 @@ public class MandatoryEventsExecution {
 
 					getProvider().log("Couldn't fix itself, restarting");
 					Thread.sleep(5000);
-					BotCommands.waitBeforeKill(getProvider(), "BECAUSE OF FIXED MODE");
+					BotCommands.waitBeforeKill(getProvider(), "BECAUSE OF FIXED MODE E01");
 				}
 				failed++;
 
@@ -102,7 +103,7 @@ public class MandatoryEventsExecution {
 							getProvider().log("Successfully resized");
 							loop = false;
 							Thread.sleep(5000);
-							BotCommands.waitBeforeKill(getProvider(), "BECAUSE OF FIXED MODE");
+							BotCommands.waitBeforeKill(getProvider(), "BECAUSE OF FIXED MODE E02");
 						}
 
 					}
@@ -112,16 +113,16 @@ public class MandatoryEventsExecution {
 	}
 
 	public void fixedMode2() throws InterruptedException {
+		if (!isLoggedIn() || getProvider() == null || getProvider().getWidgets() == null || getLogin() == null
+				|| !getLogin().hasFinished()) {
+			return;
+		}
 
 		if (!EnableFixedModeEvent.isFixedModeEnabled(getProvider())) {
 			if (getProvider().execute(new EnableFixedModeEvent()).hasFinished()) {
 				System.out.println("Set client to fixed mode, finished");
-				BotCommands.waitBeforeKill(getProvider(), "BECAUSE OF FIXED MODE");
+				BotCommands.waitBeforeKill(getProvider(), "BECAUSE OF FIXED MODE E03");
 			}
-		}
-
-		if (!isLoggedIn() || getProvider() == null || getProvider().getWidgets() == null || !getLogin().hasFinished()) {
-			return;
 		}
 
 		boolean loop = true;
@@ -148,7 +149,7 @@ public class MandatoryEventsExecution {
 				if (failed > 5) {
 					getProvider().log("Couldn't fix itself, restarting");
 					Thread.sleep(5000);
-					BotCommands.waitBeforeKill(getProvider(), "BECAUSE OF FIXED MODE");
+					BotCommands.waitBeforeKill(getProvider(), "BECAUSE OF FIXED MODE E05");
 				}
 				failed++;
 
@@ -174,7 +175,7 @@ public class MandatoryEventsExecution {
 							getProvider().log("Successfully resized");
 							loop = false;
 							Thread.sleep(5000);
-							BotCommands.waitBeforeKill(getProvider(), "BECAUSE OF FIXED MODE");
+							BotCommands.waitBeforeKill(getProvider(), "BECAUSE OF FIXED MODE E06");
 						}
 
 					}

@@ -59,14 +59,16 @@ public class TaskHandler {
 
 	public void taskLoop() throws InterruptedException {
 
-		if (!getQuest().isLoggedIn() && getQuest().getEvent() != null && getQuest().getEvent().hasFinished()) {
-			BotCommands.killProcess(getProvider(), getScript(), "BECAUSE OF NOT BEING LOGGED IN ANYMORE E02");
+		if (!getQuest().isLoggedIn() && getQuest().getEvent() != null && getQuest() != null
+				&& getQuest().getEvent() != null && getQuest().getEvent().hasFinished()) {
+			BotCommands.killProcess(getProvider(), getScript(), "BECAUSE OF NOT BEING LOGGED IN ANYMORE E02",
+					getEvent());
 		}
 
 		// Checking if acc is on tutorial island
 		if (Coordinates.isOnTutorialIsland(getProvider())) {
-			DatabaseUtilities.updateStageProgress(getProvider(), "TUT_ISLAND", 0, getEvent().getUsername());
-			BotCommands.killProcess(getProvider(), getScript(), "BECAUSE SHOULD BE ON TUTORIAL ISLAND E01");
+			DatabaseUtilities.updateStageProgress(getProvider(), "TUT_ISLAND", 0, getEvent().getUsername(), getEvent());
+			BotCommands.killProcess(getProvider(), getScript(), "BECAUSE SHOULD BE ON TUTORIAL ISLAND E01", getEvent());
 		}
 
 		// Checking if at task is resizable or no
@@ -81,7 +83,7 @@ public class TaskHandler {
 		getProvider().log("Task time: " + (currentTask - lastTask));
 
 		// So doesn't timeout when at grand exchange buying stuff
-		if (!getQuest().isQuest()
+		if (getEvent() != null && getEvent().hasFinished() && !getQuest().isQuest()
 				&& new Area(new int[][] { { 3153, 3505 }, { 3153, 3478 }, { 3178, 3478 }, { 3178, 3505 } })
 						.contains(getProvider().myPlayer())) {
 			lastTask = System.currentTimeMillis();
@@ -93,7 +95,7 @@ public class TaskHandler {
 			if (getEvent() != null && getEvent().getUsername() != null) {
 				DatabaseUtilities.updateAccountStatusInDatabase(getProvider(),
 						getEvent().getAccountStage().equalsIgnoreCase("WALKING-STUCK") ? "WALKING_STUCK" : "TIMEOUT",
-						getEvent().getUsername());
+						getEvent().getUsername(), getEvent());
 			}
 			BotCommands.waitBeforeKill(getProvider(), "BECAUSE IS WALKING STUCK");
 		} else if (!getQuest().isQuest() && lastTask != 0 && currentTask - lastTask > 800_000) {
@@ -141,7 +143,7 @@ public class TaskHandler {
 			// Sometimes a task can't be found and will try to correct itself afterwards,
 			// but this means that he task could still be null, this way it won't break
 			if (getCurrentTask() == null) {
-				getProvider().log("System couldnt find a next action, logging out");
+				getProvider().log("System couldnt find a next action, breaking out");
 				break;
 			}
 
@@ -154,7 +156,7 @@ public class TaskHandler {
 
 				// If null current task, then continue
 				if (getCurrentTask() == null) {
-					getProvider().log("System couldnt find a next action, logging out");
+					getProvider().log("System couldnt find a next action, breaking out");
 					break;
 				}
 				getProvider().log("finish: " + getCurrentTask().finished());
@@ -163,7 +165,7 @@ public class TaskHandler {
 				while (!getCurrentTask().finished()) {
 					// If null current task, then continue
 					if (getCurrentTask() == null) {
-						getProvider().log("System couldnt find a next action, logging out");
+						getProvider().log("System couldnt find a next action, breaking out");
 						break;
 					}
 
@@ -197,16 +199,17 @@ public class TaskHandler {
 						getProvider().log("Moving camera due to tasking out");
 					}
 
-					if (taskAttempts > 250 && getQuest().isQuest()
+					if (taskAttempts > 75 && getQuest().isQuest()
 							&& !getCurrentTask().getClass().getSimpleName().equalsIgnoreCase("ClickObjectTask")) {
 						DatabaseUtilities.updateAccountStatusInDatabase(getProvider(), "TASK_TIMEOUT",
-								getEvent().getUsername());
-						BotCommands.killProcess(getProvider(), getScript(), "BECAUSE TASK TIMEOUT ON ATTEMPTS");
+								getEvent().getUsername(), getEvent());
+
+						BotCommands.waitBeforeKill(getProvider(), "BECAUSE TASK TIMEOUT ON ATTEMPTS E01");
 					}
 
 					// If null current task, then continue
 					if (getCurrentTask() == null) {
-						getProvider().log("System couldnt find a next action, logging out");
+						getProvider().log("System couldnt find a next action, breaking out");
 						break;
 					}
 					getProvider().log("performing task" + getCurrentTask().getClass().getSimpleName() + " attempt: "
@@ -239,7 +242,7 @@ public class TaskHandler {
 				// Updating stage in database
 				if (getEvent() != null && getEvent().getUsername() != null) {
 					DatabaseUtilities.updateStageProgress(getProvider(), getQuest().getStage().name(),
-							getQuest().getQuestStageStep(), getEvent().getUsername());
+							getQuest().getQuestStageStep(), getEvent().getUsername(), getEvent());
 				}
 
 				// Step increased with 1 in database
@@ -250,8 +253,9 @@ public class TaskHandler {
 		// When all the tasks are complete, start with a new one with fresh variables
 		if (!getQuest().isQuest()
 				&& getQuest().getQuestStageStep() >= (getQuest().getTaskHandler().getTasks().size() - 1)) {
-			getQuest().resetStage(null);
-			getProvider().log("[TASKHANDLER] Clearing & restarting all tasks");
+			// getQuest().resetStage(null);
+			getQuest().resetStage(getEvent().getScript());
+			getProvider().log("[TASKHANDLER] Clearing & restarting all tasks 3");
 		}
 	}
 

@@ -41,8 +41,8 @@ public class CookingAssistantQuest extends Script {
 		}
 
 		if (Coordinates.isOnTutorialIsland(this)) {
-			DatabaseUtilities.updateStageProgress(this, "TUT_ISLAND", 0, login.getUsername());
-			BotCommands.killProcess((MethodProvider) this, (Script) this, "SHOULD BE ON TUT ISLAND COOKS");
+			DatabaseUtilities.updateStageProgress(this, "TUT_ISLAND", 0, login.getUsername(), login);
+			BotCommands.killProcess((MethodProvider) this, (Script) this, "SHOULD BE ON TUT ISLAND COOKS", login);
 		}
 
 		// TODO Auto-generated method stub
@@ -54,14 +54,16 @@ public class CookingAssistantQuest extends Script {
 				closeQuestCompleted.interact();
 			}
 
-			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0,
-					login.getUsername());
-			DatabaseUtilities.updateAccountBreakTill(this, getCooksAssistant().getEvent().getUsername(), 60);
-			BotCommands.killProcess((MethodProvider) this, (Script) this, "ALREADY COMPLETED THE QUEST COOKS");
+			DatabaseUtilities.updateStageProgress(this, AccountStage.QUEST_DORICS_QUEST.name(), 0, login.getUsername(),
+					login);
+			DatabaseUtilities.updateAccountBreakTill(this, getCooksAssistant().getEvent().getUsername(), 60, login);
+			BotCommands.killProcess((MethodProvider) this, (Script) this, "ALREADY COMPLETED THE QUEST COOKS", login);
 			return random(500, 600);
 		}
 
-		getCooksAssistant().getTaskHandler().taskLoop();
+		if (login.hasFinished()) {
+			getCooksAssistant().getTaskHandler().taskLoop();
+		}
 
 		return random(500, 600);
 	}
@@ -71,11 +73,11 @@ public class CookingAssistantQuest extends Script {
 		login = LoginHandler.login(this, getParameters());
 		login.setScript("QUEST_COOK_ASSISTANT");
 		cooksAssistant = new CookingsAssistant(4626, 29, login, (Script) this);
-		DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN");
+		DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN", login);
 
 		if (login != null && login.getUsername() != null) {
-			getCooksAssistant()
-					.setQuestStageStep(Integer.parseInt(DatabaseUtilities.getQuestProgress(this, login.getUsername())));
+			getCooksAssistant().setQuestStageStep(
+					Integer.parseInt(DatabaseUtilities.getQuestProgress(this, login.getUsername(), login)));
 		}
 
 		log("Quest progress: " + getCooksAssistant().getQuestStageStep());

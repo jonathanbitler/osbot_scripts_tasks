@@ -22,10 +22,36 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 	private long startTime = -1;
 
 	private int pid;
-	
+
 	private String script;
-	
+
 	private MethodProvider api;
+
+	private String dbUsername = null, dbName = null, dbPassword = null;
+
+	public String getDbUsername() {
+		return dbUsername;
+	}
+
+	public String getDbName() {
+		return dbName;
+	}
+
+	public String getDbPassword() {
+		return dbPassword;
+	}
+
+	public void setDbUsername(String dbUsername) {
+		this.dbUsername = dbUsername;
+	}
+
+	public void setDbName(String dbName) {
+		this.dbName = dbName;
+	}
+
+	public void setDbPassword(String dbPassword) {
+		this.dbPassword = dbPassword;
+	}
 
 	public LoginEvent(final String username, final String password, int pid, String accountStage, MethodProvider api) {
 		this.username = username;
@@ -47,8 +73,11 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 			return 1000;
 		} else if ((getClient().isLoggedIn() && getLobbyButton() == null)) {
 			getBot().getScriptExecutor().resume();
-			DatabaseUtilities.updateLoginStatus(null, username, "LOGGED_IN");
 			setFinished();
+
+			getApi().log("SUCCESSFULLY LOGGED IN! SET FINISHED TO: " + hasFinished());
+			new Thread(() -> DatabaseUtilities.updateLoginStatus(null, username, "LOGGED_IN", this)).start();
+
 		} else if (getClient().isLoggedIn() && getLobbyButton() != null) {
 			clickHereToPlayButton();
 		} else if (!getBot().getScriptExecutor().isPaused()) {
@@ -134,15 +163,15 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 
 		if (isLocked()) {
 			log("Account is locked, setting to locked");
-			DatabaseUtilities.updateAccountStatusInDatabase(this, "LOCKED", this.username);
+			DatabaseUtilities.updateAccountStatusInDatabase(this, "LOCKED", this.username, this);
 			BotCommands.waitBeforeKill(api, "BECAUSE OF ACCOUNT IS LOCKED");
 		} else if (isDisabledMessageVisible()) {
 			log("Account is banned, setting to locked");
-			DatabaseUtilities.updateAccountStatusInDatabase(this, "BANNED", this.username);
+			DatabaseUtilities.updateAccountStatusInDatabase(this, "BANNED", this.username, this);
 			BotCommands.waitBeforeKill(api, "BECAUSE OF ACCOUNT IS BANNED");
 		} else if (isWrongEmail()) {
 			log("Account password is wrong, setting to invalid password");
-			DatabaseUtilities.updateAccountStatusInDatabase(this, "INVALID_PASSWORD", this.username);
+			DatabaseUtilities.updateAccountStatusInDatabase(this, "INVALID_PASSWORD", this.username, this);
 			BotCommands.waitBeforeKill(api, "BECAUSE OF PASSWORD IS WRONG");
 		}
 
@@ -161,7 +190,7 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 			setFailed();
 		} else {
 			if (!getAccountStage().equalsIgnoreCase("UNKNOWN")) {
-				DatabaseUtilities.updateAccountStatusInDatabase(this, "AVAILABLE", this.username);
+				DatabaseUtilities.updateAccountStatusInDatabase(this, "AVAILABLE", this.username, this);
 			}
 
 		}
@@ -227,7 +256,7 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 
 		if (ResponseCode.isDisabledError(responseCode)) {
 			log("Login failed, account is disabled");
-			DatabaseUtilities.updateAccountStatusInDatabase(this, "BANNED", this.username);
+			DatabaseUtilities.updateAccountStatusInDatabase(this, "BANNED", this.username, this);
 			setFailed();
 			BotCommands.waitBeforeKill(api, "BECAUSE OF ACCOUNT IS DISABELD");
 			return;
@@ -235,7 +264,7 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 
 		if (ResponseCode.isConnectionError(responseCode)) {
 			log("Connection error, attempts exceeded");
-			DatabaseUtilities.updateAccountStatusInDatabase(this, "AVAILABLE", this.username);
+			DatabaseUtilities.updateAccountStatusInDatabase(this, "AVAILABLE", this.username, this);
 			setFailed();
 			BotCommands.waitBeforeKill(api, "BECAUSE OF CONNECTION ERROR");
 			return;
@@ -267,19 +296,19 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 		case 11:
 		case 18:
 			log("Account is locked, setting to locked");
-			DatabaseUtilities.updateAccountStatusInDatabase(this, "LOCKED", this.username);
+			DatabaseUtilities.updateAccountStatusInDatabase(this, "LOCKED", this.username, this);
 			BotCommands.waitBeforeKill(api, "NULL");
 			break;
 
 		case 3:
 			log("Account password is wrong, setting to invalid password");
-			DatabaseUtilities.updateAccountStatusInDatabase(this, "INVALID_PASSWORD", this.username);
+			DatabaseUtilities.updateAccountStatusInDatabase(this, "INVALID_PASSWORD", this.username, this);
 			BotCommands.waitBeforeKill(api, "NULL");
 			break;
 
 		case 4:
 			log("Account is banned, setting to locked");
-			DatabaseUtilities.updateAccountStatusInDatabase(this, "BANNED", this.username);
+			DatabaseUtilities.updateAccountStatusInDatabase(this, "BANNED", this.username, this);
 			BotCommands.waitBeforeKill(api, "NULL");
 			break;
 		}
@@ -389,7 +418,8 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 	}
 
 	/**
-	 * @param script the script to set
+	 * @param script
+	 *            the script to set
 	 */
 	public void setScript(String script) {
 		this.script = script;
@@ -403,7 +433,8 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 	}
 
 	/**
-	 * @param api the api to set
+	 * @param api
+	 *            the api to set
 	 */
 	public void setApi(MethodProvider api) {
 		this.api = api;

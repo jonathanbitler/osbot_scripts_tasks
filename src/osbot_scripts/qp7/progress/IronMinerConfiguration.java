@@ -12,13 +12,13 @@ import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 
 import osbot_scripts.bot.utils.BotCommands;
-import osbot_scripts.bot.utils.RandomUtil;
+import osbot_scripts.config.Config;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.framework.AccountStage;
 import osbot_scripts.framework.BankTask;
 import osbot_scripts.framework.ClickObjectTask;
-import osbot_scripts.framework.GrandExchangeTask;
+import osbot_scripts.framework.Pickaxe;
 import osbot_scripts.framework.WalkTask;
 import osbot_scripts.framework.parts.BankItem;
 import osbot_scripts.hopping.WorldHop;
@@ -41,6 +41,15 @@ public class IronMinerConfiguration extends QuestStep {
 					new Position(3170, 3423, 0), new Position(3171, 3413, 0), new Position(3172, 3403, 0),
 					new Position(3171, 3393, 0), new Position(3172, 3390, 0), new Position(3177, 3381, 0),
 					new Position(3182, 3372, 0), new Position(3180, 3371, 0), new Position(3175, 3367, 0)));
+
+	private static final ArrayList<Position> FROM_GE_TO_MINING_POSITION = new ArrayList<Position>(
+			Arrays.asList(new Position(3164, 3485, 0), new Position(3164, 3475, 0), new Position(3164, 3465, 0),
+					new Position(3164, 3455, 0), new Position(3165, 3451, 0), new Position(3174, 3447, 0),
+					new Position(3175, 3446, 0), new Position(3173, 3436, 0), new Position(3171, 3426, 0),
+					new Position(3169, 3416, 0), new Position(3167, 3413, 0), new Position(3169, 3403, 0),
+					new Position(3171, 3393, 0), new Position(3173, 3383, 0), new Position(3173, 3383, 0),
+					new Position(3182, 3378, 0), new Position(3187, 3375, 0), new Position(3179, 3369, 0),
+					new Position(3177, 3367, 0)));
 
 	private static final ArrayList<Position> MINING_AREA_TO_BANK = new ArrayList<Position>(
 			Arrays.asList(new Position(3183, 3371, 0), new Position(3178, 3380, 0), new Position(3173, 3389, 0),
@@ -79,16 +88,35 @@ public class IronMinerConfiguration extends QuestStep {
 		g.drawString("Time taken " + (formatTime((System.currentTimeMillis() - beginTime))), 60, 125);
 	}
 
+	private static final Area GRAND_EXCHANGE_AREA = new Area(
+			new int[][] { { 3159, 3492 }, { 3159, 3484 }, { 3170, 3485 }, { 3170, 3495 }, { 3159, 3494 } });
+
+	private static final ArrayList<Position> FROM_GE_TO_BANK_PATH = new ArrayList<Position>(
+			Arrays.asList(new Position(3165, 3485, 0), new Position(3165, 3475, 0), new Position(3165, 3465, 0),
+					new Position(3164, 3460, 0), new Position(3173, 3455, 0), new Position(3182, 3450, 0),
+					new Position(3184, 3449, 0), new Position(3183, 3439, 0), new Position(3182, 3435, 0)));
+
 	@Override
 	public void onStart() {
 		if (beginTime == -1) {
 			beginTime = System.currentTimeMillis();
 		}
 
-		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-				new WalkTask("walk to varrock west bank", -1, -1, getBot().getMethods(), BANK_POSITION_VARROCK_EAST,
-						new Area(new int[][] { { 3180, 3441 }, { 3186, 3441 }, { 3186, 3433 }, { 3180, 3433 } }),
-						getScript(), getEvent(), true, false));
+		if (getEvent().hasFinished() && GRAND_EXCHANGE_AREA.contains(myPlayer())) {
+			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+					new WalkTask("walk to varrock west bank from g.e.", -1, -1, getBot().getMethods(),
+							FROM_GE_TO_BANK_PATH, GRAND_EXCHANGE_AREA,
+							new Area(new int[][] { { 3180, 3441 }, { 3186, 3441 }, { 3186, 3433 }, { 3180, 3433 } }),
+							getScript(), getEvent(), false, true));
+		} else {
+			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+					new WalkTask("walk to varrock west bank from mining", -1, -1, getBot().getMethods(),
+							MINING_AREA_TO_BANK,
+							new Area(new int[][] { { 3174, 3379 }, { 3186, 3379 }, { 3185, 3366 }, { 3176, 3362 },
+									{ 3169, 3364 }, { 3171, 3372 } }),
+							new Area(new int[][] { { 3180, 3441 }, { 3186, 3441 }, { 3186, 3433 }, { 3180, 3433 } }),
+							getScript(), getEvent(), false, true));
+		}
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new BankTask("withdraw pickaxe", 0,
 				getBot().getMethods(), true, new BankItem[] { new BankItem("pickaxe", 1, false) },
@@ -96,9 +124,16 @@ public class IronMinerConfiguration extends QuestStep {
 						new int[][] { { 3180, 3439 }, { 3180, 3433 }, { 3186, 3433 }, { 3186, 3440 }, { 3180, 3440 } }),
 				this));
 
-		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-				new WalkTask("walk to mining area", -1, -1, getBot().getMethods(), BANK_PATH_TO_MINING_AREA,
-						BANK_VARROCK_EAST_AREA, MINING_AREA, getScript(), getEvent(), false, true));
+		if (getEvent().hasFinished() && GRAND_EXCHANGE_AREA.contains(myPlayer())) {
+			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+					new WalkTask("walk to mining area (normal)", -1, -1, getBot().getMethods(),
+							FROM_GE_TO_MINING_POSITION, GRAND_EXCHANGE_AREA, MINING_AREA, getScript(), getEvent(),
+							false, true));
+		} else {
+			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+					new WalkTask("walk to mining area", -1, -1, getBot().getMethods(), BANK_PATH_TO_MINING_AREA,
+							BANK_VARROCK_EAST_AREA, MINING_AREA, getScript(), getEvent(), false, true));
+		}
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new WalkTask("walk to mining spot", -1, -1,
 				getBot().getMethods(), MINING_POSITION, MINING_AREA, getScript(), getEvent(), false, true));
@@ -116,7 +151,7 @@ public class IronMinerConfiguration extends QuestStep {
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("walk to varrock west bank 2", -1, -1, getBot().getMethods(), MINING_AREA_TO_BANK,
-						BANK_VARROCK_EAST_AREA, getScript(), getEvent(), false, true));
+						MINING_AREA, BANK_VARROCK_EAST_AREA, getScript(), getEvent(), false, true));
 
 	}
 
@@ -186,11 +221,23 @@ public class IronMinerConfiguration extends QuestStep {
 			// resetStage(AccountStage.MINING_IRON_ORE.name());
 		}
 
+		if (MINING_AREA.contains(myPlayer()) && ((getInventory().contains(1266) || getInventory().contains(1268)
+				|| getInventory().contains(1270) || getInventory().contains(1272) || getInventory().contains(1274)
+				|| getInventory().contains(1276)))) {
+			log("Is at mining area wihout a pickaxe, restarting tasks 2!");
+			resetStage(AccountStage.MINING_IRON_ORE.name());
+		}
+
 		if (MINING_AREA.contains(myPlayer()) && !getInventory().contains("Bronze pickaxe")
 				&& !getInventory().contains("Iron pickaxe") && !getInventory().contains("Steel pickaxe")
 				&& !getInventory().contains("Mithril pickaxe") && !getInventory().contains("Adamant pickaxe")
 				&& !getInventory().contains("Rune pickaxe")) {
 			log("Is at mining area wihout a pickaxe, restarting tasks!");
+			resetStage(AccountStage.MINING_IRON_ORE.name());
+		}
+
+		if (Config.doesntHaveAnyPickaxe(this) && !getBank().isOpen() && MINING_AREA.contains(myPlayer())) {
+			log("Player doesn't have any pickaxe, getting it from back");
 			resetStage(AccountStage.MINING_IRON_ORE.name());
 		}
 
@@ -220,6 +267,11 @@ public class IronMinerConfiguration extends QuestStep {
 			// return;
 		}
 
+		if (Config.doesntHaveAnyPickaxe(this) && getBank().isOpen()) {
+			log("Player doesn't have any pickaxe, buying one right now");
+			setGrandExchangeActions(new Ge2(getEvent()));
+		}
+
 		int ironAmount = -1;
 		int totalAccountValue = -1;
 		if (getBank().isOpen()) {
@@ -228,13 +280,16 @@ public class IronMinerConfiguration extends QuestStep {
 			totalAccountValue += coinsAmount;
 
 			// If has more than 100k then start tradinig it over to the mule
-			if (coinsAmount > 60_000) {
+			if (coinsAmount > 80_000) {
 
 				// Setting the status of the account that it wants to mule to another account in
 				// the database
-				if (getEvent() != null && getEvent().getUsername() != null) {
-					DatabaseUtilities.updateStageProgress(this, "MULE_TRADING", 0, getEvent().getUsername());
-					BotCommands.killProcess((MethodProvider) this, getScript(), "BECAUSE OF GOING TO MULE TRADING");
+				if (getEvent() != null && getEvent().getUsername() != null
+						&& DatabaseUtilities.getMuleTradingFreeAccounts(this, getEvent()) > 0) {
+					DatabaseUtilities.updateStageProgress(this, "MULE_TRADING", 0, getEvent().getUsername(),
+							getEvent());
+					BotCommands.killProcess((MethodProvider) this, getScript(), "BECAUSE OF GOING TO MULE TRADING",
+							getEvent());
 				}
 			}
 
@@ -252,7 +307,7 @@ public class IronMinerConfiguration extends QuestStep {
 		}
 		log("[ESTIMATED] account value is: " + totalAccountValue);
 		if (getEvent() != null && getEvent().getUsername() != null && totalAccountValue > 0) {
-			DatabaseUtilities.updateAccountValue(this, getEvent().getUsername(), totalAccountValue);
+			DatabaseUtilities.updateAccountValue(this, getEvent().getUsername(), totalAccountValue, getEvent());
 		}
 
 		// The tasks of getting new pickaxes, looking for the skill and then the pickaxe
@@ -260,7 +315,8 @@ public class IronMinerConfiguration extends QuestStep {
 		// also execute this task to get a new mining pickaxe
 		// This is made so when a player reaches a level, or doesn't have a base
 		// pickaxe, then it goes to the g.e. and buys one according to its mining level
-		if (totalAccountValue > 3000 && getBank().isOpen() && getSkills().getStatic(Skill.MINING) <= 3
+		if (totalAccountValue > Pickaxe.BRONZE.getPrice() && getBank().isOpen()
+				&& getSkills().getStatic(Skill.MINING) <= 3
 				&& ((!getInventory().contains("Bronze pickaxe") && !getBank().contains("Bronze pickaxe")))) {
 
 			setGrandExchangeActions(new Ge2(getEvent()));
@@ -279,8 +335,8 @@ public class IronMinerConfiguration extends QuestStep {
 			// new BankItem("Uncut sapphire", 1623, 1000, 1, true),
 			// new BankItem("Clay", 434, 1000, 1, true) },
 			// null, getScript()));
-		} else if (totalAccountValue > 5000 && getBank().isOpen() && getSkills().getStatic(Skill.MINING) > 3
-				&& getSkills().getStatic(Skill.MINING) < 6
+		} else if (totalAccountValue > Pickaxe.IRON.getPrice() && getBank().isOpen()
+				&& getSkills().getStatic(Skill.MINING) > 3 && getSkills().getStatic(Skill.MINING) < 6
 				&& ((!getInventory().contains("Iron pickaxe") && !getBank().contains("Iron pickaxe")))) {
 
 			setGrandExchangeActions(new Ge2(getEvent()));
@@ -300,8 +356,8 @@ public class IronMinerConfiguration extends QuestStep {
 			// new BankItem("Uncut ruby", 1619, 1000, 1, true),
 			// new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
 			// null, getScript()));
-		} else if (totalAccountValue > 8000 && getBank().isOpen() && getSkills().getStatic(Skill.MINING) >= 6
-				&& getSkills().getStatic(Skill.MINING) < 21
+		} else if (totalAccountValue > Pickaxe.STEEL.getPrice() && getBank().isOpen()
+				&& getSkills().getStatic(Skill.MINING) >= 6 && getSkills().getStatic(Skill.MINING) < 21
 				&& ((!getInventory().contains("Steel pickaxe") && !getBank().contains("Steel pickaxe")))) {
 
 			setGrandExchangeActions(new Ge2(getEvent()));
@@ -321,8 +377,8 @@ public class IronMinerConfiguration extends QuestStep {
 			// new BankItem("Uncut ruby", 1619, 1000, 1, true),
 			// new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
 			// null, getScript()));
-		} else if (totalAccountValue > 15000 && getBank().isOpen() && getSkills().getStatic(Skill.MINING) >= 21
-				&& getSkills().getStatic(Skill.MINING) < 31
+		} else if (totalAccountValue > Pickaxe.MITHRIL.getPrice() && getBank().isOpen()
+				&& getSkills().getStatic(Skill.MINING) >= 21 && getSkills().getStatic(Skill.MINING) < 31
 				&& ((!getInventory().contains("Mithril pickaxe") && !getBank().contains("Mithril pickaxe")))) {
 
 			setGrandExchangeActions(new Ge2(getEvent()));
@@ -341,8 +397,8 @@ public class IronMinerConfiguration extends QuestStep {
 			// new BankItem("Uncut sapphire", 1623, 1000, 1, true),
 			// new BankItem("Clay", 434, 1000, 1, true) },
 			// null, getScript()));
-		} else if (totalAccountValue > 30000 && getBank().isOpen() && getSkills().getStatic(Skill.MINING) >= 31
-				&& getSkills().getStatic(Skill.MINING) < 41
+		} else if (totalAccountValue > Pickaxe.ADAMANT.getPrice() && getBank().isOpen()
+				&& getSkills().getStatic(Skill.MINING) >= 31 && getSkills().getStatic(Skill.MINING) < 41
 				&& ((!getInventory().contains("Adamant pickaxe") && !getBank().contains("Adamant pickaxe")))) {
 
 			setGrandExchangeActions(new Ge2(getEvent()));
@@ -361,7 +417,8 @@ public class IronMinerConfiguration extends QuestStep {
 			// new BankItem("Uncut sapphire", 1623, 1000, 1, true),
 			// new BankItem("Clay", 434, 1000, 1, true) },
 			// null, getScript()));
-		} else if (totalAccountValue > 45000 && getBank().isOpen() && getSkills().getStatic(Skill.MINING) >= 41
+		} else if (totalAccountValue > Pickaxe.RUNE.getPrice() && getBank().isOpen()
+				&& getSkills().getStatic(Skill.MINING) >= 41
 				&& ((!getInventory().contains("Rune pickaxe") && !getBank().contains("Rune pickaxe")))) {
 
 			setGrandExchangeActions(new Ge2(getEvent()));
@@ -397,8 +454,8 @@ public class IronMinerConfiguration extends QuestStep {
 		if (getGrandExchangeTask() != null && getGrandExchangeTask().getTask() != null
 				&& getGrandExchangeTask().getTask().finished()) {
 			// the current grand exchange task to null
-			resetStage(AccountStage.MINING_IRON_ORE.name());
 			setGrandExchangeActions(null);
+			resetStage(AccountStage.MINING_IRON_ORE.name());
 			log("Finished G.E. task, walking back to varrock bank");
 		}
 

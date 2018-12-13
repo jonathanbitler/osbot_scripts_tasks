@@ -9,6 +9,8 @@ import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 
+import osbot_scripts.config.Config;
+import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.framework.AccountStage;
 import osbot_scripts.framework.BankTask;
@@ -346,9 +348,16 @@ public class DoricsQuestConfig extends QuestStep {
 			resetStage(AccountStage.QUEST_DORICS_QUEST.name());
 		}
 
+		// Account is in lumbridge, account must have died, checking next if the player
+		// still has the pickaxe in this inventory, otherwise it's out of money and will
+		// get stuck, because it can't mine anymore
 		if (new Area(new int[][] { { 3214, 3228 }, { 3215, 3208 }, { 3231, 3211 }, { 3229, 3228 }, { 3220, 3230 },
 				{ 3214, 3228 } }).contains(myPlayer())) {
-			resetStage(AccountStage.QUEST_DORICS_QUEST.name());
+			if (!Config.doesntHaveAnyPickaxe(this)) {
+				DatabaseUtilities.updateStageProgress(this, "OUT_OF_MONEY", 0, getEvent().getUsername(), getEvent());
+			} else {
+				resetStage(AccountStage.QUEST_DORICS_QUEST.name());
+			}
 		}
 
 		if (new Area(new int[][] { { 2950, 3454 }, { 2950, 3449 }, { 2954, 3449 }, { 2954, 3455 }, { 2950, 3455 },

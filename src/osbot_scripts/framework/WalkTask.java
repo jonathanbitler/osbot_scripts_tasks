@@ -205,8 +205,9 @@ public class WalkTask extends TaskSkeleton implements Task {
 					}
 
 					if (failToWalk > 10 && getScript() != null && getLogin() != null) {
-						DatabaseUtilities.updateAccountStatusInDatabase(getApi(), "WALKING_STUCK", login.getUsername());
-						BotCommands.killProcess(getApi(), getScript(), "BECAUSE OF NOT BEING ABLE TO WALK");
+						DatabaseUtilities.updateAccountStatusInDatabase(getApi(), "WALKING_STUCK", login.getUsername(),
+								login);
+						BotCommands.killProcess(getApi(), getScript(), "BECAUSE OF NOT BEING ABLE TO WALK", login);
 					}
 					// }
 				}

@@ -95,6 +95,7 @@ public abstract class QuestStep extends MethodProvider {
 		getClient().getLoginState() == LoginState.LOADING || //
 				getClient().getLoginState() == LoginState.LOADING_MAP;
 	}
+
 	/**
 	 * Formatting time to be HOUR:MINUTE:SECONDS
 	 * 
@@ -124,7 +125,7 @@ public abstract class QuestStep extends MethodProvider {
 		this.taskHandler = new TaskHandler((MethodProvider) this, (QuestStep) this, event, script);
 		this.setMouse(new MouseTrailApi((MethodProvider) this));
 		this.setQuest(isQuest);
-//		setLogoutEventThread(new ThreadDemo());
+		// setLogoutEventThread(new ThreadDemo());
 	}
 
 	/**
@@ -132,14 +133,17 @@ public abstract class QuestStep extends MethodProvider {
 	 */
 	public void resetStage(String taskName) {
 		if (getEvent() != null && getEvent().getUsername() != null && taskName != null) {
-			DatabaseUtilities.updateStageProgress(this, taskName, 0, getEvent().getUsername());
+			DatabaseUtilities.updateStageProgress(this, taskName, 0, getEvent().getUsername(), getEvent());
 		}
 		setDoneLaps(getDoneLaps() + 1);
 		setQuestStageStep(0);
 		getTaskHandler().setCurrentTask(null);
 		getTaskHandler().getTasks().clear();
 		onStart();
-		log("[TASKHANDLER] Clearing & restarting all tasks");
+		if (getTaskHandler().getTasks().size() > 0) {
+			getTaskHandler().setCurrentTask(getTaskHandler().getTasks().get(0));
+		}
+		log("[TASKHANDLER] Clearing & restarting all tasks 2");
 	}
 
 	/**

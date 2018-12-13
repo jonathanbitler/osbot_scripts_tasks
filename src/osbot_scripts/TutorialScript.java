@@ -142,7 +142,7 @@ public class TutorialScript extends Script {
 		}
 
 		if (!getClient().isLoggedIn() && getConfigs().get(281) > 0) {
-			BotCommands.killProcess((MethodProvider) this, (Script) this, "");
+			BotCommands.killProcess((MethodProvider) this, (Script) this, "", login);
 		}
 
 		if ((!TUT_ISLAND_AREA.contains(myPlayer()) && !TUT_ISLAND_AREA_CAVE.contains(myPlayer()))
@@ -150,9 +150,9 @@ public class TutorialScript extends Script {
 						.contains(myPlayer()))) {
 			log("Succesfully completed!");
 			DatabaseUtilities.updateStageProgress(this, AccountStage.QUEST_COOK_ASSISTANT.name(), 0,
-					getLogin().getUsername());
+					getLogin().getUsername(), login);
 			BotCommands.killProcess((MethodProvider) this, (Script) this,
-					"BECAUSE PLAYER IS NOT ON TUTORIAL ISLAND, SETTING TO COOKS ASSISTANT");
+					"BECAUSE PLAYER IS NOT ON TUTORIAL ISLAND, SETTING TO COOKS ASSISTANT", login);
 		}
 
 		log(mainState);
@@ -196,6 +196,7 @@ public class TutorialScript extends Script {
 		if (!Config.NO_LOGIN) {
 			login = LoginHandler.login(this, getParameters());
 			login.setScript("TUT_ISLAND");
+			DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN", login);
 		}
 		if (events.getLogin() == null) {
 			events.setLogin(login);

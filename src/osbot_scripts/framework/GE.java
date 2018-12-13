@@ -1,4 +1,5 @@
 package osbot_scripts.framework;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -17,21 +18,18 @@ public class GE {
 	public GE(Script s) {
 		this.s = s;
 	}
-	
+
 	/**
-	 * ItemID 
-	 * itemName - For input search 
-	 * price - desired buying price 
-	 * quantity - desired buy quantity 
-	 * collectIfNeeded - Attempts to collect all items
-	 * 					 from GE main window if there's no empty box 
-	 * abortIfNeeded - If collecting fails, tries to abort the offer with the same item. If not found tries to
-	 * 				   abort the first found pending box.
-	 * collectFailsafe - if true - collects everything possible first
+	 * ItemID itemName - For input search price - desired buying price quantity -
+	 * desired buy quantity collectIfNeeded - Attempts to collect all items from GE
+	 * main window if there's no empty box abortIfNeeded - If collecting fails,
+	 * tries to abort the offer with the same item. If not found tries to abort the
+	 * first found pending box. collectFailsafe - if true - collects everything
+	 * possible first
 	 * 
-	 * KNOWN ISSUES: If there is a another buy/sale with the same item then it
-	 * will think that it's the buy/sale we're initialized (need to distinguish
-	 * things by quantity and price etc.)
+	 * KNOWN ISSUES: If there is a another buy/sale with the same item then it will
+	 * think that it's the buy/sale we're initialized (need to distinguish things by
+	 * quantity and price etc.)
 	 */
 	public boolean createBuyOffer(int itemId, String itemName, int price, int quantity, boolean collectIfNeeded,
 			boolean abortIfNeeded, boolean collectFailsafe) throws InterruptedException {
@@ -56,18 +54,16 @@ public class GE {
 	}
 
 	/**
-	 * createSellOffer 
-	 * ItemID 
-	 * itemName - For input search 
-	 * price - desired selling price 
-	 * quantity - desired selling quantity 
-	 * collectIfNeeded - Attemps to collect all items from GE main window if there's no empty box
-	 * abortIfNeeded - If collecting fails, tries to abort the offer with the same item. If not found tries to abort the first found pending box.
-	 * collectFailsafe - if true - collects everything possible first
+	 * createSellOffer ItemID itemName - For input search price - desired selling
+	 * price quantity - desired selling quantity collectIfNeeded - Attemps to
+	 * collect all items from GE main window if there's no empty box abortIfNeeded -
+	 * If collecting fails, tries to abort the offer with the same item. If not
+	 * found tries to abort the first found pending box. collectFailsafe - if true -
+	 * collects everything possible first
 	 * 
-	 * KNOWN ISSUES: If there is a another buy/sale with the same item then it
-	 * will think that it's the buy/sale we're initialized (need to distinguish
-	 * things by quantity and price etc.)
+	 * KNOWN ISSUES: If there is a another buy/sale with the same item then it will
+	 * think that it's the buy/sale we're initialized (need to distinguish things by
+	 * quantity and price etc.)
 	 */
 	public boolean createSellOffer(int itemId, String itemName, int price, int quantity, boolean collectIfNeeded,
 			boolean abortIfNeeded, boolean collectFailsafe) throws InterruptedException {
@@ -163,8 +159,8 @@ public class GE {
 		}
 
 		/*
-		 * If a pending box with the specified item was not found - Find first
-		 * pending box
+		 * If a pending box with the specified item was not found - Find first pending
+		 * box
 		 */
 		if (returningBox == null) {
 			/* Searching for pending box with item */
@@ -217,9 +213,10 @@ public class GE {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * goIntoOffer
+	 * 
 	 * @param box
 	 * @return boolean
 	 */
@@ -234,7 +231,7 @@ public class GE {
 			}.sleep();
 		}
 		log(s.grandExchange.getStatus(box).toString());
-		
+
 		// Getting box offer widget
 		RS2Widget boxOffer = s.widgets.get(465, getOfferNum(box), 2);
 		if (boxOffer != null) {
@@ -288,14 +285,13 @@ public class GE {
 		return false;
 
 	}
-	
+
 	/**
-	 * getOfferNum
-	 * NEED TO REWRITE BOX STUFF TO USING CUSTOM ENUM
+	 * getOfferNum NEED TO REWRITE BOX STUFF TO USING CUSTOM ENUM
 	 */
 	public int getOfferNum(GrandExchange.Box box) {
 
-		for(GEBoxes boxes : GEBoxes.values()) {
+		for (GEBoxes boxes : GEBoxes.values()) {
 			if (boxes.getBox() == box) {
 				return boxes.getChildWidgetId();
 			}
@@ -310,15 +306,14 @@ public class GE {
 		}
 		return false;
 	}
-	
 
-	public boolean init(int itemId, boolean collectIfNeeded, boolean abortIfNeeded, boolean collectFailsafe, String type)
-			throws InterruptedException {
+	public boolean init(int itemId, boolean collectIfNeeded, boolean abortIfNeeded, boolean collectFailsafe,
+			String type) throws InterruptedException {
 		if (s.grandExchange.isOpen()) {
-			
+
 			// Work around for the box identification bug
 			if (collectFailsafe) {
-				if(s.grandExchange.isOfferScreenOpen()) {
+				if (s.grandExchange.isOfferScreenOpen()) {
 					s.grandExchange.goBack();
 					new ConditionalSleep(3000, 500) {
 						@Override
@@ -338,7 +333,7 @@ public class GE {
 				log("Went into else. CollectIfNeeded: " + collectIfNeeded);
 				// Checking if there is anything to collect
 				if (collectIfNeeded || abortIfNeeded) {
-					
+
 					if (collectIfNeeded) {
 						if (s.grandExchange.isOfferScreenOpen()) {
 							s.grandExchange.goBack();
@@ -408,6 +403,7 @@ public class GE {
 				}.sleep();
 				log("Box status AFTER SLEEP: " + s.grandExchange.getStatus(tempBox).toString());
 				if (isOfferFinished(tempBox)) {
+					log("G.E. COLLECTING ITEM: " + itemId);
 					return collectItem(itemId, usableBoxes[i], false);
 				}
 			}
@@ -442,42 +438,42 @@ public class GE {
 							}
 						}
 						log("Collect from item collect widget");
-						
+
 						boolean w1Collect = false;
 						// ALSO COULD BE Collect-items or BANK
 						String[] w1Actions = itemCollectWidget1.getInteractActions();
 						if (w1Actions != null) {
-							List<String> widget1Actions =  Arrays.asList(itemCollectWidget1.getInteractActions());
-							
-							if(widget1Actions.contains("Collect")) {
+							List<String> widget1Actions = Arrays.asList(itemCollectWidget1.getInteractActions());
+
+							if (widget1Actions.contains("Collect")) {
 								itemCollectWidget1.interact("Collect");
 								w1Collect = true;
-							}	else if(widget1Actions.contains("Collect-note")) {
+							} else if (widget1Actions.contains("Collect-note")) {
 								itemCollectWidget1.interact("Collect-note");
 								w1Collect = true;
-							}	else if(widget1Actions.contains("Collect-item")) {
+							} else if (widget1Actions.contains("Collect-item")) {
 								itemCollectWidget1.interact("Collect-item");
 								w1Collect = true;
-							}	else if(widget1Actions.contains("Collect-notes")) {
+							} else if (widget1Actions.contains("Collect-notes")) {
 								itemCollectWidget1.interact("Collect-notes");
 								w1Collect = true;
-							}	else if(widget1Actions.contains("Collect-items")) {
+							} else if (widget1Actions.contains("Collect-items")) {
 								itemCollectWidget1.interact("Collect-items");
 								w1Collect = true;
-							}		
-							
-							if(w1Collect) {
+							}
+
+							if (w1Collect) {
 								collected = true;
 							}
-							
+
 							new ConditionalSleep(3000, 500) {
 								@Override
 								public boolean condition() throws InterruptedException {
 									return !itemCollectWidget1.isVisible();
 								}
-							}.sleep();	
+							}.sleep();
 						}
-						
+
 					}
 
 					if (itemCollectWidget2 != null) {
@@ -490,39 +486,39 @@ public class GE {
 						}
 						log("Collect from item collect widget");
 						String[] w2Actions = itemCollectWidget2.getInteractActions();
-						
-						if(w2Actions != null) {
-							List<String> widget2Actions =  Arrays.asList(itemCollectWidget2.getInteractActions());
-							
+
+						if (w2Actions != null) {
+							List<String> widget2Actions = Arrays.asList(itemCollectWidget2.getInteractActions());
+
 							boolean w2Collect = false;
-							if(widget2Actions.contains("Collect")) {
+							if (widget2Actions.contains("Collect")) {
 								itemCollectWidget2.interact("Collect");
 								w2Collect = true;
-							}	else if(widget2Actions.contains("Collect-note")) {
+							} else if (widget2Actions.contains("Collect-note")) {
 								itemCollectWidget2.interact("Collect-note");
 								w2Collect = true;
-							}	else if(widget2Actions.contains("Collect-item")) {
+							} else if (widget2Actions.contains("Collect-item")) {
 								itemCollectWidget2.interact("Collect-item");
 								w2Collect = true;
-							}	else if(widget2Actions.contains("Collect-notes")) {
+							} else if (widget2Actions.contains("Collect-notes")) {
 								itemCollectWidget2.interact("Collect-notes");
 								w2Collect = true;
-							}	else if(widget2Actions.contains("Collect-items")) {
+							} else if (widget2Actions.contains("Collect-items")) {
 								itemCollectWidget2.interact("Collect-items");
 								w2Collect = true;
-							}		
-							
-							if(w2Collect) {
+							}
+
+							if (w2Collect) {
 								collected = true;
 							}
-							
+
 							new ConditionalSleep(3000, 500) {
 								@Override
 								public boolean condition() throws InterruptedException {
 									return !itemCollectWidget2.isVisible();
 								}
-							}.sleep();	
-						}		
+							}.sleep();
+						}
 					}
 					new ConditionalSleep(3000, 500) {
 
@@ -583,7 +579,7 @@ public class GE {
 			return true;
 		}
 	}
-	
+
 	public boolean closeGE() {
 		if (s.grandExchange.isOpen()) {
 			new ConditionalSleep(2000, 200) {
@@ -596,7 +592,7 @@ public class GE {
 		}
 		return false;
 	}
-	
+
 	public void log(String msg) {
 		if (logging) {
 			s.log(msg);

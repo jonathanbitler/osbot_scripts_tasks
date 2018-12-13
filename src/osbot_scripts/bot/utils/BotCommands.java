@@ -7,6 +7,7 @@ import org.osbot.rs07.script.Script;
 
 import osbot_scripts.database.DatabaseConnection;
 import osbot_scripts.database.DatabaseUtilities;
+import osbot_scripts.events.LoginEvent;
 import osbot_scripts.util.Sleep;
 
 public class BotCommands {
@@ -25,36 +26,38 @@ public class BotCommands {
 		try {
 			api.log("QUITING BECAUSE OF: " + reason);
 			DatabaseConnection.getDatabase().disconnect();
-			Thread.sleep(30_000);
+			Thread.sleep(3_000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-//		System.exit(1);
+		System.exit(1);
 	}
 
 	/**
 	 * 
+	 * @param login
+	 *            TODO
 	 * @param pid
 	 */
-	public static void killProcess(MethodProvider api, Script bot, String reason) {
+	public static void killProcess(MethodProvider api, Script bot, String reason, LoginEvent login) {
 		try {
 			// DatabaseUtilities.updateLoginStatus(api, api.getBot().getUsername(),
 			// "DEFAULT");
 			api.log("QUITING BECAUSE OF: " + reason);
-			UsernameCheck.checkUsername(api);
+			UsernameCheck.checkUsername(api, login);
 
-			api.log("Waiting 30 seconds for get request to send!");
+			api.log("Waiting 3 seconds for get request to send!");
 			try {
 				DatabaseConnection.getDatabase().disconnect();
-				Thread.sleep(30_000);
+				Thread.sleep(3_000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
 			bot.stop();
-//			System.exit(1);
+			System.exit(1);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

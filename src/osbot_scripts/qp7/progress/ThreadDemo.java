@@ -69,7 +69,7 @@ public class ThreadDemo extends MethodProvider implements Runnable {
 				if (!isLoggedIn() && isWrongEmail()) {
 					log("Account password is wrong, setting to invalid password");
 					DatabaseUtilities.updateAccountStatusInDatabase(this, "INVALID_PASSWORD",
-							getLoginEvent().getUsername());
+							getLoginEvent().getUsername(), getLoginEvent());
 					BotCommands.waitBeforeKill(this, "BECAUSE OF INVALID PASSWORD");
 				}
 

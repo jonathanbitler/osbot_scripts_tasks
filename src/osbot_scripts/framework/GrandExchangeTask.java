@@ -7,6 +7,7 @@ import org.osbot.rs07.api.Bank.BankMode;
 import org.osbot.rs07.api.GrandExchange;
 import org.osbot.rs07.api.GrandExchange.Box;
 import org.osbot.rs07.api.map.Area;
+import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.model.NPC;
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.script.MethodProvider;
@@ -35,8 +36,6 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 	private LoginEvent login;
 
 	private Script script;
-
-	private int tries;
 
 	private QuestStep quest;
 
@@ -307,6 +306,17 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 		return true;
 	}
 
+	private static final ArrayList<Position> GE_PATH = new ArrayList<Position>(
+			Arrays.asList(new Position(3183, 3436, 0), new Position(3183, 3446, 0), new Position(3183, 3451, 0),
+					new Position(3174, 3456, 0), new Position(3165, 3461, 0), new Position(3165, 3461, 0),
+					new Position(3165, 3471, 0), new Position(3165, 3481, 0), new Position(3164, 3486, 0)));
+
+	private int normalTries;
+
+	private int buyTries;
+
+	private int sellTries;
+
 	@Override
 	public void loop() throws InterruptedException {
 		if (!ranOnStart()) {
@@ -323,14 +333,22 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 
 		GE ge = new GE(getScript());
 
-		tries++;
+		normalTries++;
 
 		// If the player is not in the grand exchange area, then walk to it
-		if (!new Area(new int[][] { { 3161, 3492 }, { 3168, 3492 }, { 3168, 3485 }, { 3161, 3485 } })
-				.contains(getApi().myPlayer())) {
-			getApi().getWalking()
-					.webWalk(new Area(new int[][] { { 3161, 3492 }, { 3168, 3492 }, { 3168, 3485 }, { 3161, 3485 } }));
-			getApi().log("The player has a grand exchange task but isn't there, walking to there");
+		if (getApi().myPlayer() != null
+				&& !new Area(new int[][] { { 3144, 3508 }, { 3144, 3471 }, { 3183, 3470 }, { 3182, 3509 } })
+						.contains(getApi().myPlayer())) {
+
+			// Contains in banking area varrock
+			if (new Area(new int[][] { { 3180, 3438 }, { 3180, 3433 }, { 3186, 3433 }, { 3186, 3438 } })
+					.contains(getApi().myPlayer())) {
+				getApi().getWalking().walkPath(GE_PATH);
+			} else {
+				getApi().getWalking().webWalk(
+						new Area(new int[][] { { 3160, 3494 }, { 3168, 3494 }, { 3168, 3485 }, { 3160, 3485 } }));
+				getApi().log("The player has a grand exchange task but isn't there, walking to there");
+			}
 		}
 
 		// First collect everything to the inventory is there's a collect option
@@ -346,11 +364,6 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 			// Withdrawing all items
 			withdrawAllItemsNeeded();
 		}
-
-		// Must have withdrawn the items from the bank before continueing
-		// if (!withdrawn[0] || !withdrawn[1]) {
-		// return;
-		// }
 
 		if (getItemsToSell().size() != 0 && !containgItemsToSellInInventory()) {
 			if (!getApi().getBank().isOpen()) {
@@ -376,28 +389,27 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 			// Open the G.E.
 			openGrandExchange();
 
-			// // Item id must be better than -1 & price be more than 0
-			// Box box = getBox();
-			//
-			// RS2Widget sellWidget = getApi().getWidgets().get(465, 7, 4);
-			// if (sellWidget != null && sellWidget.isVisible()) {
-			// sellWidget.interact();
-			// }
-			//
-			// boolean sellItem =
-
 			boolean finished = false;
-			int tries = 0;
 
+			// Loop, waiting for the task to get finished
 			while (!finished) {
-				if (tries > 10) {
+
+				if (sellTries > 5) {
+
+					// If the selling tries if bigger than 10 and the inventory doesn't contain the
+					// item anymore, then setting it to true
 					if (!getApi().getInventory().contains(sell.getName())) {
 						sell.setCompletedTask(true);
 					}
-					finished = true;
 					break;
 				}
 
+				// Opening the g.e. if it wasn't open already
+				if (!getApi().getGrandExchange().isOpen()) {
+					ge.openGe();
+				}
+
+				// New conditional sleep for selling items
 				finished = new ConditionalSleep(3000, 500) {
 					@Override
 					public boolean condition() throws InterruptedException {
@@ -406,10 +418,12 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 					}
 				}.sleep();
 
-				Thread.sleep(5000);
-
 				if (!finished) {
-					if (tries > 1) {
+					// Waiting 5 seconds to set the price lower when not finished
+					Thread.sleep(5000);
+
+					// If it didn't sell, then setting to price of the item lower
+					if (sellTries > 1) {
 						int sellPrice = (sell.getPrice() - (sell.getPrice() * sell.getAmount() / 100)) > 1
 								? (sell.getPrice() - (sell.getPrice() * sell.getAmount() / 100))
 								: 1;
@@ -418,78 +432,13 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 					}
 
 				} else {
+					// Task has completed, setting the item to true
 					sell.setCompletedTask(true);
 				}
-				tries++;
-
-				if (!getApi().getGrandExchange().isOpen()) {
-					ge.openGe();
-				}
+				sellTries++;
 
 			}
-			// new ConditionalSleep(3000, 500) {
-			// @Override
-			// public boolean condition() throws InterruptedException {
-			// return ge.createSellOffer((sell.isWithdrawNoted() ? (sell.getItemId() + 1) :
-			// sell.getItemId()),
-			// sell.getName(), sell.getPrice(), sell.getAmount(), true, true, true);
-			// }
-			// }.sleep();
 
-			//
-			// // getApi().getGrandExchange().sellItem(
-			// // (sell.isWithdrawNoted() ? (sell.getItemId() + 1) : sell.getItemId()),
-			// // sell.getPrice(),
-			// // sell.getAmount());
-			//
-			// if (!sell.isCompletedTask() && sellItem) {
-			// getApi().log("Selling the item progress continued");
-			// getApi().log("Using the box: " + box + " to sell item: " + sell.getName());
-			//
-			// Sleep.sleepUntil(
-			// () -> getApi().getGrandExchange().getStatus(box) !=
-			// GrandExchange.Status.EMPTY
-			// && getApi().getGrandExchange().getStatus(box) !=
-			// GrandExchange.Status.INITIALIZING_SALE,
-			// 10000);
-			//
-			// getApi().log("Current box status: " +
-			// getApi().getGrandExchange().getStatus(box));
-			//
-			// // Sale not instant sold
-			// if (getApi().getGrandExchange().getStatus(box) ==
-			// GrandExchange.Status.PENDING_SALE) {
-			// int number = getUsedBox(box);
-			//
-			// // Aborting the offer
-			// abortOffer(number);
-			//
-			// sell.setPrice((int) (sell.getPrice() * 0.75));
-			// sell.setCompletedTask(false);
-			// getApi().log("Item price decreased to " + sell.getPrice());
-			//
-			// }
-			//
-			// // Sale successful
-			// if (getApi().getGrandExchange().getStatus(box) ==
-			// GrandExchange.Status.FINISHED_SALE
-			// || getApi().getGrandExchange().getStatus(box) ==
-			// GrandExchange.Status.COMPLETING_SALE) {
-			// getApi().log("Sell was successfull, collecting to inventory");
-			//
-			// // Collecting the item
-			// collectToInventory();
-			//
-			// sell.setCompletedTask(true);
-			// }
-			//
-			// } else if (!sell.isCompletedTask() && !sellItem) {
-			// getApi().log("Couldn't sell item, will try next time with a new task");
-			// // if (sell.isCompletedTask()) {
-			// // sell.setCompletedTask(false);
-			// // }
-			// // sell.setCompletedTask(true);
-			// }
 		}
 
 		// Just some cooldown
@@ -505,68 +454,54 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 			// Open G.E. interface
 			openGrandExchange();
 
-			// Box box = getBox();
-			// getApi().log("trying to buy item: " + buy.getItemId() + " " + buy.getName() +
-			// " " + buy.getPrice() + " "
-			// + buy.getAmount());
-			//
-
 			boolean finished = false;
-			int tries = 0;
 
 			while (!finished) {
 
-				if (getApi().getInventory().getAmount(995) < (buy.getAmount() * buy.getPrice())) {
+				int coinsInInventory = (int) getApi().getInventory().getAmount(995);
+				int coinsInBank = (int) getApi().getBank().getAmount(995);
+
+				int ironInInventory = (int) getApi().getInventory().getAmount("Iron ore");
+				int ironInBank = (int) getApi().getBank().getAmount("Iron ore");
+				int clayInInventory = (int) getApi().getInventory().getAmount("Clay");
+				int clayInBank = (int) getApi().getBank().getAmount("Clay");
+				int totalAccountValue = (coinsInBank + coinsInInventory)
+						+ ((ironInInventory + ironInBank + clayInInventory + clayInBank) * 90);
+
+				// Checking if account has enough money to begin with
+				if (totalAccountValue < (buy.getAmount() * buy.getPrice())) {
 					getApi().log("not enough coins, closing g.e. and opening bank!");
 					ge.closeGE();
 
 					Sleep.sleepUntil(() -> !getApi().getGrandExchange().isOpen(), 5000);
 
-					getApi().getBank().open();
-
-					Sleep.sleepUntil(() -> !getApi().getBank().isOpen(), 5000);
-
+					// Trying with withdrawing all items to sell to get money
 					withdrawAllItemsNeeded();
 
-					Thread.sleep(2500);
+					// Waiting till the bank is not open anymore
+					Sleep.sleepUntil(() -> !getApi().getBank().isOpen(), 5000);
 
-					tries++;
-
-					getApi().log("current tries: " + tries);
-					if (tries > 20) {
+					// If the total value is less than it can buy a bronze pickaxe (for it to
+					// continue for now, not OO, TODO: dynamically instead of hard coded)
+					if (totalAccountValue < Pickaxe.BRONZE.getPrice() && getApi().getBank().isOpen() && buyTries > 15) {
 						DatabaseUtilities.updateStageProgress(getApi(), AccountStage.OUT_OF_MONEY.name(), 0,
-								login.getUsername());
+								login.getUsername(), login);
 						getApi().log("Not enough money.. closing for next stage");
-						BotCommands.waitBeforeKill(getApi(), "BECAUSE OF NOT HAVING ENOUGH MONEY");
+						BotCommands.waitBeforeKill(getApi(), "BECAUSE OF NOT HAVING ENOUGH MONEY R01");
 					}
 
-					continue;
+					// Sleeping for 2500 msec
+					Thread.sleep(2500);
+
+					getApi().log("current tries of buying without enough money: " + buyTries);
 				}
 
-				if (tries > 10) {
-
-					// ge.closeGE();
-					//
-					// while (!getApi().getBank().isOpen()) {
-					// getApi().getBank().open();
-					// }
-					// int coins = (int) getApi().getBank().getAmount(995);
-					// if (coins > 0) {
-					// getApi().getBank().withdrawAll(995);
-					// }
-					//
-					// if ((getApi().getInventory().getAmount("Coins") + coins) < (buy.getPrice() *
-					// buy.getAmount())) {
-					// DatabaseUtilities.updateStageProgress(getApi(), "OUT_OF_MONEY", 0,
-					// login.getUsername());
-					// getApi().log("Bot is out of money!");
-					// Thread.sleep(5000);
-					// System.exit(1);
-					// }
-
-					finished = true;
-					break;
+				// Opening the g.e. if it wasn't open already
+				if (!getApi().getGrandExchange().isOpen()) {
+					ge.openGe();
 				}
+
+				// Executing the task to buy an offer
 				finished = new ConditionalSleep(3000, 500) {
 					@Override
 					public boolean condition() throws InterruptedException {
@@ -575,83 +510,32 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 					}
 				}.sleep();
 
-				Thread.sleep(5000);
-
 				if (!finished) {
-					if (tries > 1) {
+					// If the buy wasn't suscessful, then sleep for 5 secondds
+					Thread.sleep(5000);
+
+					// If couldn't buy more than 0 times, then set the price higher
+					if (buyTries > 1) {
 						buy.setPrice((getApi().getInventory().getAmount(995) >= (buy.getPrice() * buy.getAmount()))
 								? (buy.getPrice() + (buy.getPrice() * buy.getAmount() / 100))
 								: (int) (getApi().getInventory().getAmount(995) / buy.getAmount()));
+
+						getApi().log("set buy price to: " + buy.getPrice());
 					}
 
-					getApi().log("set buy price to: " + buy.getPrice());
 				} else {
+					// Successfull
 					buy.setCompletedTask(true);
+					getApi().log("Successfully bought the items!");
 				}
-				tries++;
 
-				if (!getApi().getGrandExchange().isOpen()) {
-					ge.openGe();
+				// When the buying tries is bigger than 10, then skip back to the selling
+				if (buyTries > 5) {
+					break;
 				}
+
+				buyTries++;
 			}
-
-			// new ConditionalSleep(3000, 500) {
-			// @Override
-			// public boolean condition() throws InterruptedException {
-			// return ;
-			// }
-			// }.sleep();
-
-			//
-			// /*
-			// * getApi().getGrandExchange().buyItem(buy.getItemId(), buy.getName(),
-			// * buy.getPrice(), buy.getAmount());
-			// */
-			//
-			// getApi().log("trying to buy item: " + buy.getName());
-			//
-			// if (!buy.isCompletedTask() && buyItem) {
-			//
-			// Sleep.sleepUntil(
-			// () -> getApi().getGrandExchange().getStatus(box) !=
-			// GrandExchange.Status.EMPTY
-			// && getApi().getGrandExchange().getStatus(box) !=
-			// GrandExchange.Status.INITIALIZING_BUY,
-			// 10000);
-			//
-			// getApi().log("box status: " + getApi().getGrandExchange().getStatus(box));
-			//
-			// // Buy was not instant
-			// if (getApi().getGrandExchange().getStatus(box) ==
-			// GrandExchange.Status.PENDING_BUY
-			// || getApi().getGrandExchange().getStatus(box) ==
-			// GrandExchange.Status.FINISHED_BUY) {
-			// int number = getUsedBox(box);
-			//
-			// // Aborting the offer
-			// abortOffer(number);
-			//
-			// // Collecting the item
-			// collectToInventory();
-			//
-			// buy.setPrice((int) (buy.getPrice() * 1.25));
-			// getApi().log("Price increased to " + buy.getPrice());
-			// buy.setCompletedTask(false);
-			// }
-			//
-			// // Buy was instant
-			// if (getApi().getGrandExchange().getStatus(box) ==
-			// GrandExchange.Status.COMPLETING_BUY) {
-			// getApi().log("Buy was successfull");
-			// buy.setCompletedTask(true);
-			//
-			// // Collecting the item
-			// collectToInventory();
-			// }
-			//
-			// } else if (!buy.isCompletedTask() && !buyItem) {
-			// getApi().log("Didn't have enough money");
-			// }
 
 		}
 
@@ -738,7 +622,7 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 		// "+!getApi().getGrandExchange().isOpen());
 		// getApi().log(allSold() && allBought() &&
 		// !getApi().getGrandExchange().isOpen());
-		return (allSold() && allBought()) || (tries > 5)
+		return (allSold() && allBought()) || (normalTries > 5 && !getQuest().isQuest())
 				|| (getItemsToBuy().size() == 0 && getItemsToSell().size() == 0);
 	}
 
