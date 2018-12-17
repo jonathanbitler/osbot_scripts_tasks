@@ -25,8 +25,9 @@ public class BotCommands {
 	public static void waitBeforeKill(MethodProvider api, String reason) {
 		try {
 			api.log("QUITING BECAUSE OF: " + reason);
+
 			DatabaseConnection.getDatabase().disconnect();
-			Thread.sleep(3_000);
+			Thread.sleep(15_000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -47,10 +48,10 @@ public class BotCommands {
 			api.log("QUITING BECAUSE OF: " + reason);
 			UsernameCheck.checkUsername(api, login);
 
-			api.log("Waiting 3 seconds for get request to send!");
+			api.log("Waiting 15 seconds for get request to send!");
 			try {
 				DatabaseConnection.getDatabase().disconnect();
-				Thread.sleep(3_000);
+				Thread.sleep(15_000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

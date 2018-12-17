@@ -76,7 +76,7 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 			setFinished();
 
 			getApi().log("SUCCESSFULLY LOGGED IN! SET FINISHED TO: " + hasFinished());
-			new Thread(() -> DatabaseUtilities.updateLoginStatus(null, username, "LOGGED_IN", this)).start();
+			new Thread(() -> DatabaseUtilities.updateLoginStatus(api, username, "LOGGED_IN", this)).start();
 
 		} else if (getClient().isLoggedIn() && getLobbyButton() != null) {
 			clickHereToPlayButton();

@@ -26,6 +26,11 @@ public class WizardGuideSection extends TutorialSection {
 
 		switch (getProgress()) {
 		case 620:
+			// When still in church, go open the door
+			if (new Area(new int[][] { { 3120, 3110 }, { 3120, 3103 }, { 3129, 3103 }, { 3129, 3111 }, { 3120, 3111 } })
+					.contains(myPlayer())) {
+				clickObject(9723, "Open", new Position(3122, 3103, 0));
+			}
 			Position walkTo = new Position(3141, 3086, 0);
 			if (myPlayer().getArea(5).contains(walkTo)) {
 				talkAndContinueWithInstructor();

@@ -8,6 +8,7 @@ import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 
 import osbot_scripts.bot.utils.BotCommands;
+import osbot_scripts.bot.utils.Coordinates;
 import osbot_scripts.config.Config;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.EnableFixedModeEvent;
@@ -145,16 +146,14 @@ public class TutorialScript extends Script {
 			BotCommands.killProcess((MethodProvider) this, (Script) this, "", login);
 		}
 
-		if ((!TUT_ISLAND_AREA.contains(myPlayer()) && !TUT_ISLAND_AREA_CAVE.contains(myPlayer()))
-				|| (new Area(new int[][] { { 3221, 3228 }, { 3221, 3209 }, { 3246, 3210 }, { 3245, 3229 } })
-						.contains(myPlayer()))) {
+		if (!Coordinates.isOnTutorialIsland(this)) {
 			log("Succesfully completed!");
 			DatabaseUtilities.updateStageProgress(this, AccountStage.QUEST_COOK_ASSISTANT.name(), 0,
 					getLogin().getUsername(), login);
 			BotCommands.killProcess((MethodProvider) this, (Script) this,
 					"BECAUSE PLAYER IS NOT ON TUTORIAL ISLAND, SETTING TO COOKS ASSISTANT", login);
 		}
-
+		
 		log(mainState);
 
 		if (mainState == MainState.CREATE_CHARACTER_DESIGN) {

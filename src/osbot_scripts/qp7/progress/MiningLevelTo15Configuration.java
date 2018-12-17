@@ -19,6 +19,8 @@ import osbot_scripts.events.LoginEvent;
 import osbot_scripts.framework.AccountStage;
 import osbot_scripts.framework.BankTask;
 import osbot_scripts.framework.ClickObjectTask;
+import osbot_scripts.framework.ConcreteWalking;
+import osbot_scripts.framework.GenieLamp;
 import osbot_scripts.framework.GrandExchangeTask;
 import osbot_scripts.framework.Pickaxe;
 import osbot_scripts.framework.WalkTask;
@@ -162,6 +164,8 @@ public class MiningLevelTo15Configuration extends QuestStep {
 	@Override
 	public void onLoop() throws InterruptedException {
 		log("Running the side loop..");
+		
+		GenieLamp.openGenieLamp(this);
 
 		// At the end of the loop, restarting the loop
 		// if (BANK_VARROCK_EAST_AREA.contains(myPlayer())
@@ -277,7 +281,10 @@ public class MiningLevelTo15Configuration extends QuestStep {
 				// Setting the status of the account that it wants to mule to another account in
 				// the database
 				if (getEvent() != null && getEvent().getUsername() != null
-						&& DatabaseUtilities.getMuleTradingFreeAccounts(this, getEvent()) > 0) {
+						&& DatabaseUtilities.getMuleTradingFreeAccounts(this, getEvent()) < 3) {
+
+					ConcreteWalking.walkToGe(this);
+					
 					DatabaseUtilities.updateStageProgress(this, "MULE_TRADING", 0, getEvent().getUsername(),
 							getEvent());
 					BotCommands.killProcess(this, getScript(), "BECAUSE WANTING TO GO TO MULE TRADING", getEvent());

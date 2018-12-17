@@ -103,9 +103,6 @@ public class TaskHandler {
 			BotCommands.waitBeforeKill(getProvider(), "BECAUSE TASKS TOOK TOO MUCH TIME BETWEEN");
 		}
 
-		// Quest loop
-		// getQuest().onLoop();
-
 		// Has the task corresponding with the character been found or not?
 		boolean foundTask = false;
 
@@ -199,8 +196,19 @@ public class TaskHandler {
 						getProvider().log("Moving camera due to tasking out");
 					}
 
-					if (taskAttempts > 75 && getQuest().isQuest()
-							&& !getCurrentTask().getClass().getSimpleName().equalsIgnoreCase("ClickObjectTask")) {
+					int timeOut = 0;
+					if (getCurrentTask().getClass().getSimpleName().equalsIgnoreCase("ClickObjectTask")) {
+						timeOut = 100;
+					} else if (getCurrentTask().getClass().getSimpleName().equalsIgnoreCase("BankTask")) {
+						timeOut = 10;
+					} else if (getCurrentTask().getClass().getSimpleName().equalsIgnoreCase("GrandExchangeTask")) {
+						timeOut = 100;
+					} else {
+						timeOut = 75;
+					}
+
+//					getProvider().log("Timeout number set to: " + timeOut);
+					if (taskAttempts > timeOut && getQuest().isQuest()) {
 						DatabaseUtilities.updateAccountStatusInDatabase(getProvider(), "TASK_TIMEOUT",
 								getEvent().getUsername(), getEvent());
 

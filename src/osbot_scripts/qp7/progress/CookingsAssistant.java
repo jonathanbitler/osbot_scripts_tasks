@@ -88,6 +88,9 @@ public class CookingsAssistant extends QuestStep {
 	private static final Area BASEMENT_AREA = new Area(
 			new int[][] { { 3207, 9614 }, { 3207, 9627 }, { 3221, 9627 }, { 3221, 9614 } });
 
+	private static final Area FLOOR_ZERO = new Area(new int[][] { { 3163, 3306 }, { 3163, 3308 }, { 3166, 3311 },
+			{ 3168, 3311 }, { 3171, 3308 }, { 3171, 3306 }, { 3168, 3303 }, { 3166, 3303 }, { 3163, 3306 } });
+
 	private static final List<Position> PATH_TO_COOK_FROM_MILL = new ArrayList<Position>(
 			Arrays.asList(new Position(3166, 3301, 0), new Position(3166, 3291, 0), new Position(3166, 3287, 0),
 					new Position(3176, 3285, 0), new Position(3186, 3283, 0), new Position(3186, 3283, 0),
@@ -151,10 +154,11 @@ public class CookingsAssistant extends QuestStep {
 				new ClickObjectTask("operate", 1, QUEST_CONFIG, getBot().getMethods(), WHEAT_FLOOR_2, 24964, 24967,
 						new String[] { "You operate the hopper. The grain slides down the chute.",
 								"You operate the empty hopper. Nothing interesting happens." }));
+
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("path down", 1, QUEST_CONFIG, getBot().getMethods(),
-						new ArrayList<Position>(Arrays.asList(new Position(3167, 3305, 0))), WHEAT_FLOOR_0, getScript(),
-						getEvent(), true, false));
+						new ArrayList<Position>(Arrays.asList(new Position(3167, 3305, 0))), WHEAT_FLOOR_2, FLOOR_ZERO,
+						getScript(), getEvent(), true, false));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new ClickObjectTask("get flour to pot", 1,
 				QUEST_CONFIG, getBot().getMethods(), WHEAT_FLOOR_0, 1781, "Pot of flour"));

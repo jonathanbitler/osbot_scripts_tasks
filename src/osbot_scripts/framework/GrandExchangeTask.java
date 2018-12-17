@@ -20,6 +20,7 @@ import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.events.MandatoryEventsExecution;
 import osbot_scripts.framework.parts.BankItem;
+import osbot_scripts.qp7.progress.Ge2;
 import osbot_scripts.qp7.progress.QuestStep;
 import osbot_scripts.task.Task;
 import osbot_scripts.task.TaskSkeleton;
@@ -101,6 +102,30 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 
 	private boolean withdrawn[] = new boolean[2];
 
+	private boolean hasToCollect() {
+		RS2Widget coll = getApi().getWidgets().get(465, 6, 1);
+
+		if (coll != null && coll.isVisible()) {
+			return true;
+		}
+		return false;
+	}
+
+	private void collect() {
+		if (!getApi().getGrandExchange().isOpen()) {
+			// Collect all to the bank at end
+			openGrandExchange();
+		}
+
+		// Collecting the item
+		RS2Widget coll = getApi().getWidgets().get(465, 6, 1);
+		Sleep.sleepUntil(() -> coll != null, 10000);
+
+		if (coll != null) {
+			coll.interact("Collect");
+		}
+	}
+
 	private void collectToInventory() {
 		// Collecting items
 		if (!getApi().getGrandExchange().isOpen()) {
@@ -131,17 +156,32 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 	private void depositItems() throws InterruptedException {
 		while (!getApi().getBank().isOpen() && !getApi().getInventory().isEmpty()) {
 
+			if (getApi().getGrandExchange().isOpen()) {
+				getApi().getGrandExchange().close();
+			}
+
 			getApi().getBank().open();
 			Sleep.sleepUntil(() -> getApi().getBank().isOpen(), 10000);
 
-			// Finding the deposit button
-			RS2Widget depositAll = getApi().getWidgets().get(12, 42);
-			Sleep.sleepUntil(() -> depositAll != null, 10000);
+			// Waiting a few seconds before depositing again
+			boolean depositBoolean = getApi().getBank().depositAll();
 
-			// Wait until it clicked on the button and inventory is empty
-			if (depositAll != null) {
-				depositAll.interact("Deposit inventory");
+			while (!depositBoolean) {
+				getApi().log("Trying to deposit..");
+
+				getApi().getBank().open();
+
+				Sleep.sleepUntil(() -> getApi().getBank().isOpen(), 10000);
+
+				getApi().getBank().depositAll();
+
+				Sleep.sleepUntil(() -> getApi().getInventory().isEmpty(), 2000);
+
+				if (getApi().getInventory().isEmpty()) {
+					depositBoolean = true;
+				}
 			}
+			getApi().log("Successfully deposited");
 
 			if (getQuest() != null) {
 				// Also looping with quest
@@ -317,6 +357,31 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 
 	private int sellTries;
 
+	private boolean toAbortOffers() {
+		return !getApi().getWidgets().containingActions(465, "Abort offer").isEmpty();
+	}
+
+	private void abortOffers() throws InterruptedException {
+		if (toAbortOffers()) {
+			ArrayList<RS2Widget> toAbort = (ArrayList<RS2Widget>) getApi().getWidgets().containingActions(465,
+					"Abort offer");
+			for (int i = 0; i < toAbort.size(); i++) {
+				toAbort.get(i).interact("Abort offer");
+				int finalI = i;
+				new ConditionalSleep(10000) {
+					@Override
+					public boolean condition() {
+						return Arrays.asList(toAbort.get(finalI).getInteractOptions()).contains("Abort offer");
+					}
+				}.sleep();
+			}
+			MethodProvider.sleep(MethodProvider.random(800, 1200));
+			getApi().getGrandExchange().collect();
+		}
+	}
+
+	private int withdrawTries = 0;
+
 	@Override
 	public void loop() throws InterruptedException {
 		if (!ranOnStart()) {
@@ -407,6 +472,7 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 				// Opening the g.e. if it wasn't open already
 				if (!getApi().getGrandExchange().isOpen()) {
 					ge.openGe();
+					abortOffers();
 				}
 
 				// New conditional sleep for selling items
@@ -435,6 +501,14 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 					// Task has completed, setting the item to true
 					sell.setCompletedTask(true);
 				}
+
+				while (hasToCollect()) {
+					collect();
+
+					getApi().log("Waiting for all items to collect");
+					Thread.sleep(2500);
+				}
+
 				sellTries++;
 
 			}
@@ -458,47 +532,51 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 
 			while (!finished) {
 
-				int coinsInInventory = (int) getApi().getInventory().getAmount(995);
-				int coinsInBank = (int) getApi().getBank().getAmount(995);
-
-				int ironInInventory = (int) getApi().getInventory().getAmount("Iron ore");
-				int ironInBank = (int) getApi().getBank().getAmount("Iron ore");
-				int clayInInventory = (int) getApi().getInventory().getAmount("Clay");
-				int clayInBank = (int) getApi().getBank().getAmount("Clay");
-				int totalAccountValue = (coinsInBank + coinsInInventory)
-						+ ((ironInInventory + ironInBank + clayInInventory + clayInBank) * 90);
+				// int coinsInInventory = (int) getApi().getInventory().getAmount(995);
+				// int coinsInBank = (int) getApi().getBank().getAmount(995);
+				//
+				// int ironInInventory = (int) getApi().getInventory().getAmount("Iron ore");
+				// int ironInBank = (int) getApi().getBank().getAmount("Iron ore");
+				// int clayInInventory = (int) getApi().getInventory().getAmount("Clay");
+				// int clayInBank = (int) getApi().getBank().getAmount("Clay");
+				// int totalAccountValue = (coinsInBank + coinsInInventory)
+				// + ((ironInInventory + ironInBank + clayInInventory + clayInBank) * 90);
 
 				// Checking if account has enough money to begin with
-				if (totalAccountValue < (buy.getAmount() * buy.getPrice())) {
-					getApi().log("not enough coins, closing g.e. and opening bank!");
-					ge.closeGE();
-
-					Sleep.sleepUntil(() -> !getApi().getGrandExchange().isOpen(), 5000);
-
-					// Trying with withdrawing all items to sell to get money
-					withdrawAllItemsNeeded();
-
-					// Waiting till the bank is not open anymore
-					Sleep.sleepUntil(() -> !getApi().getBank().isOpen(), 5000);
-
-					// If the total value is less than it can buy a bronze pickaxe (for it to
-					// continue for now, not OO, TODO: dynamically instead of hard coded)
-					if (totalAccountValue < Pickaxe.BRONZE.getPrice() && getApi().getBank().isOpen() && buyTries > 15) {
-						DatabaseUtilities.updateStageProgress(getApi(), AccountStage.OUT_OF_MONEY.name(), 0,
-								login.getUsername(), login);
-						getApi().log("Not enough money.. closing for next stage");
-						BotCommands.waitBeforeKill(getApi(), "BECAUSE OF NOT HAVING ENOUGH MONEY R01");
-					}
-
-					// Sleeping for 2500 msec
-					Thread.sleep(2500);
-
-					getApi().log("current tries of buying without enough money: " + buyTries);
-				}
+				// if (totalAccountValue < (buy.getAmount() * buy.getPrice())) {
+				// getApi().log("not enough coins, closing g.e. and opening bank!");
+				// ge.closeGE();
+				//
+				// Sleep.sleepUntil(() -> !getApi().getGrandExchange().isOpen(), 5000);
+				//
+				// // Trying with withdrawing all items to sell to get money
+				// withdrawAllItemsNeeded();
+				//
+				// // Waiting till the bank is not open anymore
+				// Sleep.sleepUntil(() -> !getApi().getBank().isOpen(), 5000);
+				//
+				// // If the total value is less than it can buy a bronze pickaxe (for it to
+				// // continue for now, not OO, TODO: dynamically instead of hard coded)
+				// if (totalAccountValue < Pickaxe.BRONZE.getPrice() &&
+				// getApi().getBank().isOpen() && buyTries > 15) {
+				// DatabaseUtilities.updateStageProgress(getApi(),
+				// AccountStage.OUT_OF_MONEY.name(), 0,
+				// login.getUsername(), login);
+				// getApi().log("Not enough money.. closing for next stage");
+				// BotCommands.waitBeforeKill(getApi(), "BECAUSE OF NOT HAVING ENOUGH MONEY
+				// R01");
+				// }
+				//
+				// // Sleeping for 2500 msec
+				// Thread.sleep(2500);
+				//
+				// getApi().log("current tries of buying without enough money: " + buyTries);
+				// }
 
 				// Opening the g.e. if it wasn't open already
 				if (!getApi().getGrandExchange().isOpen()) {
 					ge.openGe();
+					abortOffers();
 				}
 
 				// Executing the task to buy an offer
@@ -514,6 +592,26 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 					// If the buy wasn't suscessful, then sleep for 5 secondds
 					Thread.sleep(5000);
 
+					if (!getApi().getInventory().contains(995)
+							|| (getApi().getInventory().getAmount(995) < (buy.getPrice() * buy.getAmount()))) {
+
+						if (getApi().getGrandExchange().isOpen()) {
+							getApi().getGrandExchange().close();
+						}
+						
+						withdrawAllItemsNeeded();
+
+						if (withdrawTries > 5) {
+							DatabaseUtilities.updateStageProgress(getApi(), AccountStage.OUT_OF_MONEY.name(), 0,
+									login.getUsername(), login);
+							getApi().log("Not enough money.. closing for next stage");
+							BotCommands.waitBeforeKill(getApi(), "BECAUSE OF NOT HAVING ENOUGH MONEY R01");
+						}
+						getApi().log("current withdraw tries: " + withdrawTries);
+
+						withdrawTries++;
+					}
+
 					// If couldn't buy more than 0 times, then set the price higher
 					if (buyTries > 1) {
 						buy.setPrice((getApi().getInventory().getAmount(995) >= (buy.getPrice() * buy.getAmount()))
@@ -527,6 +625,13 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 					// Successfull
 					buy.setCompletedTask(true);
 					getApi().log("Successfully bought the items!");
+				}
+
+				while (hasToCollect()) {
+					collect();
+
+					getApi().log("Waiting for all items to collect");
+					Thread.sleep(2500);
 				}
 
 				// When the buying tries is bigger than 10, then skip back to the selling
@@ -622,7 +727,7 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 		// "+!getApi().getGrandExchange().isOpen());
 		// getApi().log(allSold() && allBought() &&
 		// !getApi().getGrandExchange().isOpen());
-		return (allSold() && allBought()) || (normalTries > 5 && !getQuest().isQuest())
+		return (allSold() && allBought()) || (normalTries > 10 && !getQuest().isQuest())
 				|| (getItemsToBuy().size() == 0 && getItemsToSell().size() == 0);
 	}
 

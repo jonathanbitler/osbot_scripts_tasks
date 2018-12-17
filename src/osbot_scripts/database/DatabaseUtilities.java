@@ -17,6 +17,7 @@ import java.util.Date;
 
 import org.osbot.rs07.script.MethodProvider;
 
+import osbot_scripts.bot.utils.BotCommands;
 import osbot_scripts.config.Config;
 import osbot_scripts.events.LoginEvent;
 
@@ -32,6 +33,9 @@ public class DatabaseUtilities {
 			LoginEvent login) {
 		try {
 			String query = "UPDATE account SET status = ? WHERE email=?";
+			if (status.equalsIgnoreCase("TASK_TIMEOUT")) {
+				query = "UPDATE account SET status = ?, amount_timeout = amount_timeout + 1 WHERE email=?";
+			}
 			Connection conn = DatabaseConnection.getDatabase().getConnection(api, login);
 			PreparedStatement preparedStmt = conn.prepareStatement(query);
 			preparedStmt.setString(1, status);
@@ -48,6 +52,7 @@ public class DatabaseUtilities {
 
 		} catch (Exception e) {
 			api.log(exceptionToString(e));
+			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E08");
 			return false;
 		}
 	}
@@ -71,6 +76,7 @@ public class DatabaseUtilities {
 
 		} catch (Exception e) {
 			api.log(exceptionToString(e));
+			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E07");
 			return false;
 		}
 	}
@@ -94,6 +100,7 @@ public class DatabaseUtilities {
 
 		} catch (Exception e) {
 			api.log(exceptionToString(e));
+			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E06");
 			return false;
 		}
 	}
@@ -117,11 +124,8 @@ public class DatabaseUtilities {
 			return true;
 
 		} catch (Exception e) {
-			if (api == null) {
-				e.printStackTrace();
-			} else {
-				api.log(exceptionToString(e));
-			}
+			api.log(exceptionToString(e));
+			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E05");
 			return false;
 		}
 	}
@@ -129,7 +133,7 @@ public class DatabaseUtilities {
 	public static boolean updateStageProgress(MethodProvider api, String accountStage, int number, String email,
 			LoginEvent login) {
 		try {
-			String query = "UPDATE account SET account_stage = ?, account_stage_progress = ? WHERE email=?";
+			String query = "UPDATE account SET account_stage = ?, account_stage_progress = ?, trade_with_other = NULL WHERE email=?";
 			Connection conn = DatabaseConnection.getDatabase().getConnection(api, login);
 			PreparedStatement preparedStmt = conn.prepareStatement(query);
 			preparedStmt.setString(1, accountStage);
@@ -147,6 +151,7 @@ public class DatabaseUtilities {
 
 		} catch (Exception e) {
 			api.log(exceptionToString(e));
+			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E04");
 			return false;
 		}
 	}
@@ -179,6 +184,7 @@ public class DatabaseUtilities {
 
 		} catch (Exception e) {
 			api.log(exceptionToString(e));
+			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E03");
 			return false;
 		}
 	}
@@ -238,7 +244,7 @@ public class DatabaseUtilities {
 	}
 
 	public static int getMuleTradingFreeAccounts(MethodProvider api, LoginEvent login) {
-		String sql = "SELECT COUNT(*) as count FROM account WHERE status=\"MULE\" AND trade_with_other IS NULL";
+		String sql = "SELECT COUNT(*) as count FROM account WHERE account_stage=\"MULE_TRADING\" AND status=\"AVAILABLE\" ORDER BY account_value DESC";
 		int freeAmount = -1;
 
 		try {
@@ -259,8 +265,68 @@ public class DatabaseUtilities {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			api.log(exceptionToString(e));
+			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E02");
 		}
 		return -1;
+	}
+
+	public static String getAccountStatus(MethodProvider api, String email, LoginEvent login) {
+		// String sql = "SELECT trade_with_other FROM account WHERE email='" + email +
+		// "'";
+		String sql2 = "SELECT status FROM account WHERE email = '" + email + "'";
+		String status = "";
+
+		try {
+			Connection conn = DatabaseConnection.getDatabase().getConnection(api, login);
+			ResultSet results = conn.createStatement().executeQuery(sql2);
+
+			while (results.next()) {
+				try {
+					status = results.getString("status");
+
+					// api.log("trading partner found: " + partner);
+					return status;
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					api.log(exceptionToString(e));
+				}
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			api.log(exceptionToString(e));
+			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E011");
+		}
+		return null;
+	}
+
+	public static String getAccountToTradeWith(MethodProvider api, String email, LoginEvent login) {
+		// String sql = "SELECT trade_with_other FROM account WHERE email='" + email +
+		// "'";
+		String sql2 = "SELECT trade_with_other FROM account WHERE trade_with_other IS NOT NULL AND account_stage = 'UNKNOWN' AND status='MULE' AND email='"
+				+ email + "'";
+		String partner = "";
+
+		try {
+			Connection conn = DatabaseConnection.getDatabase().getConnection(api, login);
+			ResultSet results = conn.createStatement().executeQuery(sql2);
+
+			while (results.next()) {
+				try {
+					partner = results.getString("trade_with_other");
+
+					// api.log("trading partner found: " + partner);
+					return partner;
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					api.log(exceptionToString(e));
+				}
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			api.log(exceptionToString(e));
+			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E011");
+		}
+		return null;
 	}
 
 	public static String getQuestProgress(MethodProvider api, String email, LoginEvent login) {
@@ -285,6 +351,7 @@ public class DatabaseUtilities {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			api.log(exceptionToString(e));
+			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E01");
 		}
 		return null;
 	}

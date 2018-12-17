@@ -63,7 +63,7 @@ public class RimmingtonIronMiner extends Script {
 		// }
 
 		// When skilling isn't 15 yet, and thus can't mine iron
-		if (getSkills().getStatic(Skill.MINING) < 30) {
+		if (getSkills().getStatic(Skill.MINING) < 31) {
 			DatabaseUtilities.updateStageProgress(this, "MINING_LEVEL_TO_15", 0,
 					getGoldfarmMining().getEvent().getUsername(), login);
 			BotCommands.killProcess((MethodProvider) this, (Script) this, "NOT LEVEL 15 MINING YET RIMMINGONT", login);

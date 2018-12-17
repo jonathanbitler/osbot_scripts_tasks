@@ -209,7 +209,7 @@ public class Ge2 extends Script {
 						BotCommands.waitBeforeKill(this, "BECAUSE OF NOT HAVING ENOUGH MONEY E02");
 					}
 
-					if (totalAccountValue < Pickaxe.IRON.getPrice()) {
+					if (totalAccountValue > Pickaxe.BRONZE.getPrice()) {
 						setTask(new GrandExchangeTask(this,
 								new BankItem[] {
 										new BankItem("Bronze pickaxe", 1265, 1, Pickaxe.BRONZE.getPrice(), false) },
@@ -220,20 +220,6 @@ public class Ge2 extends Script {
 										new BankItem("Uncut sapphire", 1623, 1000, 1, true),
 										new BankItem("Clay", 434, 1000, 1, true) },
 								login, (Script) this));
-					}
-
-					if (totalAccountValue > Pickaxe.BRONZE.getPrice() && getSkills().getStatic(Skill.MINING) <= 3) {
-						setTask(new GrandExchangeTask(this,
-								new BankItem[] {
-										new BankItem("Bronze pickaxe", 1265, 1, Pickaxe.BRONZE.getPrice(), false) },
-								new BankItem[] { new BankItem("Iron ore", 440, 1000, 1, true),
-										new BankItem("Uncut diamond", 1617, 1000, 1, true),
-										new BankItem("Uncut emerald", 1621, 1000, 1, true),
-										new BankItem("Uncut ruby", 1619, 1000, 1, true),
-										new BankItem("Uncut sapphire", 1623, 1000, 1, true),
-										new BankItem("Clay", 434, 1000, 1, true) },
-								login, (Script) this));
-
 					} else if (totalAccountValue > Pickaxe.IRON.getPrice() && getBank().isOpen()
 							&& getSkills().getStatic(Skill.MINING) > 3 && getSkills().getStatic(Skill.MINING) < 6) {
 						setTask(new GrandExchangeTask(this,

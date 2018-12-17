@@ -54,7 +54,7 @@ public class RandomUtil {
 //			stagesToDo.add(AccountStage.QUEST_SHEEP_SHEARER);
 //		}
 		// When mining is lower than 15 and having all quests compteted
-		if (prov.getQuests().getQuestPoints() >= 7 && prov.getSkills().getStatic(Skill.MINING) < 30) {
+		if (prov.getQuests().getQuestPoints() >= 7 && prov.getSkills().getStatic(Skill.MINING) < 31) {
 			stagesToDo.add(AccountStage.MINING_LEVEL_TO_15);
 		}
 

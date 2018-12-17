@@ -69,6 +69,7 @@ public class ChurchGuideSection extends TutorialSection {
 			break;
 
 		case 620:
+			clickObject(9723, "Open", new Position(3122, 3103, 0));
 			TutorialScript.mainState = getNextMainState();
 			break;
 		}

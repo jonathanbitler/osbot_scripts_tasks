@@ -17,10 +17,10 @@ import osbot_scripts.framework.AccountStage;
 import osbot_scripts.sections.total.progress.MainState;
 import osbot_scripts.util.Sleep;
 
-public class MuleTradingConfiguration extends QuestStep {
+public class SuperMuleTradingConfiguration extends QuestStep {
 
-	public MuleTradingConfiguration(LoginEvent event, Script script) {
-		super(-1, -1, AccountStage.MULE_TRADING, event, script, false);
+	public SuperMuleTradingConfiguration(LoginEvent event, Script script) {
+		super(-1, -1, AccountStage.UNKNOWN, event, script, false);
 		// TODO Auto-generated constructor stub
 	}
 
@@ -57,6 +57,8 @@ public class MuleTradingConfiguration extends QuestStep {
 
 		log("Running the side loop..");
 
+		System.out.println("STATUS: " + DatabaseUtilities.getAccountStatus(this, getEvent().getUsername(), getEvent()));
+
 		// If the player is not in the grand exchange area, then walk to it
 		if (!new Area(new int[][] { { 3161, 3492 }, { 3168, 3492 }, { 3168, 3485 }, { 3161, 3485 } })
 				.contains(myPlayer())) {
@@ -67,14 +69,15 @@ public class MuleTradingConfiguration extends QuestStep {
 		// Not the mule
 
 		if (tradingDone) {
-			if (getEvent().getAccountStage().equalsIgnoreCase("MULE-TRADING")) {
+
+			if (DatabaseUtilities.getAccountStatus(this, getEvent().getUsername(), getEvent())
+					.equalsIgnoreCase("MULE")) {
 				// if (update) {
-				DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name().toUpperCase(),
-						0, getEvent().getUsername(), getEvent());
-				DatabaseUtilities.updateAccountValue(this, getEvent().getUsername(), 0, getEvent());
+				DatabaseUtilities.updateStageProgress(this, "UNKNOWN", 0, getEvent().getUsername(), getEvent());
+				DatabaseUtilities.updateAccountValue(this, getEvent().getEmailTradeWith(), 0, getEvent());
 				DatabaseUtilities.updateStageProgress(this, "UNKNOWN", 0, getEvent().getEmailTradeWith(), getEvent());
 				// }
-				BotCommands.killProcess(this, getScript(), "BECAUSE OF DONE WITH MULE TRADING", getEvent());
+				BotCommands.killProcess(this, getScript(), "BECAUSE OF DONE WITH SUPER MULE TRADING", getEvent());
 				getScript().stop();
 			} else {
 				// Successfull trading
@@ -144,13 +147,14 @@ public class MuleTradingConfiguration extends QuestStep {
 
 		tries++;
 
-		if (tries > (getEvent().getAccountStage().equalsIgnoreCase("MULE-TRADING") ? 160 : 70)) {
+		if (tries > (DatabaseUtilities.getAccountStatus(this, getEvent().getUsername(), getEvent())
+				.equalsIgnoreCase("MULE") ? 160 : 70)) {
 			tradingDone = true;
 			// update = true;
 			log("Failed to trade it over");
 		}
 
-		if (getEvent().getAccountStage().equalsIgnoreCase("MULE-TRADING")) {
+		if (DatabaseUtilities.getAccountStatus(this, getEvent().getUsername(), getEvent()).equalsIgnoreCase("MULE")) {
 
 			log("currently trading: " + getTrade().isCurrentlyTrading());
 			if ((getTrade().isCurrentlyTrading() || getTrade().isFirstInterfaceOpen()

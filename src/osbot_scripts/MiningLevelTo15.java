@@ -53,7 +53,7 @@ public class MiningLevelTo15 extends Script {
 		}
 
 		// If mining is equals or bigger than 15, then it can proceed to mining iron
-		if (getSkills().getStatic(Skill.MINING) >= 30) {
+		if (getSkills().getStatic(Skill.MINING) >= 31) {
 			Thread.sleep(5000);
 			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0,
 					login.getUsername(), login);

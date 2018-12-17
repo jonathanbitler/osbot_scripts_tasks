@@ -214,7 +214,11 @@ public class WalkTask extends TaskSkeleton implements Task {
 			}
 
 			if (getLogin().getAccountStage().equalsIgnoreCase("WALKING-STUCK")) {
-				getApi().getWalking().webWalk(getPathToWalk().get(getPathToWalk().size() - 1));
+				if (getFinishArea() != null) {
+					getApi().getWalking().webWalk(getFinishArea());
+				} else {
+					getApi().getWalking().webWalk(getPathToWalk().get(getPathToWalk().size() - 1));
+				}
 				getApi().log("Account stuck, trying to walk with webwalking");
 
 				if (!getLogin().getAccountStage().equalsIgnoreCase("UNKNOWN")) {
@@ -223,9 +227,19 @@ public class WalkTask extends TaskSkeleton implements Task {
 			} else if (isWebWalking()
 					&& !getApi().myPlayer().getArea(1).contains(getPathToWalk().get(getPathToWalk().size() - 1))) {
 				getApi().log("Webwalking to the last of the positions");
-				if (!getApi().getWalking().webWalk(getPathToWalk().get(getPathToWalk().size() - 1))) {
-					setWebWalking(false);
+				if (getFinishArea() != null) {
+					if (!getApi().getWalking().webWalk(getFinishArea())) {
+						setWebWalking(false);
+					}
+				} else {
+					if (!getApi().getWalking().webWalk(getPathToWalk().get(getPathToWalk().size() - 1))) {
+						setWebWalking(false);
+					}
 				}
+				// if (!getApi().getWalking().webWalk(getPathToWalk().get(getPathToWalk().size()
+				// - 1))) {
+				// setWebWalking(false);
+				// }
 			} else {
 
 				getApi().log("size to walk: " + getPathToWalk().size());
@@ -255,7 +269,11 @@ public class WalkTask extends TaskSkeleton implements Task {
 			}
 		} else {
 			if (!getApi().getWalking().walkPath(getPathToWalk())) {
-				getApi().getWalking().webWalk(getPathToWalk().get(getPathToWalk().size() - 1));
+				if (getFinishArea() != null) {
+					getApi().getWalking().webWalk(getFinishArea());
+				} else {
+					getApi().getWalking().webWalk(getPathToWalk().get(getPathToWalk().size() - 1));
+				}
 			}
 		}
 	}
