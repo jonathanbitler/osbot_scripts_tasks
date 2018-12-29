@@ -1,6 +1,7 @@
 package osbot_scripts.qp7.progress;
 
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import java.util.List;
 
 import org.osbot.rs07.api.Client.LoginState;
@@ -13,15 +14,31 @@ import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 
+import osbot_scripts.bot.utils.BotCommands;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
+import osbot_scripts.events.MandatoryEventsExecution;
 import osbot_scripts.framework.AccountStage;
+import osbot_scripts.framework.GEPrice;
 import osbot_scripts.mouse.MouseTrailApi;
+import osbot_scripts.scripttypes.ScriptAbstract;
 import osbot_scripts.sections.total.progress.MainState;
 import osbot_scripts.taskhandling.TaskHandler;
 import osbot_scripts.util.Sleep;
 
 public abstract class QuestStep extends MethodProvider {
+
+	/**
+	 * Handling tasks per quest
+	 * 
+	 * @param tasks
+	 */
+	public abstract void timeOutHandling(TaskHandler tasks);
+	
+	/**
+	 * 
+	 */
+	private ScriptAbstract scriptAbstract;
 
 	/**
 	 * The mouse's trial
@@ -97,6 +114,29 @@ public abstract class QuestStep extends MethodProvider {
 	}
 
 	/**
+	 * Class that contains information to gather data about the g.e.
+	 */
+	private GEPrice gePrices = new GEPrice();
+
+	/**
+	 * Returns the g.e. cost for an item
+	 * 
+	 * @param itemId
+	 * @param buy
+	 * @return
+	 */
+	public int getGrandexchangePriceForItem(int itemId, boolean buy) {
+		int cost = 0;
+		try {
+			cost = buy ? gePrices.getBuyingPrice(itemId) : gePrices.getSellingPrice(itemId);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return cost;
+	}
+
+	/**
 	 * Formatting time to be HOUR:MINUTE:SECONDS
 	 * 
 	 * @param ms
@@ -125,11 +165,28 @@ public abstract class QuestStep extends MethodProvider {
 		this.taskHandler = new TaskHandler((MethodProvider) this, (QuestStep) this, event, script);
 		this.setMouse(new MouseTrailApi((MethodProvider) this));
 		this.setQuest(isQuest);
-		// setLogoutEventThread(new ThreadDemo());
+	}
+
+	public void initializeAbstract() {
+		this.scriptAbstract.setEvent(getEvent());
+		this.scriptAbstract.setEvents(new MandatoryEventsExecution(this, getEvent()));
+		this.scriptAbstract.setProvider(this);
+		this.scriptAbstract.setQuest(this);
+		this.scriptAbstract.setScript(getScript());
+	}
+
+	public boolean killTask = false;
+	
+	public boolean isKillTask() {
+		return killTask;
+	}
+
+	public void setKillTask(boolean killTask) {
+		this.killTask = killTask;
 	}
 
 	/**
-	 * Resetting the stages
+	 * Resetting the stagesbotha
 	 */
 	public void resetStage(String taskName) {
 		if (getEvent() != null && getEvent().getUsername() != null && taskName != null) {
@@ -143,6 +200,7 @@ public abstract class QuestStep extends MethodProvider {
 		if (getTaskHandler().getTasks().size() > 0) {
 			getTaskHandler().setCurrentTask(getTaskHandler().getTasks().get(0));
 		}
+		setKillTask(true);
 		log("[TASKHANDLER] Clearing & restarting all tasks 2");
 	}
 
@@ -263,8 +321,9 @@ public abstract class QuestStep extends MethodProvider {
 	 * Loops through the section
 	 * 
 	 * @throws InterruptedException
+	 * @throws IOException
 	 */
-	public abstract void onLoop() throws InterruptedException;
+	public abstract void onLoop() throws InterruptedException, IOException;
 
 	/**
 	 * On start
@@ -489,6 +548,22 @@ public abstract class QuestStep extends MethodProvider {
 	 */
 	public void setDoneLaps(int doneLaps) {
 		this.doneLaps = doneLaps;
+	}
+
+	/**
+	 * @return the scriptAbstract
+	 */
+	public ScriptAbstract getScriptAbstract() {
+		return scriptAbstract;
+	}
+
+	/**
+	 * @param scriptAbstract
+	 *            the scriptAbstract to set
+	 */
+	public void setScriptAbstract(ScriptAbstract scriptAbstract) {
+		this.scriptAbstract = scriptAbstract;
+		initializeAbstract();
 	}
 
 }

@@ -10,6 +10,8 @@ import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.utility.ConditionalSleep;
 
+import osbot_scripts.util.Sleep;
+
 public class GE {
 
 	Script s;
@@ -309,6 +311,21 @@ public class GE {
 
 	public boolean init(int itemId, boolean collectIfNeeded, boolean abortIfNeeded, boolean collectFailsafe,
 			String type) throws InterruptedException {
+
+		boolean finish = false;
+		while (!finish) {
+			if (s.getGrandExchange().isOpen()) {
+				finish = true;
+			}
+			// Opening the g.e.
+			openGe();
+
+			finish = s.getGrandExchange().isOpen();
+			s.log("Trying to open the g.e..");
+
+			Sleep.sleepUntil(() -> s.getGrandExchange().isOpen(), 5000);
+		}
+
 		if (s.grandExchange.isOpen()) {
 
 			// Work around for the box identification bug
@@ -415,144 +432,164 @@ public class GE {
 	public boolean collectItem(int itemId, GrandExchange.Box box, boolean forAbort) {
 		log("Went into collectItem()");
 		// If the offer is finished
-		if (isOfferFinished(box)) {
-			log("Offer is finished");
-			// If the box contains the same item ID
-			if (s.grandExchange.getItemId(box) == itemId || forAbort) {
-				log("Found a coressponding item in box");
-				/* Get the collection widgets */
-				// Widget 1
-				RS2Widget itemCollectWidget1 = s.widgets.get(465, 23, 2);
-				// Widget 2
-				RS2Widget itemCollectWidget2 = s.widgets.get(465, 23, 3);
 
-				boolean collected = false;
-				// If the widget exists
-				if (itemCollectWidget1 != null || itemCollectWidget2 != null) {
-					if (itemCollectWidget1 != null) {
-						log("WIDGET1 IS NOT NULL");
-						// If the widget is visible
-						if (!itemCollectWidget1.isVisible()) {
-							if (goIntoOffer(box)) {
-								log("Widget was not visible, so went to it");
-							}
-						}
-						log("Collect from item collect widget");
+		boolean finished = false;
+		while (!finished) {
 
-						boolean w1Collect = false;
-						// ALSO COULD BE Collect-items or BANK
-						String[] w1Actions = itemCollectWidget1.getInteractActions();
-						if (w1Actions != null) {
-							List<String> widget1Actions = Arrays.asList(itemCollectWidget1.getInteractActions());
+			// For noted and unnoted TODO check is works
+			finished = s.getInventory().contains(itemId) || s.getInventory().contains(itemId + 1);
 
-							if (widget1Actions.contains("Collect")) {
-								itemCollectWidget1.interact("Collect");
-								w1Collect = true;
-							} else if (widget1Actions.contains("Collect-note")) {
-								itemCollectWidget1.interact("Collect-note");
-								w1Collect = true;
-							} else if (widget1Actions.contains("Collect-item")) {
-								itemCollectWidget1.interact("Collect-item");
-								w1Collect = true;
-							} else if (widget1Actions.contains("Collect-notes")) {
-								itemCollectWidget1.interact("Collect-notes");
-								w1Collect = true;
-							} else if (widget1Actions.contains("Collect-items")) {
-								itemCollectWidget1.interact("Collect-items");
-								w1Collect = true;
-							}
+			if (finished) {
+				s.log("Successfully collected from G.e. Task!");
+				return true;
+			}
 
-							if (w1Collect) {
-								collected = true;
-							}
+			if (isOfferFinished(box)) {
+				log("Offer is finished");
+				// If the box contains the same item ID
+				if (s.grandExchange.getItemId(box) == itemId || forAbort) {
+					log("Found a coressponding item in box");
+					/* Get the collection widgets */
+					// Widget 1
+					RS2Widget itemCollectWidget1 = s.widgets.get(465, 23, 2);
+					// Widget 2
+					RS2Widget itemCollectWidget2 = s.widgets.get(465, 23, 3);
 
-							new ConditionalSleep(3000, 500) {
-								@Override
-								public boolean condition() throws InterruptedException {
-									return !itemCollectWidget1.isVisible();
+					boolean collected = false;
+					// If the widget exists
+					if (itemCollectWidget1 != null || itemCollectWidget2 != null) {
+						if (itemCollectWidget1 != null) {
+							log("WIDGET1 IS NOT NULL");
+							// If the widget is visible
+							if (!itemCollectWidget1.isVisible()) {
+								if (goIntoOffer(box)) {
+									log("Widget was not visible, so went to it");
 								}
-							}.sleep();
-						}
-
-					}
-
-					if (itemCollectWidget2 != null) {
-						log("WIDGET2 IS NOT NULL");
-						// If the widget is visible
-						if (!itemCollectWidget2.isVisible()) {
-							if (goIntoOffer(box)) {
-								log("Widget was not visible, so went to it");
 							}
-						}
-						log("Collect from item collect widget");
-						String[] w2Actions = itemCollectWidget2.getInteractActions();
+							log("Collect from item collect widget");
 
-						if (w2Actions != null) {
-							List<String> widget2Actions = Arrays.asList(itemCollectWidget2.getInteractActions());
+							boolean w1Collect = false;
+							// ALSO COULD BE Collect-items or BANK
+							String[] w1Actions = itemCollectWidget1.getInteractActions();
+							if (w1Actions != null) {
+								List<String> widget1Actions = Arrays.asList(itemCollectWidget1.getInteractActions());
 
-							boolean w2Collect = false;
-							if (widget2Actions.contains("Collect")) {
-								itemCollectWidget2.interact("Collect");
-								w2Collect = true;
-							} else if (widget2Actions.contains("Collect-note")) {
-								itemCollectWidget2.interact("Collect-note");
-								w2Collect = true;
-							} else if (widget2Actions.contains("Collect-item")) {
-								itemCollectWidget2.interact("Collect-item");
-								w2Collect = true;
-							} else if (widget2Actions.contains("Collect-notes")) {
-								itemCollectWidget2.interact("Collect-notes");
-								w2Collect = true;
-							} else if (widget2Actions.contains("Collect-items")) {
-								itemCollectWidget2.interact("Collect-items");
-								w2Collect = true;
-							}
-
-							if (w2Collect) {
-								collected = true;
-							}
-
-							new ConditionalSleep(3000, 500) {
-								@Override
-								public boolean condition() throws InterruptedException {
-									return !itemCollectWidget2.isVisible();
+								if (widget1Actions.contains("Collect")) {
+									itemCollectWidget1.interact("Collect");
+									w1Collect = true;
+								} else if (widget1Actions.contains("Collect-note")) {
+									itemCollectWidget1.interact("Collect-note");
+									w1Collect = true;
+								} else if (widget1Actions.contains("Collect-item")) {
+									itemCollectWidget1.interact("Collect-item");
+									w1Collect = true;
+								} else if (widget1Actions.contains("Collect-notes")) {
+									itemCollectWidget1.interact("Collect-notes");
+									w1Collect = true;
+								} else if (widget1Actions.contains("Collect-items")) {
+									itemCollectWidget1.interact("Collect-items");
+									w1Collect = true;
 								}
-							}.sleep();
+
+								if (w1Collect) {
+									collected = true;
+								}
+
+								new ConditionalSleep(3000, 500) {
+									@Override
+									public boolean condition() throws InterruptedException {
+										return !itemCollectWidget1.isVisible();
+									}
+								}.sleep();
+							}
+
 						}
+
+						if (itemCollectWidget2 != null) {
+							log("WIDGET2 IS NOT NULL");
+							// If the widget is visible
+							if (!itemCollectWidget2.isVisible()) {
+								if (goIntoOffer(box)) {
+									log("Widget was not visible, so went to it");
+								}
+							}
+							log("Collect from item collect widget");
+							String[] w2Actions = itemCollectWidget2.getInteractActions();
+
+							if (w2Actions != null) {
+								List<String> widget2Actions = Arrays.asList(itemCollectWidget2.getInteractActions());
+
+								boolean w2Collect = false;
+								if (widget2Actions.contains("Collect")) {
+									itemCollectWidget2.interact("Collect");
+									w2Collect = true;
+								} else if (widget2Actions.contains("Collect-note")) {
+									itemCollectWidget2.interact("Collect-note");
+									w2Collect = true;
+								} else if (widget2Actions.contains("Collect-item")) {
+									itemCollectWidget2.interact("Collect-item");
+									w2Collect = true;
+								} else if (widget2Actions.contains("Collect-notes")) {
+									itemCollectWidget2.interact("Collect-notes");
+									w2Collect = true;
+								} else if (widget2Actions.contains("Collect-items")) {
+									itemCollectWidget2.interact("Collect-items");
+									w2Collect = true;
+								}
+
+								if (w2Collect) {
+									collected = true;
+								}
+
+								new ConditionalSleep(3000, 500) {
+									@Override
+									public boolean condition() throws InterruptedException {
+										return !itemCollectWidget2.isVisible();
+									}
+								}.sleep();
+							}
+						}
+						new ConditionalSleep(3000, 500) {
+
+							@Override
+							public boolean condition() throws InterruptedException {
+								return !s.grandExchange.isOfferScreenOpen();
+							}
+
+						}.sleep();
+
+						return collected;
+
+					} else {
+						log("WIDGET IS NULL");
+						// If the widget is not present collect from header
+						s.grandExchange.goBack();
+						new ConditionalSleep(3000, 500) {
+
+							@Override
+							public boolean condition() throws InterruptedException {
+								return !s.grandExchange.isOfferScreenOpen();
+							}
+
+						}.sleep();
+						new ConditionalSleep(3000, 500) {
+
+							@Override
+							public boolean condition() throws InterruptedException {
+								return s.grandExchange.collect();
+							}
+
+						}.sleep();
+						return true;
 					}
-					new ConditionalSleep(3000, 500) {
-
-						@Override
-						public boolean condition() throws InterruptedException {
-							return !s.grandExchange.isOfferScreenOpen();
-						}
-
-					}.sleep();
-
-					return collected;
-
-				} else {
-					log("WIDGET IS NULL");
-					// If the widget is not present collect from header
-					s.grandExchange.goBack();
-					new ConditionalSleep(3000, 500) {
-
-						@Override
-						public boolean condition() throws InterruptedException {
-							return !s.grandExchange.isOfferScreenOpen();
-						}
-
-					}.sleep();
-					new ConditionalSleep(3000, 500) {
-
-						@Override
-						public boolean condition() throws InterruptedException {
-							return s.grandExchange.collect();
-						}
-
-					}.sleep();
-					return true;
 				}
+			}
+			s.log("Waiting for item to collect to inventory!");
+			try {
+				Thread.sleep(1500);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 
@@ -570,13 +607,13 @@ public class GE {
 						return s.grandExchange.isOpen();
 					}
 				}.sleep();
-				return true;
+				return false;
 			} else {
 				s.log("Clerk not found");
 				return false;
 			}
 		} else {
-			return true;
+			return false;
 		}
 	}
 

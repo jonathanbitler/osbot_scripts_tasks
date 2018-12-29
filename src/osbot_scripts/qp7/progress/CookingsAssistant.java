@@ -16,6 +16,7 @@ import osbot_scripts.framework.ItemOnObjectTask;
 import osbot_scripts.framework.PickupItemTask;
 import osbot_scripts.framework.WalkTask;
 import osbot_scripts.sections.total.progress.MainState;
+import osbot_scripts.taskhandling.TaskHandler;
 
 public class CookingsAssistant extends QuestStep {
 
@@ -165,7 +166,7 @@ public class CookingsAssistant extends QuestStep {
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("path to cook from mill", 1, QUEST_CONFIG, getBot().getMethods(), PATH_TO_COOK_FROM_MILL,
-						WHEAT_FLOOR_0, COOKS_AREA, getScript(), getEvent(), false, true));
+						WHEAT_FLOOR_0, COOKS_AREA, getScript(), getEvent(), true, false));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new DialogueTask("talk with cook final", 1,
 				QUEST_CONFIG, getBot().getMethods(), COOKS_AREA, 4626, 2, new String[] { "" }));
@@ -187,6 +188,12 @@ public class CookingsAssistant extends QuestStep {
 	public MainState getNextMainState() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public void timeOutHandling(TaskHandler tasks) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

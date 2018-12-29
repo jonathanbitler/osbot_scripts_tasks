@@ -1,5 +1,7 @@
 package osbot_scripts.task;
 
+import java.io.IOException;
+
 public interface Task {
 	
 	/**
@@ -34,8 +36,9 @@ public interface Task {
 	/**
 	 * When it is running, the loop
 	 * @throws InterruptedException 
+	 * @throws IOException 
 	 */
-	public void loop() throws InterruptedException;
+	public void loop() throws InterruptedException, IOException;
 	
 	/**
 	 * When is it finished and can continue to the next task?

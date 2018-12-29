@@ -4,9 +4,10 @@ import java.util.Optional;
 
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.map.Position;
-import org.osbot.rs07.api.model.Item;
+import org.osbot.rs07.api.model.RS2Object;
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.api.ui.Tab;
+import org.osbot.rs07.script.MethodProvider;
 
 import osbot_scripts.TutorialScript;
 import osbot_scripts.framework.TabWid;
@@ -43,49 +44,25 @@ public class MiningGuideSection extends TutorialSection {
 			break;
 
 		case 270:
-			clickObject(10080, "Prospect", new Position(3076, 9502, 0));
-			Thread.sleep(2000);
+			prospect(Rock.TIN);
 			break;
-
 		case 280:
-			clickObject(10079, "Prospect", new Position(3084, 9502, 0));
-			Thread.sleep(2000);
+			prospect(Rock.COPPER);
 			break;
-
 		case 290:
-			// getTabs().open(Tab.INVENTORY);
-			Tabs.openTab(this, TabWid.INVENTORY);
+			talkAndContinueWithInstructor();
 			break;
-
 		case 300:
 		case 311:
-			mineTin();
+			mine(Rock.TIN);
 			break;
-
 		case 310:
-			mineCopper();
+			mine(Rock.COPPER);
 			break;
 
 		case 320:
-			// Walking to its own positon to prevent it getting stuck
-			getWalking().walk(myPlayer().getArea(2).getRandomPosition());
-
-			// if (getInventory().isItemSelected()) {
-			// getInventory().deselectItem();
-			// }
-
-			Item tinOre = getInventory().getItem(438);
-			if (tinOre != null) {
-				Item copperOre = getInventory().getItem(436);
-				if (copperOre != null) {
-					if (tinOre.interact()) {
-						clickObject(10082, "Use", new Position(3079, 9498, 0));
-					}
-				} else {
-					mineCopper();
-				}
-			} else {
-				mineTin();
+			if (getTabs().open(Tab.INVENTORY)) {
+				smelt();
 			}
 			break;
 
@@ -125,6 +102,28 @@ public class MiningGuideSection extends TutorialSection {
 			selectContinue();
 		}
 
+	}
+
+	private void prospect(Rock rock) {
+		RS2Object closestRock = rock.getClosestWithOre(getBot().getMethods());
+		if (closestRock != null && closestRock.interact("Prospect")) {
+			Sleep.sleepUntil(this::pendingContinue, 6000, 600);
+		}
+	}
+
+	private void mine(Rock rock) {
+		RS2Object closestRock = rock.getClosestWithOre(getBot().getMethods());
+		if (closestRock != null && closestRock.interact("Mine")) {
+			Sleep.sleepUntil(this::pendingContinue, 6000, 600);
+		}
+	}
+
+	private void smelt() {
+		if (!"Tin ore".equals(getInventory().getSelectedItemName())) {
+			getInventory().getItem("Tin ore").interact("Use");
+		} else if (getObjects().closest("Furnace").interact("Use")) {
+			Sleep.sleepUntil(() -> getInventory().contains("Bronze bar"), 5000, 600);
+		}
 	}
 
 	private static final Area SMITH_AREA = new Area(3076, 9497, 3082, 9504);
@@ -176,4 +175,31 @@ public class MiningGuideSection extends TutorialSection {
 		return MainState.COMBAT_SECTION;
 	}
 
+}
+
+enum Rock {
+
+	COPPER((short) 4645, (short) 4510), TIN((short) 53);
+
+	private final short[] COLOURS;
+
+	Rock(final short... COLOURS) {
+		this.COLOURS = COLOURS;
+	}
+
+	public RS2Object getClosestWithOre(final MethodProvider S) {
+		// noinspection unchecked
+		return S.getObjects().closest(obj -> {
+			short[] colours = obj.getDefinition().getModifiedModelColors();
+			if (colours != null) {
+				for (short c : colours) {
+					for (short col : COLOURS) {
+						if (c == col)
+							return true;
+					}
+				}
+			}
+			return false;
+		});
+	}
 }

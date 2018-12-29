@@ -66,6 +66,14 @@ public class BankGuideSection extends TutorialSection {
 			break;
 
 		case 520:
+			if (!BANK_AREA.contains(myPosition())) {
+				if (getWalking().walkPath(PATH_TO_BANK)) {
+					getDoorHandler().handleNextObstacle(BANK_AREA);
+				} else {
+					getWalking().webWalk(BANK_AREA);
+				}
+			}
+			
 			if (pendingContinue()) {
 				selectContinue();
 				RS2Widget pollWidget = getWidgets().get(345, 2, 11);

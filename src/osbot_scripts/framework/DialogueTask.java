@@ -1,6 +1,7 @@
 package osbot_scripts.framework;
 
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -150,7 +151,7 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 	}
 
 	@Override
-	public void loop() {
+	public void loop() throws IOException {
 		if (!ranOnStart()) {
 			onStart();
 		}

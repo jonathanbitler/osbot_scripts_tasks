@@ -1,6 +1,7 @@
 package osbot_scripts;
 
 import java.awt.Graphics2D;
+import java.io.IOException;
 
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.script.MethodProvider;
@@ -10,13 +11,13 @@ import org.osbot.rs07.script.ScriptManifest;
 import osbot_scripts.bot.utils.BotCommands;
 import osbot_scripts.bot.utils.Coordinates;
 import osbot_scripts.bot.utils.RandomUtil;
-import osbot_scripts.config.Config;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.events.MandatoryEventsExecution;
 import osbot_scripts.login.LoginHandler;
-import osbot_scripts.qp7.progress.CookingsAssistant;
 import osbot_scripts.qp7.progress.DoricsQuestConfig;
+import osbot_scripts.scripttypes.MiningType;
+import osbot_scripts.scripttypes.ScriptType;
 
 @ScriptManifest(author = "pim97", info = "QUEST_DORICS_QUEST", logo = "", name = "QUEST_DORICS_QUEST", version = 1.0)
 public class DoricsQuest extends Script {
@@ -53,7 +54,7 @@ public class DoricsQuest extends Script {
 				closeQuestCompleted.interact();
 			}
 
-			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0,
+			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this, login).name(), 0,
 					login.getUsername(), login);
 			DatabaseUtilities.updateAccountBreakTill(this, getGoblinsDiplomacy().getEvent().getUsername(), 60, login);
 			BotCommands.killProcess((MethodProvider) this, (Script) this, "ALREADY COMPLETED THE QUEST DORICS", login);
@@ -62,7 +63,12 @@ public class DoricsQuest extends Script {
 
 		if (login.hasFinished()) {
 			getGoblinsDiplomacy().onLoop();
-			getGoblinsDiplomacy().getTaskHandler().taskLoop();
+			try {
+				getGoblinsDiplomacy().getTaskHandler().taskLoop();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 
 		return random(500, 600);
@@ -76,6 +82,7 @@ public class DoricsQuest extends Script {
 			DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN", login);
 		}
 		goblinsDiplomacy = new DoricsQuestConfig(3893, 31, login, (Script) this);
+		goblinsDiplomacy.setScriptAbstract(new MiningType());
 
 		if (login != null && login.getUsername() != null) {
 			// if (!Config.TEST) {

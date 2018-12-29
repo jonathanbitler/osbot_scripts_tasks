@@ -1,6 +1,7 @@
 package osbot_scripts;
 
 import java.awt.Graphics2D;
+import java.io.IOException;
 
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.map.Position;
@@ -53,7 +54,7 @@ public class RomeoAndJulietQuest extends Script {
 				closeQuestCompleted.interact();
 			}
 			Thread.sleep(5000);
-			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0,
+			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this, login).name(), 0,
 					login.getUsername(), login);
 			DatabaseUtilities.updateAccountBreakTill(this, getRomeoAndJuliet().getEvent().getUsername(), 60, login);
 
@@ -62,7 +63,12 @@ public class RomeoAndJulietQuest extends Script {
 		}
 
 		if (login.hasFinished()) {
-			getRomeoAndJuliet().getTaskHandler().taskLoop();
+			try {
+				getRomeoAndJuliet().getTaskHandler().taskLoop();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 
 		return random(500, 600);

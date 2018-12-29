@@ -9,7 +9,7 @@ import org.osbot.rs07.event.Event;
 import org.osbot.rs07.script.MethodProvider;
 
 import osbot_scripts.bot.utils.BotCommands;
-import osbot_scripts.qp7.progress.QuestStep;
+import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.util.Sleep;
 
 public class MandatoryEventsExecution {
@@ -77,7 +77,10 @@ public class MandatoryEventsExecution {
 				if (failed > 5) {
 
 					getProvider().log("Couldn't fix itself, restarting");
+					new Thread(() -> DatabaseUtilities.updateLoginStatus(getProvider(), login.getUsername(), "DEFAULT",
+							login)).start();
 					Thread.sleep(5000);
+
 					BotCommands.waitBeforeKill(getProvider(), "BECAUSE OF FIXED MODE E01");
 				}
 				failed++;
@@ -148,6 +151,8 @@ public class MandatoryEventsExecution {
 
 				if (failed > 5) {
 					getProvider().log("Couldn't fix itself, restarting");
+					new Thread(() -> DatabaseUtilities.updateLoginStatus(getProvider(), login.getUsername(), "DEFAULT",
+							login)).start();
 					Thread.sleep(5000);
 					BotCommands.waitBeforeKill(getProvider(), "BECAUSE OF FIXED MODE E05");
 				}

@@ -1,6 +1,7 @@
 package osbot_scripts;
 
 import java.awt.Graphics2D;
+import java.io.IOException;
 
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.event.Event;
@@ -17,6 +18,7 @@ import osbot_scripts.events.MandatoryEventsExecution;
 import osbot_scripts.login.LoginHandler;
 import osbot_scripts.qp7.progress.IronMinerConfiguration;
 import osbot_scripts.qp7.progress.RimmingTonIronConfig;
+import osbot_scripts.scripttypes.MiningType;
 
 @ScriptManifest(author = "pim97", info = "RIMMINGTON_IRON_ORE", logo = "", name = "RIMMINGTON_IRON_ORE", version = 1.0)
 public class RimmingtonIronMiner extends Script {
@@ -48,9 +50,10 @@ public class RimmingtonIronMiner extends Script {
 
 		// Account must have atleast 7 quest points, otherwise set it back to quesiton
 		if (getQuests().getQuestPoints() < 7) {
-			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0,
+			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this, login).name(), 0,
 					login.getUsername(), login);
-			BotCommands.killProcess((MethodProvider) this, (Script) this, "NOT ENOUGH QUEST POINTS RIMMINGTON MINER", login);
+			BotCommands.killProcess((MethodProvider) this, (Script) this, "NOT ENOUGH QUEST POINTS RIMMINGTON MINER",
+					login);
 		}
 
 		// Breaking for 30 minutes because has done a few laps
@@ -77,7 +80,12 @@ public class RimmingtonIronMiner extends Script {
 		// if (getGoldfarmMining().getGrandExchangeTask() == null) {
 
 		if (login.hasFinished()) {
-			getGoldfarmMining().getTaskHandler().taskLoop();
+			try {
+				getGoldfarmMining().getTaskHandler().taskLoop();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		// }
 
@@ -95,6 +103,7 @@ public class RimmingtonIronMiner extends Script {
 		login.setScript("RIMMINGTON_IRON_ORE");
 		DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN", login);
 		goldfarmMining = new RimmingTonIronConfig(login, (Script) this);
+		goldfarmMining.setScriptAbstract(new MiningType());
 
 		getGoldfarmMining().setQuest(false);
 		if (login != null && login.getUsername() != null) {

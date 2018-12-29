@@ -87,7 +87,7 @@ public class ThreadDemo extends MethodProvider implements Runnable {
 						&& loginEvent.hasFinished()) {
 
 					if (loginEvent.getScript() != null) {
-						log("Seperate thread is currently running.. " + loginEvent.getScript());
+//						log("Seperate thread is currently running.. " + loginEvent.getScript());
 
 						// Resizable mode when logged in
 						if (!loginEvent.getScript().equalsIgnoreCase("TUT_ISLAND")) {

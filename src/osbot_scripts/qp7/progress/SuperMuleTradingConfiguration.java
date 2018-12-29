@@ -15,6 +15,7 @@ import osbot_scripts.events.LoginEvent;
 import osbot_scripts.events.WidgetActionFilter;
 import osbot_scripts.framework.AccountStage;
 import osbot_scripts.sections.total.progress.MainState;
+import osbot_scripts.taskhandling.TaskHandler;
 import osbot_scripts.util.Sleep;
 
 public class SuperMuleTradingConfiguration extends QuestStep {
@@ -32,6 +33,12 @@ public class SuperMuleTradingConfiguration extends QuestStep {
 		demo.exchangeContext(this.getBot());
 		demo.setLoginEvent(getEvent());
 		new Thread(demo).start();
+	}
+	
+	@Override
+	public void timeOutHandling(TaskHandler tasks) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	private ThreadDemo demo;
@@ -55,6 +62,10 @@ public class SuperMuleTradingConfiguration extends QuestStep {
 	@Override
 	public void onLoop() throws InterruptedException {
 
+		if (getEvent().hasFinished() && !isLoggedIn()) {
+			BotCommands.killProcess(this, getScript(), "BECAUSE NOT LOGGED IN 01 MULE TRADING", getEvent());
+		}
+
 		log("Running the side loop..");
 
 		System.out.println("STATUS: " + DatabaseUtilities.getAccountStatus(this, getEvent().getUsername(), getEvent()));
@@ -73,8 +84,8 @@ public class SuperMuleTradingConfiguration extends QuestStep {
 			if (DatabaseUtilities.getAccountStatus(this, getEvent().getUsername(), getEvent())
 					.equalsIgnoreCase("MULE")) {
 				// if (update) {
+				DatabaseUtilities.updateAccountValue(this, getEvent().getUsername(), 0, getEvent());
 				DatabaseUtilities.updateStageProgress(this, "UNKNOWN", 0, getEvent().getUsername(), getEvent());
-				DatabaseUtilities.updateAccountValue(this, getEvent().getEmailTradeWith(), 0, getEvent());
 				DatabaseUtilities.updateStageProgress(this, "UNKNOWN", 0, getEvent().getEmailTradeWith(), getEvent());
 				// }
 				BotCommands.killProcess(this, getScript(), "BECAUSE OF DONE WITH SUPER MULE TRADING", getEvent());
@@ -111,7 +122,7 @@ public class SuperMuleTradingConfiguration extends QuestStep {
 
 					// If it's finding the partner for 10 times and its the same, then accept the
 					// trade and continue
-					if (newPartnerFindTries > 5 && tradeWith != null &&
+					if (newPartnerFindTries > 3 && tradeWith != null &&
 					// && getEvent().getTradeWith() != null &&
 							getEvent().getTradeWith().equalsIgnoreCase(tradeWith)
 							// && getTrade().getLastRequestingPlayer() != null
@@ -122,7 +133,7 @@ public class SuperMuleTradingConfiguration extends QuestStep {
 
 					// This is so the account doesn't stay logged in for more than 4 minutes at a
 					// time and not finding a new partner to trade with
-					if (newPartnerFindTries > 50) {
+					if (newPartnerFindTries > 5) {
 						DatabaseUtilities.updateStageProgress(this, "UNKNOWN", 0, getEvent().getUsername(), getEvent());
 						BotCommands.killProcess(this, getScript(), "BECAUSE OF DONE WITH UNKNOWN TRADING", getEvent());
 						getScript().stop();
@@ -148,7 +159,7 @@ public class SuperMuleTradingConfiguration extends QuestStep {
 		tries++;
 
 		if (tries > (DatabaseUtilities.getAccountStatus(this, getEvent().getUsername(), getEvent())
-				.equalsIgnoreCase("MULE") ? 160 : 70)) {
+				.equalsIgnoreCase("MULE") ? 300 : 300)) {
 			tradingDone = true;
 			// update = true;
 			log("Failed to trade it over");
@@ -176,6 +187,14 @@ public class SuperMuleTradingConfiguration extends QuestStep {
 				if (!getBank().isOpen()) {
 					getBank().open();
 					Sleep.sleepUntil(() -> getBank().isOpen(), 5000);
+
+					int totalAccountValue = (int) getBank().getAmount(995);
+
+					log("[ESTIMATED MULE VALUE] account value is: " + totalAccountValue);
+					if (getEvent() != null && getEvent().getUsername() != null && totalAccountValue > 0) {
+						DatabaseUtilities.updateAccountValue(this, getEvent().getUsername(), totalAccountValue,
+								getEvent());
+					}
 				}
 
 				Thread.sleep(5000);
@@ -272,7 +291,7 @@ public class SuperMuleTradingConfiguration extends QuestStep {
 			// in 5 minutes
 			else if (!getInventory().contains(995) && !tradingDone
 					&& getPlayers().closest(getEvent().getTradeWith()) == null
-					&& (System.currentTimeMillis() - timeout > 250_000)) {
+					&& (System.currentTimeMillis() - timeout > 400_000)) {
 
 				if (!getBank().isOpen()) {
 					getBank().open();

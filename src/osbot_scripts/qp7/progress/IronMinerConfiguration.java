@@ -2,6 +2,7 @@ package osbot_scripts.qp7.progress;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -20,12 +21,14 @@ import osbot_scripts.framework.BankTask;
 import osbot_scripts.framework.ClickObjectTask;
 import osbot_scripts.framework.ConcreteWalking;
 import osbot_scripts.framework.GenieLamp;
+import osbot_scripts.framework.GrandExchangeTask;
 import osbot_scripts.framework.Pickaxe;
 import osbot_scripts.framework.WalkTask;
 import osbot_scripts.framework.parts.BankItem;
 import osbot_scripts.hopping.WorldHop;
 import osbot_scripts.qp7.progress.entities.Rock;
 import osbot_scripts.sections.total.progress.MainState;
+import osbot_scripts.taskhandling.TaskHandler;
 import osbot_scripts.util.Sleep;
 
 public class IronMinerConfiguration extends QuestStep {
@@ -175,9 +178,9 @@ public class IronMinerConfiguration extends QuestStep {
 	}
 
 	@Override
-	public void onLoop() throws InterruptedException {
+	public void onLoop() throws InterruptedException, IOException {
 		log("Running the side loop..");
-		
+
 		GenieLamp.openGenieLamp(this);
 
 		// At the end of the loop, restarting the loop
@@ -252,7 +255,7 @@ public class IronMinerConfiguration extends QuestStep {
 		// When having more than 200 clay, then go to the g.e. and sell it
 		if (getBank().isOpen() && getBank().getAmount("Iron ore") > 200) {
 
-			setGrandExchangeActions(new Ge2(getEvent()));
+			setGrandExchangeActions(new Ge2(getEvent(), this));
 
 			// int amount = (int) (getBank().getAmount("Iron ore"));
 			// setGrandExchangeTask(new GrandExchangeTask(this, new BankItem[] {}, new
@@ -273,7 +276,19 @@ public class IronMinerConfiguration extends QuestStep {
 
 		if (Config.doesntHaveAnyPickaxe(this) && getBank().isOpen()) {
 			log("Player doesn't have any pickaxe, buying one right now");
-			setGrandExchangeActions(new Ge2(getEvent()));
+			Ge2 ge = new Ge2(getEvent(), this);
+
+			GrandExchangeTask task = new GrandExchangeTask(this,
+					new BankItem[] { new BankItem("Bronze pickaxe", 1265, 1, Pickaxe.BRONZE.getPrice(), false) },
+					new BankItem[] { new BankItem("Iron ore", 440, 1000, 1, true),
+							new BankItem("Uncut diamond", 1617, 1000, 1, true),
+							new BankItem("Uncut emerald", 1621, 1000, 1, true),
+							new BankItem("Uncut ruby", 1619, 1000, 1, true),
+							new BankItem("Uncut sapphire", 1623, 1000, 1, true),
+							new BankItem("Clay", 434, 1000, 1, true) },
+					getEvent(), getScript(), this);
+
+			ge.setTask(task);
 		}
 
 		int ironAmount = -1;
@@ -326,7 +341,7 @@ public class IronMinerConfiguration extends QuestStep {
 				&& getSkills().getStatic(Skill.MINING) <= 3
 				&& ((!getInventory().contains("Bronze pickaxe") && !getBank().contains("Bronze pickaxe")))) {
 
-			setGrandExchangeActions(new Ge2(getEvent()));
+			setGrandExchangeActions(new Ge2(getEvent(), this));
 			// DatabaseUtilities.updateStageProgress((MethodProvider) this,
 			// AccountStage.GE_SELL_BUY_MINING.name(), 0,
 			// getEvent().getUsername());
@@ -346,7 +361,7 @@ public class IronMinerConfiguration extends QuestStep {
 				&& getSkills().getStatic(Skill.MINING) > 3 && getSkills().getStatic(Skill.MINING) < 6
 				&& ((!getInventory().contains("Iron pickaxe") && !getBank().contains("Iron pickaxe")))) {
 
-			setGrandExchangeActions(new Ge2(getEvent()));
+			setGrandExchangeActions(new Ge2(getEvent(), this));
 			// DatabaseUtilities.updateStageProgress((MethodProvider) this,
 			// AccountStage.GE_SELL_BUY_MINING.name(), 0,
 			// getEvent().getUsername());
@@ -367,7 +382,7 @@ public class IronMinerConfiguration extends QuestStep {
 				&& getSkills().getStatic(Skill.MINING) >= 6 && getSkills().getStatic(Skill.MINING) < 21
 				&& ((!getInventory().contains("Steel pickaxe") && !getBank().contains("Steel pickaxe")))) {
 
-			setGrandExchangeActions(new Ge2(getEvent()));
+			setGrandExchangeActions(new Ge2(getEvent(), this));
 			// DatabaseUtilities.updateStageProgress((MethodProvider) this,
 			// AccountStage.GE_SELL_BUY_MINING.name(), 0,
 			// getEvent().getUsername());
@@ -388,7 +403,7 @@ public class IronMinerConfiguration extends QuestStep {
 				&& getSkills().getStatic(Skill.MINING) >= 21 && getSkills().getStatic(Skill.MINING) < 31
 				&& ((!getInventory().contains("Mithril pickaxe") && !getBank().contains("Mithril pickaxe")))) {
 
-			setGrandExchangeActions(new Ge2(getEvent()));
+			setGrandExchangeActions(new Ge2(getEvent(), this));
 			// DatabaseUtilities.updateStageProgress((MethodProvider) this,
 			// AccountStage.GE_SELL_BUY_MINING.name(), 0,
 			// getEvent().getUsername());
@@ -408,7 +423,7 @@ public class IronMinerConfiguration extends QuestStep {
 				&& getSkills().getStatic(Skill.MINING) >= 31 && getSkills().getStatic(Skill.MINING) < 41
 				&& ((!getInventory().contains("Adamant pickaxe") && !getBank().contains("Adamant pickaxe")))) {
 
-			setGrandExchangeActions(new Ge2(getEvent()));
+			setGrandExchangeActions(new Ge2(getEvent(), this));
 			// DatabaseUtilities.updateStageProgress((MethodProvider) this,
 			// AccountStage.GE_SELL_BUY_MINING.name(), 0,
 			// getEvent().getUsername());
@@ -428,7 +443,7 @@ public class IronMinerConfiguration extends QuestStep {
 				&& getSkills().getStatic(Skill.MINING) >= 41
 				&& ((!getInventory().contains("Rune pickaxe") && !getBank().contains("Rune pickaxe")))) {
 
-			setGrandExchangeActions(new Ge2(getEvent()));
+			setGrandExchangeActions(new Ge2(getEvent(), this));
 			// DatabaseUtilities.updateStageProgress((MethodProvider) this,
 			// AccountStage.GE_SELL_BUY_MINING.name(), 0,
 			// getEvent().getUsername());
@@ -471,6 +486,7 @@ public class IronMinerConfiguration extends QuestStep {
 				&& !getGrandExchangeTask().getTask().finished()) {
 			getGrandExchangeTask().getTask().loop();
 
+			System.out.println("RESET 02");
 			resetStage(AccountStage.MINING_IRON_ORE.name());
 
 		}
@@ -516,6 +532,12 @@ public class IronMinerConfiguration extends QuestStep {
 	 */
 	public void setPickaxe(String pickaxe) {
 		this.pickaxe = pickaxe;
+	}
+	
+	@Override
+	public void timeOutHandling(TaskHandler tasks) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

@@ -15,6 +15,7 @@ import osbot_scripts.framework.ClickObjectTask;
 import osbot_scripts.framework.DialogueTask;
 import osbot_scripts.framework.WalkTask;
 import osbot_scripts.sections.total.progress.MainState;
+import osbot_scripts.taskhandling.TaskHandler;
 
 public class RomeoAndJuliet extends QuestStep {
 
@@ -272,6 +273,12 @@ public class RomeoAndJuliet extends QuestStep {
 	public MainState getNextMainState() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	@Override
+	public void timeOutHandling(TaskHandler tasks) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

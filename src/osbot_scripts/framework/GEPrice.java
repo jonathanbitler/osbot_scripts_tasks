@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 
+import osbot_scripts.ge.api.ItemResource;
+
 public class GEPrice {
 
 	private static final String BASE = "https://api.rsbuddy.com/grandExchange?a=guidePrice&i=";
@@ -57,25 +59,32 @@ public class GEPrice {
 	 * @return itemPrice
 	 * @throws IOException
 	 */
-	private int parse(final int itemID, String choice) throws IOException {
-		final URL url = new URL(BASE + itemID);
-		BufferedReader file = new BufferedReader(new InputStreamReader(url.openStream()));
-		String line;
-		String price = null;
-		while ((line = file.readLine()) != null) {
-			if (line.contains("{")) {
-				price = (line).trim();
-			}
-		}
-		if (choice.equals("buying")) {
-			price = price.substring(price.indexOf(",") + 10, nthOccurrence(price, ',', 1)).trim();
-		} else if (choice.equals("selling")) {
-			price = price.substring(nthOccurrence(price, ',', 2) + 11, price.indexOf("sellingQuantity") - 2).trim();
-		} else {
-			price = price.substring(price.indexOf(":") + 1, price.indexOf(",")).trim();
-		}
-		file.close();
-		return Integer.parseInt(price);
+	private int parse(final int itemID, String choice) {
+		ItemResource itemResource = new ItemResource(itemID);
+		return itemResource.getPrice();
+//		try {
+//			final URL url = new URL(BASE + itemID);
+//			BufferedReader file = new BufferedReader(new InputStreamReader(url.openStream()));
+//			String line;
+//			String price = null;
+//			while ((line = file.readLine()) != null) {
+//				if (line.contains("{")) {
+//					price = (line).trim();
+//				}
+//			}
+//			if (choice.equals("buying")) {
+//				price = price.substring(price.indexOf(",") + 10, nthOccurrence(price, ',', 1)).trim();
+//			} else if (choice.equals("selling")) {
+//				price = price.substring(nthOccurrence(price, ',', 2) + 11, price.indexOf("sellingQuantity") - 2).trim();
+//			} else {
+//				price = price.substring(price.indexOf(":") + 1, price.indexOf(",")).trim();
+//			}
+//			file.close();
+//			return Integer.parseInt(price);
+//		} catch (Exception e) {
+//			ItemResource itemResource = new ItemResource(itemID);
+//			return itemResource.getPrice();
+//		}
 	}
 
 	private int nthOccurrence(String str, char c, int n) {

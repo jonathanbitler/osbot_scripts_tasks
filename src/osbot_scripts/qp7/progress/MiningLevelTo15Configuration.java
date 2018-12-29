@@ -2,17 +2,19 @@ package osbot_scripts.qp7.progress;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.map.Position;
+import org.osbot.rs07.api.model.GroundItem;
+import org.osbot.rs07.api.model.Player;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 
 import osbot_scripts.bot.utils.BotCommands;
-import osbot_scripts.bot.utils.RandomUtil;
 import osbot_scripts.config.Config;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
@@ -28,6 +30,7 @@ import osbot_scripts.framework.parts.BankItem;
 import osbot_scripts.hopping.WorldHop;
 import osbot_scripts.qp7.progress.entities.Rock;
 import osbot_scripts.sections.total.progress.MainState;
+import osbot_scripts.taskhandling.TaskHandler;
 import osbot_scripts.util.Sleep;
 
 public class MiningLevelTo15Configuration extends QuestStep {
@@ -92,13 +95,18 @@ public class MiningLevelTo15Configuration extends QuestStep {
 					new Position(3182, 3378, 0), new Position(3187, 3375, 0), new Position(3179, 3369, 0),
 					new Position(3177, 3367, 0)));
 
+	private PlayersAround around = new PlayersAround(this);
+
 	@Override
 	public void onStart() {
 		if (beginTime == -1) {
 			beginTime = System.currentTimeMillis();
+
+			around.exchangeContext(getBot());
+			new Thread(around).start();
 		}
 
-		if (getEvent().hasFinished() && GRAND_EXCHANGE_AREA.contains(myPlayer())) {
+		if (getEvent() != null && getEvent().hasFinished() && GRAND_EXCHANGE_AREA.contains(myPlayer())) {
 			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 					new WalkTask("walk to varrock west bank from g.e.", -1, -1, getBot().getMethods(),
 							FROM_GE_TO_BANK_PATH, GRAND_EXCHANGE_AREA,
@@ -139,10 +147,6 @@ public class MiningLevelTo15Configuration extends QuestStep {
 						new Area(new int[][] { { 3184, 3374 }, { 3179, 3374 }, { 3179, 3369 }, { 3184, 3369 } }), 7454,
 						new BankItem("Clay", 1, false), true, this, Rock.CLAY));
 
-		// getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new
-		// DropItemTask("drop all clay", -1, -1,
-		// getBot().getMethods(), "Drop", true, new String[] { "Clay" }));
-
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("walk to varrock west bank 2", -1, -1, getBot().getMethods(), MINING_AREA_TO_BANK,
 						MINING_AREA, BANK_VARROCK_EAST_AREA, getScript(), getEvent(), false, true));
@@ -150,32 +154,28 @@ public class MiningLevelTo15Configuration extends QuestStep {
 	}
 
 	public void onPaint(Graphics2D g) {
-		g.setColor(Color.WHITE);
-		int profit = ((currentAmount - beginAmount) + soldAmount) * 140;
-		long profitPerHour = (long) (profit * (3600000.0 / (System.currentTimeMillis() - beginTime)));
-		g.drawString("Sold ores " + soldAmount, 60, 50);
-		g.drawString("Begin ores " + beginAmount, 60, 65);
-		g.drawString("Current ores " + currentAmount, 60, 80);
-		g.drawString("Total mined ores " + ((currentAmount - beginAmount) + soldAmount), 60, 95);
-		g.drawString("Money per hour " + (profitPerHour > 0 ? profitPerHour : "Need more data"), 60, 110);
-		g.drawString("Time taken " + (formatTime((System.currentTimeMillis() - beginTime))), 60, 125);
+//		g.setColor(Color.WHITE);
+//		int profit = ((currentAmount - beginAmount) + soldAmount) * 140;
+//		long profitPerHour = (long) (profit * (3600000.0 / (System.currentTimeMillis() - beginTime)));
+//		g.drawString("Sold ores " + soldAmount, 60, 50);
+//		g.drawString("Begin ores " + beginAmount, 60, 65);
+//		g.drawString("Current ores " + currentAmount, 60, 80);
+//		g.drawString("Total mined ores " + ((currentAmount - beginAmount) + soldAmount), 60, 95);
+//		g.drawString("Money per hour " + (profitPerHour > 0 ? profitPerHour : "Need more data"), 60, 110);
+//		g.drawString("Time taken " + (formatTime((System.currentTimeMillis() - beginTime))), 60, 125);
+//
+//		g.drawString((around.aroundMine < 0 ? "Calculating.."
+//				: around.aroundMine + " / " + around.getPlayersAroundExceptMe()).toString(), 60, 150);
 	}
 
 	@Override
-	public void onLoop() throws InterruptedException {
+	public void onLoop() throws InterruptedException, IOException {
 		log("Running the side loop..");
-		
+
 		GenieLamp.openGenieLamp(this);
 
-		// At the end of the loop, restarting the loop
-		// if (BANK_VARROCK_EAST_AREA.contains(myPlayer())
-		// && (getQuestStageStep() >= (getTaskHandler().getTasks().size() - 1))) {
-		// log("Restarting tasks to 0 for another loop!");
-		// resetStage(AccountStage.MINING_LEVEL_TO_15.name());
-		// }
-
 		if (!Config.NO_LOGIN) {
-			if (getEvent().hasFinished() && !isLoggedIn()) {
+			if (getEvent() != null && getEvent().hasFinished() && !isLoggedIn()) {
 				log("Not logged in.. restarting");
 				BotCommands.waitBeforeKill((MethodProvider) this, "BECAUSE OF NOT LOGGED IN ATM E02");
 			}
@@ -202,15 +202,6 @@ public class MiningLevelTo15Configuration extends QuestStep {
 			MuggerStuck.runCopperMine(getScript(), (MethodProvider) this);
 
 			Sleep.sleepUntil(() -> !getCombat().isFighting() && !myPlayer().isUnderAttack(), 5000);
-
-			// getWalking().walkPath(
-			// new ArrayList<Position>(Arrays.asList(new Position(3182, 3371, 0), new
-			// Position(3181, 3365, 0),
-			// new Position(3173, 3361, 0), new Position(3169, 3368, 0), new Position(3173,
-			// 3377, 0),
-			// new Position(3183, 3379, 0), new Position(3185, 3379, 0), new Position(3181,
-			// 3371, 0))));
-			// resetStage(AccountStage.MINING_LEVEL_TO_15.name());
 		}
 
 		if (MINING_AREA.contains(myPlayer()) && ((getInventory().contains(1266) || getInventory().contains(1268)
@@ -229,7 +220,7 @@ public class MiningLevelTo15Configuration extends QuestStep {
 		}
 
 		if (Config.doesntHaveAnyPickaxe(this) && !getBank().isOpen() && MINING_AREA.contains(myPlayer())) {
-			log("Player doesn't have any pickaxe, getting it from back");
+			log("Player doesn't have any pickaxe, getting it from bank");
 			resetStage(AccountStage.MINING_LEVEL_TO_15.name());
 		}
 
@@ -241,20 +232,63 @@ public class MiningLevelTo15Configuration extends QuestStep {
 		// The tasks of getting new pickaxes, looking for the skill and then the pickaxe
 		// corresponding with this skill level, when the player is in lumrbidge, then
 		// also execute this task to get a new mining pickaxe
-
 		// When having more than 200 clay, then go to the g.e. and sell it
 		if (getBank().isOpen() && getBank().getAmount("Clay") > 200) {
-			// DatabaseUtilities.updateStageProgress((MethodProvider) this,
-			// AccountStage.GE_SELL_BUY_MINING.name(), 0,
-			// getEvent().getUsername());
-			// BotCommands.killProcess((MethodProvider) this, getScript());
-			// return;
-			setGrandExchangeActions(new Ge2(getEvent()));
+			setGrandExchangeActions(new Ge2(getEvent(), this));
 		}
 
 		if (Config.doesntHaveAnyPickaxe(this) && getBank().isOpen()) {
 			log("Player doesn't have any pickaxe, buying one right now");
-			setGrandExchangeActions(new Ge2(getEvent()));
+
+			int costInBankAndInventory = (int) (getBank().getAmount(995) + getInventory().getAmount(995));
+			int itemCost = getGrandexchangePriceForItem(1265, true);
+
+			// *1.25 should prevent not insta buyable
+			if ((getBank().isOpen()) && (costInBankAndInventory < (itemCost * 1.25))) {
+
+				Area bronzePickaxeLocation = new Area(new int[][] { { 3228, 3226 }, { 3227, 3225 }, { 3227, 3220 },
+						{ 3231, 3220 }, { 3231, 3225 }, { 3230, 3226 }, { 3228, 3226 } }).setPlane(2);
+
+				// Not in location of bronze pickaxe
+				while (!bronzePickaxeLocation.contains(myPlayer()) && (!getInventory().contains("Bronze pickaxe"))) {
+					getWalking().webWalk(bronzePickaxeLocation);
+
+					GroundItem item = getGroundItems().closest("Bronze pickaxe");
+					if (item != null) {
+						item.interact();
+					}
+					log("Going to pick up bronze pickaxe!");
+
+					if (getInventory().contains("Bronze pickaxe")) {
+						log("Got bronze pickaxe, walking to position!");
+					}
+
+				}
+
+				// In location of bronze pickaxea and got the pickaxe, walk back
+				while (bronzePickaxeLocation.contains(myPlayer()) && (getInventory().contains("Bronze pickaxe"))) {
+					getWalking().webWalk(DoricsQuestConfig.MINING_AREA);
+					getWalking().walkPath(DoricsQuestConfig.MINING_POSITION);
+				}
+
+			} else {
+
+				Ge2 ge = new Ge2(getEvent(), this);
+
+				GrandExchangeTask task = new GrandExchangeTask(this,
+						new BankItem[] { new BankItem("Bronze pickaxe", 1265, 1, Pickaxe.BRONZE.getPrice(), false) },
+						new BankItem[] {
+								// new BankItem("Iron ore", 440, 1000, 1, true),
+								new BankItem("Uncut diamond", 1617, 1000, 1, true),
+								new BankItem("Uncut emerald", 1621, 1000, 1, true),
+								new BankItem("Uncut ruby", 1619, 1000, 1, true),
+								new BankItem("Uncut sapphire", 1623, 1000, 1, true),
+								new BankItem("Clay", 434, 1000, 1, true) },
+						getEvent(), getScript(), this);
+
+				ge.setTask(task);
+				setGrandExchangeActions(ge);
+			}
 		}
 
 		int clayAmount = -1;
@@ -276,7 +310,7 @@ public class MiningLevelTo15Configuration extends QuestStep {
 			int coinsAmount = (int) getBank().getAmount(995);
 
 			// If has more than 100k then start tradinig it over to the mule
-			if (coinsAmount > 60_000) {
+			if (coinsAmount > 44_000) {
 
 				// Setting the status of the account that it wants to mule to another account in
 				// the database
@@ -284,7 +318,7 @@ public class MiningLevelTo15Configuration extends QuestStep {
 						&& DatabaseUtilities.getMuleTradingFreeAccounts(this, getEvent()) < 3) {
 
 					ConcreteWalking.walkToGe(this);
-					
+
 					DatabaseUtilities.updateStageProgress(this, "MULE_TRADING", 0, getEvent().getUsername(),
 							getEvent());
 					BotCommands.killProcess(this, getScript(), "BECAUSE WANTING TO GO TO MULE TRADING", getEvent());
@@ -302,83 +336,32 @@ public class MiningLevelTo15Configuration extends QuestStep {
 		if (totalAccountValue > Pickaxe.BRONZE.getPrice() && getBank().isOpen()
 				&& getSkills().getStatic(Skill.MINING) <= 3
 				&& ((!getInventory().contains("Bronze pickaxe") && !getBank().contains("Bronze pickaxe")))) {
-
-			setGrandExchangeActions(new Ge2(getEvent()));
-
-			// DatabaseUtilities.updateStageProgress((MethodProvider) this,
-			// AccountStage.GE_SELL_BUY_MINING.name(), 0,
-			// getEvent().getUsername());
-			// BotCommands.killProcess((MethodProvider) this, getScript());
-			// return;
-
-			// setGrandExchangeTask(
-			// new GrandExchangeTask(this, new BankItem[] { new BankItem("Bronze pickaxe",
-			// 1265, 1, 1400, false) },
-			// new BankItem[] { new BankItem("Clay", 434, 1000, 1, true),
-			// new BankItem("Uncut diamond", 1617, 1000, 1, true),
-			// new BankItem("Uncut emerald", 1621, 1000, 1, true),
-			// new BankItem("Uncut ruby", 1619, 1000, 1, true),
-			// new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
-			// null, getScript()));
+			setGrandExchangeActions(new Ge2(getEvent(), this));
 		} else if (totalAccountValue > Pickaxe.IRON.getPrice() && getBank().isOpen()
 				&& getSkills().getStatic(Skill.MINING) > 3 && getSkills().getStatic(Skill.MINING) < 6
 				&& ((!getInventory().contains("Iron pickaxe") && !getBank().contains("Iron pickaxe")))) {
 
-			setGrandExchangeActions(new Ge2(getEvent()));
-
-			// DatabaseUtilities.updateStageProgress((MethodProvider) this,
-			// AccountStage.GE_SELL_BUY_MINING.name(), 0,
-			// getEvent().getUsername());
-			// BotCommands.killProcess((MethodProvider) this, getScript());
-			// return;
-			// setGrandExchangeTask(
-			// new GrandExchangeTask(this, new BankItem[] { new BankItem("Iron pickaxe",
-			// 1267, 1, 1400, false) },
-			// new BankItem[] { new BankItem("Clay", 434, 1000, 1, true),
-			// new BankItem("Uncut diamond", 1617, 1000, 1, true),
-			// new BankItem("Uncut emerald", 1621, 1000, 1, true),
-			// new BankItem("Uncut ruby", 1619, 1000, 1, true),
-			// new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
-			// null, getScript()));
+			setGrandExchangeActions(new Ge2(getEvent(), this));
 		} else if (totalAccountValue > Pickaxe.STEEL.getPrice() && getBank().isOpen()
 				&& getSkills().getStatic(Skill.MINING) >= 6 && getSkills().getStatic(Skill.MINING) < 21
 				&& ((!getInventory().contains("Steel pickaxe") && !getBank().contains("Steel pickaxe")))) {
 
-			setGrandExchangeActions(new Ge2(getEvent()));
-
-			// DatabaseUtilities.updateStageProgress((MethodProvider) this,
-			// AccountStage.GE_SELL_BUY_MINING.name(), 0,
-			// getEvent().getUsername());
-			// BotCommands.killProcess((MethodProvider) this, getScript());
-			// return;
-			// setGrandExchangeTask(
-			// new GrandExchangeTask(this, new BankItem[] { new BankItem("Steel pickaxe",
-			// 1269, 1, 5000, false) },
-			// new BankItem[] { new BankItem("Clay", 434, 1000, 1, true),
-			// new BankItem("Uncut diamond", 1617, 1000, 1, true),
-			// new BankItem("Uncut emerald", 1621, 1000, 1, true),
-			// new BankItem("Uncut ruby", 1619, 1000, 1, true),
-			// new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
-			// null, getScript()));
+			setGrandExchangeActions(new Ge2(getEvent(), this));
 		} else if (totalAccountValue > Pickaxe.MITHRIL.getPrice() && getBank().isOpen()
 				&& getSkills().getStatic(Skill.MINING) >= 21
 				&& ((!getInventory().contains("Mithril pickaxe") && !getBank().contains("Mithril pickaxe")))) {
 
-			setGrandExchangeActions(new Ge2(getEvent()));
+			setGrandExchangeActions(new Ge2(getEvent(), this));
+		} else if (totalAccountValue > Pickaxe.ADAMANT.getPrice() && getBank().isOpen()
+				&& getSkills().getStatic(Skill.MINING) >= 31 && getSkills().getStatic(Skill.MINING) < 41
+				&& ((!getInventory().contains("Adamant pickaxe") && !getBank().contains("Adamant pickaxe")))) {
 
-			// DatabaseUtilities.updateStageProgress((MethodProvider) this,
-			// AccountStage.GE_SELL_BUY_MINING.name(), 0,
-			// getEvent().getUsername());
-			// BotCommands.killProcess((MethodProvider) this, getScript());
-			// return;
-			// setGrandExchangeTask(new GrandExchangeTask(this,
-			// new BankItem[] { new BankItem("Mithril pickaxe", 1273, 1, 10000, false) },
-			// new BankItem[] { new BankItem("Clay", 434, 1000, 1, true),
-			// new BankItem("Uncut diamond", 1617, 1000, 1, true),
-			// new BankItem("Uncut emerald", 1621, 1000, 1, true),
-			// new BankItem("Uncut ruby", 1619, 1000, 1, true),
-			// new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
-			// null, getScript()));
+			setGrandExchangeActions(new Ge2(getEvent(), this));
+		} else if (totalAccountValue > Pickaxe.RUNE.getPrice() && getBank().isOpen()
+				&& getSkills().getStatic(Skill.MINING) >= 41
+				&& ((!getInventory().contains("Rune pickaxe") && !getBank().contains("Rune pickaxe")))) {
+
+			setGrandExchangeActions(new Ge2(getEvent(), this));
 		}
 
 		log("g.e. running " + getGrandExchangeTask() + " "
@@ -395,8 +378,8 @@ public class MiningLevelTo15Configuration extends QuestStep {
 		if (getGrandExchangeTask() != null && getGrandExchangeTask().getTask() != null
 				&& getGrandExchangeTask().getTask().finished()) {
 			// the current grand exchange task to null
-			resetStage(AccountStage.MINING_IRON_ORE.name());
 			setGrandExchangeActions(null);
+			resetStage(AccountStage.MINING_LEVEL_TO_15.name());
 			log("Finished G.E. task, walking back to varrock bank");
 		}
 
@@ -405,7 +388,8 @@ public class MiningLevelTo15Configuration extends QuestStep {
 				&& !getGrandExchangeTask().getTask().finished()) {
 			getGrandExchangeTask().getTask().loop();
 
-			resetStage(AccountStage.MINING_IRON_ORE.name());
+			System.out.println("RESET 01");
+			resetStage(AccountStage.MINING_LEVEL_TO_15.name());
 
 		}
 
@@ -422,21 +406,6 @@ public class MiningLevelTo15Configuration extends QuestStep {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
-	/**
-	 * @return the grandExchangeTask
-	 */
-	// public GrandExchangeTask getGrandExchangeTask() {
-	// return grandExchangeTask;
-	// }
-	//
-	// /**
-	// * @param grandExchangeTask
-	// * the grandExchangeTask to set
-	// */
-	// public void setGrandExchangeTask(GrandExchangeTask grandExchangeTask) {
-	// this.grandExchangeTask = grandExchangeTask;
-	// }
 
 	/**
 	 * @return the pickaxe
@@ -466,6 +435,12 @@ public class MiningLevelTo15Configuration extends QuestStep {
 	 */
 	public void setGrandExchangeActions(Ge2 grandExchangeActions) {
 		this.grandExchangeActions = grandExchangeActions;
+	}
+	
+	@Override
+	public void timeOutHandling(TaskHandler tasks) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

@@ -23,6 +23,7 @@ import osbot_scripts.framework.parts.BankItem;
 import osbot_scripts.hopping.WorldHop;
 import osbot_scripts.qp7.progress.entities.Rock;
 import osbot_scripts.sections.total.progress.MainState;
+import osbot_scripts.taskhandling.TaskHandler;
 
 public class RimmingTonIronConfig extends QuestStep {
 
@@ -393,6 +394,12 @@ public class RimmingTonIronConfig extends QuestStep {
 	 */
 	public void setPickaxe(String pickaxe) {
 		this.pickaxe = pickaxe;
+	}
+	
+	@Override
+	public void timeOutHandling(TaskHandler tasks) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

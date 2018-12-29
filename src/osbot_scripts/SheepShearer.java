@@ -1,6 +1,7 @@
 package osbot_scripts;
 
 import java.awt.Graphics2D;
+import java.io.IOException;
 
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.ui.RS2Widget;
@@ -53,7 +54,7 @@ public class SheepShearer extends Script {
 			if (closeQuestCompleted != null) {
 				closeQuestCompleted.interact();
 			}
-			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0,
+			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this, login).name(), 0,
 					login.getUsername(), login);
 			DatabaseUtilities.updateAccountBreakTill(this, getSheepShearer().getEvent().getUsername(), 60, login);
 			BotCommands.killProcess((MethodProvider) this, (Script) this, "ALREADY COMPLETED QUEST SHEEP", login);
@@ -61,7 +62,12 @@ public class SheepShearer extends Script {
 		}
 
 		if (login.hasFinished()) {
-			getSheepShearer().getTaskHandler().taskLoop();
+			try {
+				getSheepShearer().getTaskHandler().taskLoop();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 
 		return random(500, 600);

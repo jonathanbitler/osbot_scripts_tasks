@@ -1,26 +1,21 @@
 package osbot_scripts.framework;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.osbot.rs07.api.Bank.BankMode;
-import org.osbot.rs07.api.GrandExchange;
-import org.osbot.rs07.api.GrandExchange.Box;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.map.Position;
-import org.osbot.rs07.api.model.NPC;
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.utility.ConditionalSleep;
 
 import osbot_scripts.bot.utils.BotCommands;
-import osbot_scripts.bot.utils.RandomUtil;
-import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
-import osbot_scripts.events.MandatoryEventsExecution;
 import osbot_scripts.framework.parts.BankItem;
-import osbot_scripts.qp7.progress.Ge2;
+import osbot_scripts.qp7.progress.DoricsQuestConfig;
 import osbot_scripts.qp7.progress.QuestStep;
 import osbot_scripts.task.Task;
 import osbot_scripts.task.TaskSkeleton;
@@ -40,37 +35,6 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 
 	private QuestStep quest;
 
-	/**
-	 * 
-	 * @param scriptName
-	 * @param questProgress
-	 * @param questConfig
-	 * @param prov
-	 * @param area
-	 * @param objectId
-	 */
-	public GrandExchangeTask(String scriptName, int questProgress, MethodProvider prov, BankItem[] toBuy,
-			BankItem[] toSell, LoginEvent login, Script script) {
-
-		setScriptName(scriptName);
-		setProv(prov);
-		setCurrentQuestProgress(questProgress);
-		setItemsToBuy(new ArrayList<BankItem>(Arrays.asList(toBuy)));
-		setItemsToSell(new ArrayList<BankItem>(Arrays.asList(toSell)));
-		setLogin(login);
-		setScript(script);
-	}
-
-	public GrandExchangeTask(MethodProvider prov, BankItem[] toBuy, BankItem[] toSell, LoginEvent login,
-			Script script) {
-
-		setProv(prov);
-		setItemsToBuy(new ArrayList<BankItem>(Arrays.asList(toBuy)));
-		setItemsToSell(new ArrayList<BankItem>(Arrays.asList(toSell)));
-		setLogin(login);
-		setScript(script);
-	}
-
 	public GrandExchangeTask(MethodProvider prov, BankItem[] toBuy, BankItem[] toSell, LoginEvent login, Script script,
 			QuestStep quest) {
 
@@ -80,6 +44,8 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 		setLogin(login);
 		setScript(script);
 		setQuest(quest);
+
+		ge = new GE(getScript());
 	}
 
 	@Override
@@ -100,37 +66,116 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 		return false;
 	}
 
-	private boolean withdrawn[] = new boolean[2];
+	private GE ge;
 
-	private boolean hasToCollect() {
-		RS2Widget coll = getApi().getWidgets().get(465, 6, 1);
+	private int openBankDepositItemsAndTakeItems(boolean editPriceWhenTooMuchDifference) throws InterruptedException {
+		getApi().log("Opening bank");
+		openBank();
 
-		if (coll != null && coll.isVisible()) {
-			return true;
-		}
-		return false;
+		getApi().log("Depositing all items");
+		depositItems();
+
+		getApi().log("Taking items to buy and sell");
+		return takeItemsToBuyAndSell(editPriceWhenTooMuchDifference);
 	}
 
-	private void collect() {
-		if (!getApi().getGrandExchange().isOpen()) {
-			// Collect all to the bank at end
-			openGrandExchange();
+	private int tries = 0;
+
+	@Override
+	public void loop() throws InterruptedException {
+
+		// Walk to the G.E.
+		walkToGrandExchangeIfNotThere();
+
+		// Start bank tasks
+		openBankDepositItemsAndTakeItems(true);
+
+		getApi().log("Closing bank");
+		closeBank();
+		// End bank tasks
+
+		// Start G.E. tasks
+		getApi().log("Opening grand exchange");
+		openGrandExchange();
+
+		getApi().log("Aborting all offers if exists");
+		abortOffers();
+
+		getApi().log("Sell all tasked items");
+		boolean soldAll = false;
+		while (!soldAll) {
+			if (allItemsSold()) {
+				soldAll = true;
+				break;
+			}
+			soldAll = sellTaskedItems();
 		}
 
-		// Collecting the item
-		RS2Widget coll = getApi().getWidgets().get(465, 6, 1);
-		Sleep.sleepUntil(() -> coll != null, 10000);
+		getApi().log("Buy all tasked items");
+		boolean boughtAll = false;
+		while (!boughtAll) {
+			if (allItemsBought()) {
+				boughtAll = true;
+				break;
+			}
+			boughtAll = buyTaskedItems();
+		}
 
-		if (coll != null) {
-			coll.interact("Collect");
+		getApi().log("Collect all offers if it didn't");
+		collectAllOffersIfDidntCollect();
+		// End G.E. tasks
+
+		tries++;
+	}
+
+	// Path to the G.E.
+	private static final ArrayList<Position> GE_PATH = new ArrayList<Position>(
+			Arrays.asList(new Position(3183, 3436, 0), new Position(3183, 3446, 0), new Position(3183, 3451, 0),
+					new Position(3174, 3456, 0), new Position(3165, 3461, 0), new Position(3165, 3461, 0),
+					new Position(3165, 3471, 0), new Position(3165, 3481, 0), new Position(3164, 3486, 0)));
+
+	private void walkToGrandExchangeIfNotThere() {
+		// If the player is not in the grand exchange area, then walk to it
+		if (getApi().myPlayer() != null
+				&& !new Area(new int[][] { { 3144, 3508 }, { 3144, 3471 }, { 3183, 3470 }, { 3182, 3509 } })
+						.contains(getApi().myPlayer())) {
+
+			// Contains in banking area varrock
+			if (new Area(new int[][] { { 3180, 3438 }, { 3180, 3433 }, { 3186, 3433 }, { 3186, 3438 } })
+					.contains(getApi().myPlayer())) {
+				getApi().getWalking().walkPath(GE_PATH);
+			} else {
+				getApi().getWalking().webWalk(
+						new Area(new int[][] { { 3160, 3494 }, { 3168, 3494 }, { 3168, 3485 }, { 3160, 3485 } }));
+				getApi().log("The player has a grand exchange task but isn't there, walking to there");
+			}
 		}
 	}
 
-	private void collectToInventory() {
+	/**
+	 * Are all the items sold?
+	 * 
+	 * @return
+	 */
+	private boolean allItemsSold() {
+		boolean done = true;
+		for (BankItem sell : itemsToSell) {
+			getApi().log("ALL ITEMS SOLD: " + sell.isCompletedTask() + " " + sell.getName());
+			if (!sell.isCompletedTask()) {
+				done = false;
+			}
+		}
+		return done;
+	}
+
+	/**
+	 * Did the person collect all the offers?
+	 */
+	private void collectAllOffersIfDidntCollect() {
 		// Collecting items
 		if (!getApi().getGrandExchange().isOpen()) {
 			// Collect all to the bank at end
-			openGrandExchange();
+			ge.openGe();
 
 			// Collecting the item
 			RS2Widget coll = getApi().getWidgets().get(465, 6, 0);
@@ -153,215 +198,231 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 		}
 	}
 
-	private void depositItems() throws InterruptedException {
-		while (!getApi().getBank().isOpen() && !getApi().getInventory().isEmpty()) {
-
-			if (getApi().getGrandExchange().isOpen()) {
-				getApi().getGrandExchange().close();
+	/**
+	 * Are all the items bought?
+	 * 
+	 * @return
+	 */
+	private boolean allItemsBought() {
+		boolean done = true;
+		for (BankItem buy : itemsToBuy) {
+			getApi().log("ALL ITEMS BOUGHT: " + buy.isCompletedTask() + " " + buy.getName());
+			if (!buy.isCompletedTask()) {
+				done = false;
 			}
-
-			getApi().getBank().open();
-			Sleep.sleepUntil(() -> getApi().getBank().isOpen(), 10000);
-
-			// Waiting a few seconds before depositing again
-			boolean depositBoolean = getApi().getBank().depositAll();
-
-			while (!depositBoolean) {
-				getApi().log("Trying to deposit..");
-
-				getApi().getBank().open();
-
-				Sleep.sleepUntil(() -> getApi().getBank().isOpen(), 10000);
-
-				getApi().getBank().depositAll();
-
-				Sleep.sleepUntil(() -> getApi().getInventory().isEmpty(), 2000);
-
-				if (getApi().getInventory().isEmpty()) {
-					depositBoolean = true;
-				}
-			}
-			getApi().log("Successfully deposited");
-
-			if (getQuest() != null) {
-				// Also looping with quest
-				try {
-					getQuest().onLoop();
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-
-			Sleep.sleepUntil(() -> getApi().getInventory().isEmpty(), 10000);
-			getApi().log("[GRAND EXCHANGE] inventory deposited");
 		}
-
+		return done;
 	}
 
-	private BankItem containsOnBuyList(int id) {
-		for (BankItem sell : getItemsToBuy()) {
-			if (sell.getItemId() == id) {
-				return sell;
-			}
-		}
-		return null;
-	}
-
-	private void withdrawAllItemsNeeded() {
-
-		try {
-			depositItems();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		if (getItemsToSell().size() == 0) {
-			// withdrawn[0] = true;
-		}
-
-		for (BankItem buy : getItemsToBuy()) {
+	private boolean buyTaskedItems() throws InterruptedException {
+		for (BankItem buy : itemsToBuy) {
+			getApi().log("BUY ITEM: " + buy.getName() + " COMPLETED" + buy.isCompletedTask());
 			if (buy.isCompletedTask()) {
-				// withdrawn[1] = true;
 				continue;
 			}
 
-			// Already has enough
-			if (getApi().getBank().getAmount(buy.getName()) >= buy.getAmount()) {
-				buy.setCompletedTask(true);
-				getApi().log("set compelted for: " + buy.getName() + " to: " + buy.isCompletedTask());
-				continue;
-			}
+			int buyTries = 0;
+			boolean finish = false;
 
-			int coinsRequired = buy.getPrice() * buy.getAmount();
-			if (getApi().getBank().withdraw(995, coinsRequired)) {
-				// withdrawn[1] = true;
-			}
-		}
+			while (!finish) {
+				openGrandExchange();
 
-		// Withdrawing all the items you want to sell
-		for (BankItem sell : getItemsToSell()) {
-			if (sell.isCompletedTask()) {
-				// withdrawn[0] = true;
-				continue;
-			}
+				finish = new ConditionalSleep(3000, 500) {
+					@Override
+					public boolean condition() throws InterruptedException {
+						return ge.createBuyOffer(buy.getItemId(), buy.getName(), buy.getPrice(), buy.getAmount(), true,
+								true, true);
+					}
+				}.sleep();
 
-			int amountInBank = (int) getApi().getBank().getAmount(sell.getName());
-			if (amountInBank <= 0) {
-				sell.setCompletedTask(true);
-				// withdrawn[0] = true;
-				continue;
-			}
+				// If selling was succesfull
+				if (finish) {
+					buy.setCompletedTask(finish);
+					getApi().log("Buying successful of item: " + buy.getName() + " amount: " + buy.getAmount());
+				} else {
+					getApi().log("No success, current buy tries: " + buyTries);
+					double increase = 1.13;
+					int higheredSellPriceBy10Percent = (int) ((buy.getPrice() * buy.getAmount()) * (increase));
 
-			if (sell.getAmount() > amountInBank) {
-				getApi().log("didnt have: " + sell.getAmount() + " to sell, so set to: " + amountInBank);
-				sell.setAmount(amountInBank);
-			}
+					if (buyTries > 0) {
+						buy.setPrice(higheredSellPriceBy10Percent / buy.getAmount());
+						getApi().log("Didn't finish while selling (price not correct?), setting to price to: "
+								+ buy.getPrice() + " of " + buy.getName());
+					}
 
-			BankItem onBoth = containsOnBuyList(sell.getItemId());
-			getApi().log("ONBOTH: " + onBoth);
+					abortOffers();
 
-			if (onBoth != null) {
-				if (sell.getAmount() - onBoth.getAmount() > 0) {
-					sell.setAmount(sell.getAmount() - onBoth.getAmount());
-					getApi().log("on both lists detected, set to: " + sell.getAmount() + " on " + sell.getName());
-				} else if (sell.getAmount() - onBoth.getAmount() == 0) {
-					sell.setCompletedTask(true);
-					onBoth.setCompletedTask(true);
-					getApi().log("completed! " + onBoth.getName() + " " + sell.getName());
-				} else if (sell.getAmount() - onBoth.getAmount() < 0) {
-					sell.setCompletedTask(true);
-					onBoth.setAmount(onBoth.getAmount() + (onBoth.getAmount() - sell.getAmount()));
-					getApi().log("modified " + onBoth.getAmount() + " " + onBoth.getName());
+					boolean notEnoughCoinsToBuyItem = ((getApi().getInventory().getAmount("Coins")
+							+ openBankDepositItemsAndTakeItems(false)) < (higheredSellPriceBy10Percent));
+
+					Sleep.sleepUntil(() -> !notEnoughCoinsToBuyItem, 10000);
+
+					if ((!getQuest().isQuest()) && (notEnoughCoinsToBuyItem)) {
+						buy.setCompletedTask(true);
+						getApi().log("Doesn't have enough coins to buy the item, setting the item " + buy.getName()
+								+ " to " + buy.isCompletedTask() + " for now!");
+						finish = true;
+					} else if ((getQuest().isQuest()) && (notEnoughCoinsToBuyItem)) {
+						buy.setPrice((int) (getApi().getInventory().getAmount("Coins") / buy.getAmount()));
+						getApi().log("Didn't have this amount of cash, setting to: " + buy.getPrice());
+
+						if (buyTries > 2 && getQuest() != null && getQuest() instanceof DoricsQuestConfig) {
+							String scriptName = getLogin() != null && getLogin().getScript() != null
+									? getLogin().getScript()
+									: null;
+
+							getApi().log("Restarting application with script name: " + scriptName);
+							getQuest().resetStage(scriptName);
+							BotCommands.waitBeforeKill(getApi(), "ABC");
+						}
+					}
+
+					if (buy.isCompletedTask()) {
+						getApi().log("Breaking out of this loop, because buying already finished");
+						break;
+					}
+
+					if (buyTries > 5) {
+						getApi().log("Breaking out of this loop, because couldn't buy");
+						break;
+					}
+					buyTries++;
 				}
+
 			}
 
-			if (amountInBank < sell.getAmount()) {
-				sell.setAmount(amountInBank);
+			while (hasToCollect()) {
+				collect();
+
+				Thread.sleep(1500);
+				getApi().log("Trying to collect items...");
 			}
 
-			if (sell.isWithdrawNoted()) {
-				getApi().getBank().enableMode(BankMode.WITHDRAW_NOTE);
-				Sleep.sleepUntil(() -> getApi().getBank().getWithdrawMode().equals(BankMode.WITHDRAW_NOTE), 10000);
-			} else if (!sell.isWithdrawNoted() && getApi().getBank().getWithdrawMode().equals(BankMode.WITHDRAW_NOTE)) {
-				getApi().getBank().enableMode(BankMode.WITHDRAW_ITEM);
-				Sleep.sleepUntil(() -> getApi().getBank().getWithdrawMode().equals(BankMode.WITHDRAW_ITEM), 10000);
-			}
-			if (getApi().getBank().withdraw(sell.getName(), sell.getAmount())) {
-				// withdrawn[0] = true;
-			}
+			getApi().log("Succesfully bought item: " + buy.getName() + " amount: " + buy.getAmount());
 		}
 
-		if (getItemsToBuy().size() == 0) {
-			// withdrawn[1] = true;
-		}
-
+		return allItemsBought();
 	}
 
 	/**
+	 * Selling the items that were queued
 	 * 
-	 * @param box
+	 * @return
+	 * @throws InterruptedException
+	 */
+	private boolean sellTaskedItems() throws InterruptedException {
+
+		for (BankItem sell : itemsToSell) {
+			getApi().log("SELL ITEM: " + sell.getName() + " COMPLETED" + sell.isCompletedTask());
+			if (sell.isCompletedTask()) {
+				continue;
+			}
+
+			int sellTries = 0;
+			boolean finish = false;
+
+			getApi().log("Selling the item: " + sell.getName());
+			while (!finish) {
+				openGrandExchange();
+
+				getApi().log("Going to checkout if selling");
+
+				finish = new ConditionalSleep(3000, 500) {
+					@Override
+					public boolean condition() throws InterruptedException {
+						return ge.createSellOffer(sell.getItemId(), sell.getName(), sell.getPrice(), sell.getAmount(),
+								true, true, true);
+					}
+				}.sleep();
+
+				if (finish) {
+					sell.setCompletedTask(true);
+					getApi().log("Selling successful of item: " + sell.getName() + " amount: " + sell.getAmount());
+				} else {
+					getApi().log("No success!");
+
+					int loweredSellPriceBy10Percent = (int) (((sell.getPrice() * sell.getAmount()) * 0.9));
+
+					if (sellTries > 0) {
+						sell.setPrice(loweredSellPriceBy10Percent / sell.getAmount());
+						getApi().log("Didn't finish while selling (price not correct?), setting to price to: "
+								+ sell.getPrice() + " of " + sell.getName());
+					}
+
+					abortOffers();
+
+					Sleep.sleepUntil(() -> getApi().getInventory().getAmount(sell.getName()) > 0, 7500);
+					if (getApi().getInventory().getAmount(sell.getName()) <= 0) {
+						openBankDepositItemsAndTakeItems(false);
+					}
+
+					if (sell.isCompletedTask()) {
+						getApi().log("Breaking out of this loop, because selling already finished");
+						break;
+					}
+
+					if (sellTries > 5) {
+						getApi().log("Breaking out of this loop, because couldn't sell");
+						break;
+					}
+					sellTries++;
+				}
+			}
+
+			while (hasToCollect()) {
+				collect();
+				Thread.sleep(1500);
+				getApi().log("Trying to collect items...");
+			}
+
+			getApi().log("Succesfully sold item: " + sell.getName() + " amount: " + sell.getAmount());
+		}
+
+		return allItemsSold();
+	}
+
+	/**
+	 * Collects the items in the g.e.
+	 */
+	private void collect() {
+		// Collecting the item
+		RS2Widget coll = getApi().getWidgets().get(465, 6, 1);
+		Sleep.sleepUntil(() -> coll != null, 10000);
+
+		if (coll != null) {
+			coll.interact();
+		}
+	}
+
+	/**
+	 * Are there any offers to collect? TODO: not only for 1st slot
+	 * 
 	 * @return
 	 */
-	private int getUsedBox(Box box) {
-		int number = 0;
-		if (box == Box.BOX_1) {
-			number = 7;
-		} else if (box == Box.BOX_2) {
-			number = 8;
-		} else if (box == Box.BOX_3) {
-			number = 9;
+	private boolean hasToCollect() {
+		RS2Widget coll = getApi().getWidgets().get(465, 6, 1);
+
+		if (coll != null && coll.isVisible()) {
+			return true;
 		}
-		return number;
+		return false;
 	}
 
-	private void abortOffer(int number) {
-		RS2Widget widget = getApi().getWidgets().get(465, number, 2);
-		Sleep.sleepUntil(() -> getApi().getWidgets().containingActions(465, "Abort offer").size() > 0, 10000);
-
-		if (widget != null) {
-			widget.interact("Abort offer");
-
-			// Collecting the item
-			collectToInventory();
-		}
-	}
-
-	private boolean containgItemsToSellInInventory() {
-		for (BankItem containg : getItemsToSell()) {
-			if (!getApi().getInventory().contains(containg.getName()) && !containg.isCompletedTask()) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	private boolean containgItemsToBuyInInventory() {
-		for (BankItem containg : getItemsToSell()) {
-			if (!getApi().getInventory().contains(995) && !containg.isCompletedTask()) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	private static final ArrayList<Position> GE_PATH = new ArrayList<Position>(
-			Arrays.asList(new Position(3183, 3436, 0), new Position(3183, 3446, 0), new Position(3183, 3451, 0),
-					new Position(3174, 3456, 0), new Position(3165, 3461, 0), new Position(3165, 3461, 0),
-					new Position(3165, 3471, 0), new Position(3165, 3481, 0), new Position(3164, 3486, 0)));
-
-	private int normalTries;
-
-	private int buyTries;
-
-	private int sellTries;
-
+	/**
+	 * If an offer is open, then return true
+	 * 
+	 * @return
+	 */
 	private boolean toAbortOffers() {
 		return !getApi().getWidgets().containingActions(465, "Abort offer").isEmpty();
 	}
 
-	private void abortOffers() throws InterruptedException {
+	/**
+	 * Aborting all current open offers
+	 * 
+	 * @throws InterruptedException
+	 */
+	private void abortOffers() {
 		if (toAbortOffers()) {
 			ArrayList<RS2Widget> toAbort = (ArrayList<RS2Widget>) getApi().getWidgets().containingActions(465,
 					"Abort offer");
@@ -375,360 +436,350 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 					}
 				}.sleep();
 			}
-			MethodProvider.sleep(MethodProvider.random(800, 1200));
-			getApi().getGrandExchange().collect();
+
+			Sleep.sleepUntil(() -> getApi().getGrandExchange().collect(), 10000);
 		}
 	}
 
-	private int withdrawTries = 0;
-
-	@Override
-	public void loop() throws InterruptedException {
-		if (!ranOnStart()) {
-			onStart();
+	/**
+	 * Openeing the grand exhcnage
+	 * 
+	 * @return
+	 * @throws InterruptedException
+	 */
+	private boolean openGrandExchange() {
+		if (getApi().getGrandExchange().isOpen()) {
+			return true;
 		}
 
-		if (getApi() != null && getApi().getClient() != null && getApi().getClient().isLoggedIn() && login != null
-				&& login.hasFinished()) {
-			MandatoryEventsExecution ev = new MandatoryEventsExecution(getApi(), login);
-			ev.fixedMode();
-			ev.fixedMode2();
-			// ev.executeAllEvents();
+		boolean open = false;
+
+		while (!open) {
+			Sleep.sleepUntil(() -> ge.openGe(), 5000);
+
+			open = getApi().getGrandExchange().isOpen();
 		}
 
-		GE ge = new GE(getScript());
+		return open;
+	}
 
-		normalTries++;
+	// /**
+	// * When the item contains both in the sell and buy list, substract sell from
+	// buy
+	// */
+	// private void inSellAndBuyTask() {
+	// for (BankItem sell : itemsToSell) {
+	// for (BankItem buy : itemsToBuy) {
+	//
+	// if (!sell.isCompletedTask() && !buy.isCompletedTask()
+	// && sell.getName().equalsIgnoreCase(buy.getName())) {
+	// int newSellAmount = sell.getAmount() - buy.getAmount();
+	// sell.setAmount(newSellAmount > 0 ? newSellAmount : 0);
+	//
+	// if (newSellAmount >= 0) {
+	// buy.setCompletedTask(true);
+	// }
+	// if (newSellAmount <= 0) {
+	// sell.setCompletedTask(true);
+	// buy.setCompletedTask(true);
+	// }
+	//
+	// getApi().log("Set sell to: " + sell.isCompletedTask() + " " +
+	// sell.getAmount()
+	// + " because contained in both lists");
+	//
+	// }
+	// }
+	// }
+	// }
 
-		// If the player is not in the grand exchange area, then walk to it
-		if (getApi().myPlayer() != null
-				&& !new Area(new int[][] { { 3144, 3508 }, { 3144, 3471 }, { 3183, 3470 }, { 3182, 3509 } })
-						.contains(getApi().myPlayer())) {
+	private GEPrice price = new GEPrice();
 
-			// Contains in banking area varrock
-			if (new Area(new int[][] { { 3180, 3438 }, { 3180, 3433 }, { 3186, 3433 }, { 3186, 3438 } })
-					.contains(getApi().myPlayer())) {
-				getApi().getWalking().walkPath(GE_PATH);
-			} else {
-				getApi().getWalking().webWalk(
-						new Area(new int[][] { { 3160, 3494 }, { 3168, 3494 }, { 3168, 3485 }, { 3160, 3485 } }));
-				getApi().log("The player has a grand exchange task but isn't there, walking to there");
-			}
-		}
-
-		// First collect everything to the inventory is there's a collect option
-		collectToInventory();
-
-		// If the inventory is full, deposit everything first
-		// if (getApi().getInventory().isFull()) {
-		if (!getApi().getBank().isOpen()) {
-
-			// Deposting all the items first
-			depositItems();
-
-			// Withdrawing all items
-			withdrawAllItemsNeeded();
-		}
-
-		if (getItemsToSell().size() != 0 && !containgItemsToSellInInventory()) {
-			if (!getApi().getBank().isOpen()) {
-
-				// Deposting all the items first
-				depositItems();
-
-				// Withdrawing all items
-				withdrawAllItemsNeeded();
-			}
-		}
-
-		// Sell the items, if the items can't be sold, then it takes the item from the
-		// bank to sell as an extra bankup
-		for (BankItem sell : getItemsToSell()) {
-			// Has already sold everything
-			if (sell.isCompletedTask()) {
+	private int takeItemsToBuyAndSell(boolean editPriceWhenTooMuchDifference) {
+		for (BankItem sell : itemsToSell) {
+			if (sell.isCompletedTask() || (getApi().getBank().getAmount(sell.getItemId()) <= 0
+					&& getApi().getInventory().getAmount(sell.getItemId()) <= 0)) {
+				getApi().log("Skipped to sell this items, didnt have this item in the bank " + sell.getName());
+				sell.setCompletedTask(true);
 				continue;
 			}
 
-			getApi().log("Trying to sell item: " + sell.getName() + " " + sell.getItemId() + " " + sell.getAmount());
+			int gePrice = 0;
+			try {
+				gePrice = price.getSellingPrice(sell.getItemId());
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			int setPriceThroughTask = sell.getPrice();
 
-			// Open the G.E.
-			openGrandExchange();
+			double difference = ((gePrice - setPriceThroughTask) / setPriceThroughTask) * 100;
+			// When the buying price is difference too big, set to normal TODO add back
+			if ((difference > 50 || difference <= 0) && (editPriceWhenTooMuchDifference)) {
+				getApi().log(
+						"There's too much difference between the set price and the selling price, set to selling price from g.e.");
 
-			boolean finished = false;
-
-			// Loop, waiting for the task to get finished
-			while (!finished) {
-
-				if (sellTries > 5) {
-
-					// If the selling tries if bigger than 10 and the inventory doesn't contain the
-					// item anymore, then setting it to true
-					if (!getApi().getInventory().contains(sell.getName())) {
-						sell.setCompletedTask(true);
-					}
-					break;
-				}
-
-				// Opening the g.e. if it wasn't open already
-				if (!getApi().getGrandExchange().isOpen()) {
-					ge.openGe();
-					abortOffers();
-				}
-
-				// New conditional sleep for selling items
-				finished = new ConditionalSleep(3000, 500) {
-					@Override
-					public boolean condition() throws InterruptedException {
-						return ge.createSellOffer(sell.getItemId(), sell.getName(), sell.getPrice(), sell.getAmount(),
-								true, true, true);
-					}
-				}.sleep();
-
-				if (!finished) {
-					// Waiting 5 seconds to set the price lower when not finished
-					Thread.sleep(5000);
-
-					// If it didn't sell, then setting to price of the item lower
-					if (sellTries > 1) {
-						int sellPrice = (sell.getPrice() - (sell.getPrice() * sell.getAmount() / 100)) > 1
-								? (sell.getPrice() - (sell.getPrice() * sell.getAmount() / 100))
-								: 1;
-
-						getApi().log(sell.getName() + " set sell price to: " + sellPrice);
-					}
-
-				} else {
-					// Task has completed, setting the item to true
-					sell.setCompletedTask(true);
-				}
-
-				while (hasToCollect()) {
-					collect();
-
-					getApi().log("Waiting for all items to collect");
-					Thread.sleep(2500);
-				}
-
-				sellTries++;
-
+				// So there's more chacne at selling instantly
+				int newPrice = (int) (gePrice * 0.9);
+				sell.setPrice(newPrice);
+				getApi().log("Set item name: " + sell.getName() + " to selling price: " + newPrice);
 			}
 
+			// If player doesn't have enough, then lower it to the amount the player has
+			int itemsOfThisInBank = (int) getApi().getBank().getAmount(sell.getName());
+
+			if (itemsOfThisInBank < sell.getAmount()) {
+				sell.setAmount(itemsOfThisInBank);
+				getApi().log("Set to: " + itemsOfThisInBank + " of item: " + sell.getName()
+						+ " because didnt have this amount");
+			}
+
+			// When the item contains both in the sell and buy list, substract sell from buy
+			// inSellAndBuyTask();
+
+			// Setting to noted or not depending on the items
+			getApi().log("amount 12: " + (getApi().getInventory().getAmount(sell.getName() + " " + sell.getAmount())));
+
+			boolean withdrawnSuccess = false;
+			while (!withdrawnSuccess) {
+
+				if (sell.isWithdrawNoted()) {
+					getApi().getBank().enableMode(BankMode.WITHDRAW_NOTE);
+					Sleep.sleepUntil(() -> getApi().getBank().getWithdrawMode().equals(BankMode.WITHDRAW_NOTE), 2000);
+				} else if (!sell.isWithdrawNoted()
+						&& getApi().getBank().getWithdrawMode().equals(BankMode.WITHDRAW_NOTE)) {
+					getApi().getBank().enableMode(BankMode.WITHDRAW_ITEM);
+					Sleep.sleepUntil(() -> getApi().getBank().getWithdrawMode().equals(BankMode.WITHDRAW_ITEM), 2000);
+				}
+
+				Sleep.sleepUntil(() -> getApi().getBank().withdraw(sell.getName(), sell.getAmount()), 5000);
+
+				withdrawnSuccess = getApi().getInventory().getAmount(sell.getName()) >= sell.getAmount();
+			}
+
+			getApi().log("Withdrawn item: " + (sell.getName()) + " items successfully!");
 		}
 
-		// Just some cooldown
-		Thread.sleep(2500);
-
-		for (BankItem buy : getItemsToBuy()) {
-
-			// Has already bought everything
+		for (BankItem buy : itemsToBuy) {
 			if (buy.isCompletedTask()) {
 				continue;
 			}
 
-			// Open G.E. interface
-			openGrandExchange();
-
-			boolean finished = false;
-
-			while (!finished) {
-
-				// int coinsInInventory = (int) getApi().getInventory().getAmount(995);
-				// int coinsInBank = (int) getApi().getBank().getAmount(995);
-				//
-				// int ironInInventory = (int) getApi().getInventory().getAmount("Iron ore");
-				// int ironInBank = (int) getApi().getBank().getAmount("Iron ore");
-				// int clayInInventory = (int) getApi().getInventory().getAmount("Clay");
-				// int clayInBank = (int) getApi().getBank().getAmount("Clay");
-				// int totalAccountValue = (coinsInBank + coinsInInventory)
-				// + ((ironInInventory + ironInBank + clayInInventory + clayInBank) * 90);
-
-				// Checking if account has enough money to begin with
-				// if (totalAccountValue < (buy.getAmount() * buy.getPrice())) {
-				// getApi().log("not enough coins, closing g.e. and opening bank!");
-				// ge.closeGE();
-				//
-				// Sleep.sleepUntil(() -> !getApi().getGrandExchange().isOpen(), 5000);
-				//
-				// // Trying with withdrawing all items to sell to get money
-				// withdrawAllItemsNeeded();
-				//
-				// // Waiting till the bank is not open anymore
-				// Sleep.sleepUntil(() -> !getApi().getBank().isOpen(), 5000);
-				//
-				// // If the total value is less than it can buy a bronze pickaxe (for it to
-				// // continue for now, not OO, TODO: dynamically instead of hard coded)
-				// if (totalAccountValue < Pickaxe.BRONZE.getPrice() &&
-				// getApi().getBank().isOpen() && buyTries > 15) {
-				// DatabaseUtilities.updateStageProgress(getApi(),
-				// AccountStage.OUT_OF_MONEY.name(), 0,
-				// login.getUsername(), login);
-				// getApi().log("Not enough money.. closing for next stage");
-				// BotCommands.waitBeforeKill(getApi(), "BECAUSE OF NOT HAVING ENOUGH MONEY
-				// R01");
-				// }
-				//
-				// // Sleeping for 2500 msec
-				// Thread.sleep(2500);
-				//
-				// getApi().log("current tries of buying without enough money: " + buyTries);
-				// }
-
-				// Opening the g.e. if it wasn't open already
-				if (!getApi().getGrandExchange().isOpen()) {
-					ge.openGe();
-					abortOffers();
-				}
-
-				// Executing the task to buy an offer
-				finished = new ConditionalSleep(3000, 500) {
-					@Override
-					public boolean condition() throws InterruptedException {
-						return ge.createBuyOffer(buy.getItemId(), buy.getName(), buy.getPrice(), buy.getAmount(), true,
-								true, true);
-					}
-				}.sleep();
-
-				if (!finished) {
-					// If the buy wasn't suscessful, then sleep for 5 secondds
-					Thread.sleep(5000);
-
-					if (!getApi().getInventory().contains(995)
-							|| (getApi().getInventory().getAmount(995) < (buy.getPrice() * buy.getAmount()))) {
-
-						if (getApi().getGrandExchange().isOpen()) {
-							getApi().getGrandExchange().close();
-						}
-						
-						withdrawAllItemsNeeded();
-
-						if (withdrawTries > 5) {
-							DatabaseUtilities.updateStageProgress(getApi(), AccountStage.OUT_OF_MONEY.name(), 0,
-									login.getUsername(), login);
-							getApi().log("Not enough money.. closing for next stage");
-							BotCommands.waitBeforeKill(getApi(), "BECAUSE OF NOT HAVING ENOUGH MONEY R01");
-						}
-						getApi().log("current withdraw tries: " + withdrawTries);
-
-						withdrawTries++;
-					}
-
-					// If couldn't buy more than 0 times, then set the price higher
-					if (buyTries > 1) {
-						buy.setPrice((getApi().getInventory().getAmount(995) >= (buy.getPrice() * buy.getAmount()))
-								? (buy.getPrice() + (buy.getPrice() * buy.getAmount() / 100))
-								: (int) (getApi().getInventory().getAmount(995) / buy.getAmount()));
-
-						getApi().log("set buy price to: " + buy.getPrice());
-					}
-
-				} else {
-					// Successfull
-					buy.setCompletedTask(true);
-					getApi().log("Successfully bought the items!");
-				}
-
-				while (hasToCollect()) {
-					collect();
-
-					getApi().log("Waiting for all items to collect");
-					Thread.sleep(2500);
-				}
-
-				// When the buying tries is bigger than 10, then skip back to the selling
-				if (buyTries > 5) {
-					break;
-				}
-
-				buyTries++;
+			int gePrice = 0;
+			try {
+				gePrice = price.getBuyingPrice(buy.getItemId());
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
 			}
 
+			double difference = ((gePrice - buy.getPrice()) / buy.getPrice()) * 100;
+
+			getApi().log("name: " + buy.getName() + " Got g.e. price: " + gePrice + " perc diff: " + difference
+					+ " set price: " + buy.getPrice());
+
+			// When the buying price is difference too big, set to normal
+			if ((difference > 50 || difference <= 0) && (editPriceWhenTooMuchDifference)) {
+				getApi().log(
+						"There's too much difference between the set price and the buying price, set to buying price from g.e.");
+
+				// So there's more chacne at selling instantly
+				int newPrice = (int) (gePrice * 1.2);
+				buy.setPrice(newPrice);
+				getApi().log("Set item name: " + buy.getName() + " to buying price: " + newPrice);
+			}
+
+			if (getApi().getBank().getAmount(buy.getName()) >= buy.getAmount()) {
+				buy.setCompletedTask(true);
+				ifAlreadyHasThenDontSell(buy);
+				getApi().log("Set to true, because already has this amount of item in bank!");
+				continue;
+			}
+
+			try {
+				openBank();
+			} catch (InterruptedException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
+			int coinsInBank = (int) getApi().getBank().getAmount("Coins");
+			int coinsInInventory = (int) getApi().getInventory().getAmount("Coins");
+			int itemCostTotal = buy.getAmount() * buy.getPrice();
+			int totalCoins = coinsInBank + coinsInInventory;
+			int extraCoinsAfterSelling = 0;
+			try {
+				extraCoinsAfterSelling = getAverageProfitsOfSellingItems();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			int totalCoinsAfterSelling = totalCoins + extraCoinsAfterSelling;
+
+			if ((!getQuest().isQuest()) && (totalCoinsAfterSelling < itemCostTotal)) {
+				getApi().log("Player doesnt have enough coins to buy this item, to prevent getting stuck, setting "
+						+ buy.getName() + " to completed so it can gather more!");
+				getApi().log("totalCoinsAfterSelling: " + totalCoinsAfterSelling + " itemCostTotal: " + itemCostTotal);
+				buy.setCompletedTask(true);
+				continue;
+			}
 		}
 
-		// Just some cooldown
-		Thread.sleep(2500);
+		// Withdrawing all the money
+		int coinsToWithdraw = 0;
 
-		// Collect to inventory
-		collectToInventory();
+		for (BankItem buy : itemsToBuy) {
+			if (buy.isCompletedTask()) {
+				continue;
+			}
 
-		// Deposit all items
-		depositItems();
-
-		// Close the bank
-		getApi().getBank().close();
-
-		for (BankItem sell : getItemsToBuy()) {
-			getApi().log("sell : " + sell.getName() + " " + sell.isCompletedTask());
+			coinsToWithdraw += (buy.getAmount() * buy.getPrice());
+			getApi().log("increased with: " + (buy.getAmount() * buy.getPrice() + " for item: " + buy.getName()));
 		}
+		getApi().log("Total coins to withdraw: " + coinsToWithdraw + " should have because now");
 
-		for (BankItem sell : getItemsToBuy()) {
-			getApi().log("buy : " + sell.getName() + " " + sell.isCompletedTask());
+		boolean enoughCoinsInInventory = false;
+		while (!enoughCoinsInInventory) {
+
+			// Open bank
+			try {
+				openBank();
+			} catch (InterruptedException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
+			// Not enough in the bank
+			int coinsInBank = (int) getApi().getBank().getAmount("Coins");
+			if (coinsToWithdraw > coinsInBank) {
+				coinsToWithdraw = coinsInBank;
+			}
+
+			// Withdraw
+			getApi().getBank().withdraw("Coins", coinsToWithdraw);
+			getApi().log("Waiting for coins to withdraw..");
+
+			boolean gotInInventory = getApi().getInventory().getAmount("Coins") >= coinsToWithdraw;
+
+			// Waiting on having it in the inventory
+			Sleep.sleepUntil(() -> gotInInventory, 5000);
+
+			// So has enough coins now?
+			enoughCoinsInInventory = gotInInventory;
 		}
-
+		return (int) getApi().getBank().getAmount("Coins");
 	}
 
-	public void openGrandExchange() {
-		// Is it open?
-		if (!getApi().getGrandExchange().isOpen()) {
-			NPC npc = getApi().getNpcs().closest(n -> n.getName().equalsIgnoreCase("Grand Exchange Clerk"));
-			if (npc != null) {
-				npc.interact("Exchange");
+	/**
+	 * 
+	 * @param buy
+	 */
+	private void ifAlreadyHasThenDontSell(BankItem buy) {
+		for (BankItem sell : itemsToSell) {
+			if (!sell.isCompletedTask() && !buy.isCompletedTask()
+					&& (buy.getName().equalsIgnoreCase(sell.getName()) || buy.getItemId() == sell.getItemId())) {
+				int decreaseFromSelling = sell.getAmount() - buy.getAmount() >= 0 ? sell.getAmount() - buy.getAmount()
+						: 0;
+				boolean alsoFinishedSelling = (decreaseFromSelling == 0);
+
+				if (alsoFinishedSelling) {
+					sell.setCompletedTask(true);
+				}
+
+				sell.setAmount(decreaseFromSelling);
 			}
-			Sleep.sleepUntil(() -> getApi().getGrandExchange().isOpen(), 10000);
+		}
+	}
+
+	/**
+	 * The total of the average when selling the items for profit
+	 * 
+	 * @return
+	 * @throws IOException
+	 */
+	private int getAverageProfitsOfSellingItems() throws IOException {
+		int totalPrice = 0;
+		for (BankItem sell : itemsToSell) {
+			if (sell.isCompletedTask()) {
+				continue;
+			}
+
+			int gePrice = price.getSellingPrice(sell.getItemId());
+			totalPrice += gePrice;
+		}
+		return totalPrice;
+	}
+
+	private boolean closeBank() throws InterruptedException {
+		if (!getApi().getBank().isOpen()) {
+			return true;
 		}
 
+		boolean finish = false;
+
+		while (!finish) {
+			getApi().getBank().close();
+			Thread.sleep(1500);
+
+			finish = !getApi().getBank().isOpen();
+		}
+
+		return finish;
 	}
 
 	/**
 	 * 
 	 * @return
+	 * @throws InterruptedException
 	 */
-	private Box getBox() {
-		Box finalBox = null;
-		Box[] box = { Box.BOX_1, Box.BOX_2, Box.BOX_3 };
+	private boolean depositItems() throws InterruptedException {
 
-		for (int i = 0; i < 3; i++) {
-			if (getApi().getGrandExchange().buyItems(box[i])
-					&& getApi().getGrandExchange().getStatus(box[i]) == GrandExchange.Status.EMPTY) {
-				finalBox = box[i];
-				break;
-			}
+		// Opens the bank
+		openBank();
+
+		if (getApi().getInventory().isEmpty()) {
+			return true;
 		}
-		return finalBox;
+
+		boolean finish = false;
+
+		while (!finish) {
+			Sleep.sleepUntil(() -> getApi().getBank().depositAll(), 5000);
+			finish = getApi().getInventory().isEmpty();
+		}
+
+		return finish;
 	}
 
 	/**
-	 * Are all the items sold?
+	 * Opens the bank for the G.E.
 	 * 
 	 * @return
+	 * @throws InterruptedException
 	 */
-	private boolean allSold() {
-		boolean done = true;
-		for (BankItem sell : getItemsToSell()) {
-			if (!sell.isCompletedTask()) {
-				done = false;
-			}
+	private boolean openBank() throws InterruptedException {
+		if (getApi().getBank().isOpen()) {
+			return true;
 		}
-		return done;
-	}
+		boolean finish = false;
 
-	private boolean allBought() {
-		boolean done = true;
-		for (BankItem sell : getItemsToBuy()) {
-			if (!sell.isCompletedTask()) {
-				done = false;
-			}
+		while (!finish) {
+			getApi().getBank().open();
+
+			Thread.sleep(1500);
+			finish = getApi().getBank().isOpen();
 		}
-		return done;
+
+		return finish;
 	}
 
 	@Override
 	public boolean finished() {
-		// getApi().log(allSold()+" "+allBought()+"
-		// "+!getApi().getGrandExchange().isOpen());
-		// getApi().log(allSold() && allBought() &&
-		// !getApi().getGrandExchange().isOpen());
-		return (allSold() && allBought()) || (normalTries > 10 && !getQuest().isQuest())
-				|| (getItemsToBuy().size() == 0 && getItemsToSell().size() == 0);
+		// boolean finishedBecauseEmptyLists = getItemsToBuy().size() == 0 ||
+		// getItemsToSell().size() == 0;
+		boolean finishedBecauseAllSoldAndAllBought = allItemsBought() && allItemsSold();
+
+		return finishedBecauseAllSoldAndAllBought || tries > 3;
 	}
 
 	@Override

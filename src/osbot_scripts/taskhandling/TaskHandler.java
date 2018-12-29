@@ -1,25 +1,30 @@
 package osbot_scripts.taskhandling;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map.Entry;
-import java.util.Set;
 
+import org.osbot.rs07.api.Chatbox;
 import org.osbot.rs07.api.map.Area;
-import org.osbot.rs07.api.map.Position;
-import org.osbot.rs07.event.WalkingEvent;
+import org.osbot.rs07.api.model.GroundItem;
+import org.osbot.rs07.api.ui.Spells;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 
 import osbot_scripts.bot.utils.BotCommands;
 import osbot_scripts.bot.utils.Coordinates;
 import osbot_scripts.bot.utils.RandomUtil;
+import osbot_scripts.config.Config;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.events.MandatoryEventsExecution;
 import osbot_scripts.framework.AccountStage;
-import osbot_scripts.hopping.WorldHop;
+import osbot_scripts.qp7.progress.DoricsQuestConfig;
+import osbot_scripts.qp7.progress.IronMinerConfiguration;
+import osbot_scripts.qp7.progress.MiningLevelTo15Configuration;
 import osbot_scripts.qp7.progress.QuestStep;
 import osbot_scripts.task.Task;
+import osbot_scripts.util.Sleep;
 
 public class TaskHandler {
 
@@ -32,6 +37,8 @@ public class TaskHandler {
 	}
 
 	private HashMap<Integer, Task> tasks = new HashMap<Integer, Task>();
+
+	private int taskAttempts = 0;
 
 	private Task currentTask;
 
@@ -57,7 +64,21 @@ public class TaskHandler {
 	private static final Area LUMBRIDGE_AREA_START = new Area(
 			new int[][] { { 3212, 3246 }, { 3273, 3246 }, { 3272, 3190 }, { 3212, 3190 } });
 
-	public void taskLoop() throws InterruptedException {
+	public boolean isClickObjectTask() {
+		return getCurrentTask() != null
+				&& getCurrentTask().getClass().getSimpleName().equalsIgnoreCase("ClickObjectTask");
+	}
+
+	public boolean isBankTask() {
+		return getCurrentTask() != null && getCurrentTask().getClass().getSimpleName().equalsIgnoreCase("BankTask");
+	}
+
+	public boolean isGeTask() {
+		return getCurrentTask() != null
+				&& getCurrentTask().getClass().getSimpleName().equalsIgnoreCase("GrandExchangeTask");
+	}
+
+	public void taskLoop() throws InterruptedException, IOException {
 
 		if (!getQuest().isLoggedIn() && getQuest().getEvent() != null && getQuest() != null
 				&& getQuest().getEvent() != null && getQuest().getEvent().hasFinished()) {
@@ -111,14 +132,15 @@ public class TaskHandler {
 		// Looping over all the tasks
 		for (Entry<Integer, Task> entry : copyTasks.entrySet()) {
 
-			int taskAttempts = 0;
+			taskAttempts = 0;
 			int questStepRequired = entry.getKey();
 			Task task = entry.getValue();
 
 			// Finding new task out of the database (the number) when starting
 			if (getCurrentTask() == null
 					&& (questStepRequired == getQuest().getQuestStageStep() || (currentTask - lastTask) > 30_000)
-					&& (task.requiredConfigQuestStep() == getQuest().getQuestProgress() || !getQuest().isQuest())) {
+					&& (task.requiredConfigQuestStep() == (getQuest().getQuestProgress() < 0 ? 0
+							: getQuest().getQuestProgress()) || !getQuest().isQuest())) {
 				setCurrentTask(task);
 				getProvider().log("On next task new: " + task.scriptName() + " " + task.requiredConfigQuestStep() + " "
 						+ getQuest().getQuestProgress() + " " + getQuest().getQuestStageStep() + " "
@@ -144,7 +166,8 @@ public class TaskHandler {
 				break;
 			}
 
-			if ((task.requiredConfigQuestStep() == getQuest().getQuestProgress() || !getQuest().isQuest())
+			if ((task.requiredConfigQuestStep() == (getQuest().getQuestProgress() < 0 ? 0
+					: getQuest().getQuestProgress()) || !getQuest().isQuest())
 					&& (questStepRequired == getQuest().getQuestStageStep()
 							|| questStepRequired == getQuest().getQuestStageStep() - 1
 							|| (currentTask - lastTask) > 30_000)) {
@@ -160,10 +183,24 @@ public class TaskHandler {
 
 				// Waiting on task to get finished
 				while (!getCurrentTask().finished()) {
+
 					// If null current task, then continue
 					if (getCurrentTask() == null) {
 						getProvider().log("System couldnt find a next action, breaking out");
 						break;
+					}
+
+					// May kill the task if it didn't finish already
+					if (getQuest().isKillTask()) {
+						getProvider().log("Killing the task: " + getQuest().isKillTask());
+						getQuest().setKillTask(false);
+						break;
+					}
+
+					// Looping on the script while a task is not finish for a script specifically
+					// written
+					if (getQuest().getScriptAbstract() != null) {
+						getQuest().getScriptAbstract().loop();
 					}
 
 					// If the person is not logged in anymore, but the client is still open, then
@@ -184,36 +221,35 @@ public class TaskHandler {
 						getCurrentTask().loop();
 					}
 
+					// Looping on the script while a task is not finish for a script specifically
+					// written
+					if (getQuest().getScriptAbstract() != null) {
+						getQuest().getScriptAbstract().loop();
+					}
+
 					// Sometimes the script can't perform the task correctly and will get stuck
 					// performing the task over and over again without completing it
 					taskAttempts++;
 
 					// When is about to task out, try to move the camera every 10th appempt to try
 					// to fix itself
-					if (taskAttempts >= 50 && taskAttempts % 10 == 0 && getQuest().isQuest()) {
+					if (taskAttempts >= 50 && taskAttempts % 10 == 0 && getQuest().isQuest() && taskAttempts < 100) {
 						getProvider().getCamera().movePitch(RandomUtil.getRandomNumberInRange(0, 60));
 						getProvider().getCamera().moveYaw(RandomUtil.getRandomNumberInRange(0, 360));
 						getProvider().log("Moving camera due to tasking out");
 					}
 
-					int timeOut = 0;
-					if (getCurrentTask().getClass().getSimpleName().equalsIgnoreCase("ClickObjectTask")) {
-						timeOut = 100;
-					} else if (getCurrentTask().getClass().getSimpleName().equalsIgnoreCase("BankTask")) {
-						timeOut = 10;
-					} else if (getCurrentTask().getClass().getSimpleName().equalsIgnoreCase("GrandExchangeTask")) {
-						timeOut = 100;
-					} else {
-						timeOut = 75;
+					/**
+					 * Timeout handling for script abstract, for example mining
+					 */
+					if (getQuest().getScriptAbstract() != null) {
+						getQuest().getScriptAbstract().taskOutTaskAttempts(this);
 					}
 
-//					getProvider().log("Timeout number set to: " + timeOut);
-					if (taskAttempts > timeOut && getQuest().isQuest()) {
-						DatabaseUtilities.updateAccountStatusInDatabase(getProvider(), "TASK_TIMEOUT",
-								getEvent().getUsername(), getEvent());
-
-						BotCommands.waitBeforeKill(getProvider(), "BECAUSE TASK TIMEOUT ON ATTEMPTS E01");
-					}
+					/**
+					 * Timeout handling for quests specific
+					 */
+					getQuest().timeOutHandling(this);
 
 					// If null current task, then continue
 					if (getCurrentTask() == null) {
@@ -255,14 +291,18 @@ public class TaskHandler {
 
 				// Step increased with 1 in database
 				getQuest().setQuestStageStep(questStepRequired + 1);
+
 			}
 		}
 
 		// When all the tasks are complete, start with a new one with fresh variables
 		if (!getQuest().isQuest()
-				&& getQuest().getQuestStageStep() >= (getQuest().getTaskHandler().getTasks().size() - 1)) {
+				&& getQuest().getQuestStageStep() >= (getQuest().getTaskHandler().getTasks().size() - 1)
+				&& (getCurrentTask() != null
+						&& !getCurrentTask().getClass().getSimpleName().equalsIgnoreCase("GrandExchangeTask"))) {
 			// getQuest().resetStage(null);
-			getQuest().resetStage(getEvent().getScript());
+			getQuest()
+					.resetStage((getEvent() != null && getEvent().getScript() != null) ? getEvent().getScript() : null);
 			getProvider().log("[TASKHANDLER] Clearing & restarting all tasks 3");
 		}
 	}
@@ -356,6 +396,14 @@ public class TaskHandler {
 	 */
 	public void setScript(Script script) {
 		this.script = script;
+	}
+
+	public int getTaskAttempts() {
+		return taskAttempts;
+	}
+
+	public void setTaskAttempts(int taskAttempts) {
+		this.taskAttempts = taskAttempts;
 	}
 
 }

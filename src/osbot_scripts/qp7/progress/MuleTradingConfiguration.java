@@ -15,6 +15,7 @@ import osbot_scripts.events.LoginEvent;
 import osbot_scripts.events.WidgetActionFilter;
 import osbot_scripts.framework.AccountStage;
 import osbot_scripts.sections.total.progress.MainState;
+import osbot_scripts.taskhandling.TaskHandler;
 import osbot_scripts.util.Sleep;
 
 public class MuleTradingConfiguration extends QuestStep {
@@ -55,6 +56,21 @@ public class MuleTradingConfiguration extends QuestStep {
 	@Override
 	public void onLoop() throws InterruptedException {
 
+		if (getEvent().hasFinished() && !isLoggedIn()) {
+			BotCommands.killProcess(this, getScript(), "BECAUSE NOT LOGGED IN 01 MULE TRADING", getEvent());
+		}
+
+		String toTradeWith = DatabaseUtilities.getAccountToTradeWith(this, getEvent().getUsername(), getEvent());
+
+		if (toTradeWith != null) {
+			String otherPlayersStatus = DatabaseUtilities.getAccountStatusByIngameName(this, toTradeWith, getEvent());
+
+			if (otherPlayersStatus != null && otherPlayersStatus.equalsIgnoreCase("SUPER_MULE")) {
+				BotCommands.killProcess(this, getScript(), "BECAUSE ABOUT TO TRADE WITH SUPER MULE", getEvent());
+				getScript().stop();
+			}
+		}
+
 		log("Running the side loop..");
 
 		// If the player is not in the grand exchange area, then walk to it
@@ -69,8 +85,9 @@ public class MuleTradingConfiguration extends QuestStep {
 		if (tradingDone) {
 			if (getEvent().getAccountStage().equalsIgnoreCase("MULE-TRADING")) {
 				// if (update) {
-				DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name().toUpperCase(),
-						0, getEvent().getUsername(), getEvent());
+				DatabaseUtilities.updateStageProgress(this,
+						RandomUtil.gextNextAccountStage(this, getEvent()).name().toUpperCase(), 0,
+						getEvent().getUsername(), getEvent());
 				DatabaseUtilities.updateAccountValue(this, getEvent().getUsername(), 0, getEvent());
 				DatabaseUtilities.updateStageProgress(this, "UNKNOWN", 0, getEvent().getEmailTradeWith(), getEvent());
 				// }
@@ -144,7 +161,7 @@ public class MuleTradingConfiguration extends QuestStep {
 
 		tries++;
 
-		if (tries > (getEvent().getAccountStage().equalsIgnoreCase("MULE-TRADING") ? 160 : 70)) {
+		if (tries > (getEvent().getAccountStage().equalsIgnoreCase("MULE-TRADING") ? 300 : 150)) {
 			tradingDone = true;
 			// update = true;
 			log("Failed to trade it over");
@@ -172,6 +189,14 @@ public class MuleTradingConfiguration extends QuestStep {
 				if (!getBank().isOpen()) {
 					getBank().open();
 					Sleep.sleepUntil(() -> getBank().isOpen(), 5000);
+
+					int totalAccountValue = (int) getBank().getAmount(995);
+
+					log("[ESTIMATED MULE VALUE] account value is: " + totalAccountValue);
+					if (getEvent() != null && getEvent().getUsername() != null && totalAccountValue > 0) {
+						DatabaseUtilities.updateAccountValue(this, getEvent().getUsername(), totalAccountValue,
+								getEvent());
+					}
 				}
 
 				Thread.sleep(5000);
@@ -237,6 +262,22 @@ public class MuleTradingConfiguration extends QuestStep {
 			} else if (getPlayers().closest(getEvent().getTradeWith()) != null && getBank().isOpen()) {
 				log("Player is near and having bank open, closing...");
 				getBank().close();
+			} else if ((getTrade().getLastRequestingPlayer() != null
+					&& getTrade().getLastRequestingPlayer().getName() != null) && !getInventory().contains(995)) {
+				boolean inDatabase = DatabaseUtilities.accountContainsInDatabase(this,
+						getTrade().getLastRequestingPlayer().getName(), getEvent());
+
+				// Only trade when the person trading is actually from the database
+				if (inDatabase) {
+					String name = getTrade().getLastRequestingPlayer().getName();
+
+					trade(name, new HashMap<String, Integer>(), true);
+					log("Accepting trade request... contains in database.. doing actions...");
+
+					getEvent().setTradeWith(name);
+					lastTradedPlayer = name;
+				}
+
 			} else {
 				log("Waiting for the other player to send a request...");
 			}
@@ -268,7 +309,7 @@ public class MuleTradingConfiguration extends QuestStep {
 			// in 5 minutes
 			else if (!getInventory().contains(995) && !tradingDone
 					&& getPlayers().closest(getEvent().getTradeWith()) == null
-					&& (System.currentTimeMillis() - timeout > 250_000)) {
+					&& (System.currentTimeMillis() - timeout > 400_000)) {
 
 				if (!getBank().isOpen()) {
 					getBank().open();
@@ -446,6 +487,12 @@ public class MuleTradingConfiguration extends QuestStep {
 	public MainState getNextMainState() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public void timeOutHandling(TaskHandler tasks) {
+		// TODO Auto-generated method stub
+
 	}
 
 }

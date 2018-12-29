@@ -270,6 +270,65 @@ public class DatabaseUtilities {
 		return -1;
 	}
 
+	public static String getAccountStatusByIngameName(MethodProvider api, String ingameName, LoginEvent login) {
+		// String sql = "SELECT trade_with_other FROM account WHERE email='" + email +
+		// "'";
+		String sql2 = "SELECT status FROM account WHERE name = '" + ingameName + "'";
+		String status = "";
+
+		try {
+			Connection conn = DatabaseConnection.getDatabase().getConnection(api, login);
+			ResultSet results = conn.createStatement().executeQuery(sql2);
+
+			while (results.next()) {
+				try {
+					status = results.getString("status");
+
+					// api.log("trading partner found: " + partner);
+					return status;
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					api.log(exceptionToString(e));
+				}
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			api.log(exceptionToString(e));
+			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E011");
+		}
+		return null;
+	}
+
+	public static boolean accountContainsInDatabase(MethodProvider api, String name, LoginEvent login) {
+		// String sql = "SELECT trade_with_other FROM account WHERE email='" + email +
+		// "'";
+		String sql2 = "SELECT COUNT(*) as found FROM account WHERE name = '" + name + "'";
+		String found = "";
+
+		try {
+			Connection conn = DatabaseConnection.getDatabase().getConnection(api, login);
+			ResultSet results = conn.createStatement().executeQuery(sql2);
+
+			while (results.next()) {
+				try {
+					found = results.getString("found");
+					boolean inDatabase = Integer.parseInt(found) > 0 ? true : false;
+
+					// api.log("trading partner found: " + partner);
+					return inDatabase;
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					api.log(exceptionToString(e));
+				}
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			api.log(exceptionToString(e));
+			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E012");
+		}
+		return false;
+	}
+
 	public static String getAccountStatus(MethodProvider api, String email, LoginEvent login) {
 		// String sql = "SELECT trade_with_other FROM account WHERE email='" + email +
 		// "'";
@@ -325,6 +384,33 @@ public class DatabaseUtilities {
 			// TODO Auto-generated catch block
 			api.log(exceptionToString(e));
 			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E011");
+		}
+		return null;
+	}
+	
+	public static String getScriptConfigValue(MethodProvider api, LoginEvent login) {
+		String sql = "SELECT script FROM config";
+		String progress = "";
+
+		try {
+			Connection conn = DatabaseConnection.getDatabase().getConnection(api, login);
+			ResultSet results = conn.createStatement().executeQuery(sql);
+
+			while (results.next()) {
+				try {
+					progress = results.getString("script");
+
+					api.log("quest steps: " + progress);
+					return progress;
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					api.log(exceptionToString(e));
+				}
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			api.log(exceptionToString(e));
+			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E01");
 		}
 		return null;
 	}

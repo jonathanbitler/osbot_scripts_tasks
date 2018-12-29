@@ -3,23 +3,24 @@ package osbot_scripts.framework.parts;
 public class BankItem {
 
 	private String name;
-	
+
 	private int amount;
-	
+
 	private int itemId;
-	
+
 	private long amountBeforeAction = -1;
-	
+
 	private int sellPrice;
-	
+
 	private boolean completedTask = false;
-	
+
 	private boolean withdrawNoted;
-	
+
 	private boolean inBankToBeSkipped;
-	
+
 	/**
-	 * @param withdrawNoted TODO
+	 * @param withdrawNoted
+	 *            TODO
 	 * 
 	 */
 	public BankItem(String name, int amount, boolean withdrawNoted) {
@@ -27,7 +28,7 @@ public class BankItem {
 		setAmount(amount);
 		setWithdrawNoted(withdrawNoted);
 	}
-	
+
 	public BankItem(String name, int itemId, int amount, int sellPrice, boolean withdrawNoted) {
 		setName(name);
 		setItemId(itemId);
@@ -35,7 +36,6 @@ public class BankItem {
 		setPrice(sellPrice);
 		setWithdrawNoted(withdrawNoted);
 	}
-
 
 	/**
 	 * @return the name
@@ -45,7 +45,8 @@ public class BankItem {
 	}
 
 	/**
-	 * @param name the name to set
+	 * @param name
+	 *            the name to set
 	 */
 	public void setName(String name) {
 		this.name = name;
@@ -59,7 +60,8 @@ public class BankItem {
 	}
 
 	/**
-	 * @param amount the amount to set
+	 * @param amount
+	 *            the amount to set
 	 */
 	public void setAmount(int amount) {
 		this.amount = amount;
@@ -73,7 +75,8 @@ public class BankItem {
 	}
 
 	/**
-	 * @param l the amountBeforeAction to set
+	 * @param l
+	 *            the amountBeforeAction to set
 	 */
 	public void setAmountBeforeAction(long l) {
 		this.amountBeforeAction = l;
@@ -87,7 +90,8 @@ public class BankItem {
 	}
 
 	/**
-	 * @param itemId the itemId to set
+	 * @param itemId
+	 *            the itemId to set
 	 */
 	public void setItemId(int itemId) {
 		this.itemId = itemId;
@@ -101,9 +105,13 @@ public class BankItem {
 	}
 
 	/**
-	 * @param sellPrice the sellPrice to set
+	 * @param sellPrice
+	 *            the sellPrice to set
 	 */
 	public void setPrice(int sellPrice) {
+		if (sellPrice <= 0) {
+			return;
+		}
 		this.sellPrice = sellPrice;
 	}
 
@@ -115,7 +123,8 @@ public class BankItem {
 	}
 
 	/**
-	 * @param completedTask the completedTask to set
+	 * @param completedTask
+	 *            the completedTask to set
 	 */
 	public void setCompletedTask(boolean completedTask) {
 		this.completedTask = completedTask;
@@ -129,7 +138,8 @@ public class BankItem {
 	}
 
 	/**
-	 * @param withdrawNoted the withdrawNoted to set
+	 * @param withdrawNoted
+	 *            the withdrawNoted to set
 	 */
 	public void setWithdrawNoted(boolean withdrawNoted) {
 		this.withdrawNoted = withdrawNoted;
@@ -143,10 +153,11 @@ public class BankItem {
 	}
 
 	/**
-	 * @param inBankToBeSkipped the inBankToBeSkipped to set
+	 * @param inBankToBeSkipped
+	 *            the inBankToBeSkipped to set
 	 */
 	public void setInBankToBeSkipped(boolean inBankToBeSkipped) {
 		this.inBankToBeSkipped = inBankToBeSkipped;
 	}
-	
+
 }

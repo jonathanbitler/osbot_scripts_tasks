@@ -1,10 +1,15 @@
 package osbot_scripts.framework;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import javax.swing.DefaultDesktopManager;
+
 import org.osbot.rs07.api.Bank.BankMode;
 import org.osbot.rs07.api.map.Area;
+import org.osbot.rs07.api.model.NPC;
+import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.MethodProvider;
 
@@ -81,13 +86,30 @@ public class BankTask extends TaskSkeleton implements Task {
 	}
 
 	@Override
-	public void loop() throws InterruptedException {
+	public void loop() throws InterruptedException, IOException {
 		if (!ranOnStart()) {
 			onStart();
 		}
 
 		if (!getArea().contains(getApi().myPlayer())) {
 			getApi().getWalking().webWalk(getArea());
+		}
+
+		if (new Area(new int[][] { { 3144, 3508 }, { 3144, 3471 }, { 3183, 3470 }, { 3182, 3509 } })
+				.contains(getApi().myPlayer())) {
+			NPC npc = getApi().getNpcs().closest("Banker");
+			if (npc != null) {
+				npc.interact("Collect");
+
+				Sleep.sleepUntil(() -> getApi().getWidgets().get(402, 3) != null
+						&& getApi().getWidgets().get(402, 3).isVisible(), 5000);
+				RS2Widget widgetCollect = getApi().getWidgets().get(402, 3);
+
+				if (widgetCollect != null && widgetCollect.isVisible()) {
+					widgetCollect.interact();
+				}
+				Thread.sleep(5000);
+			}
 		}
 
 		if (!getApi().getBank().isOpen()) {
@@ -103,12 +125,21 @@ public class BankTask extends TaskSkeleton implements Task {
 			// Depositing all items to the bank, can't deposit other items, because already
 			// doing all
 			if (isDepositAll()) {
-				if (!getApi().getBank().isOpen()) {
-					getApi().getBank().open();
-					Sleep.sleepUntil(() -> getApi().getBank().isOpen(), 10000);
+				boolean isEmpty = false;
+
+				while (!isEmpty) {
+					isEmpty = getApi().getInventory().isEmpty();
+
+					if (!isEmpty) {
+						if (!getApi().getBank().isOpen()) {
+							getApi().getBank().open();
+							Sleep.sleepUntil(() -> getApi().getBank().isOpen(), 10000);
+						}
+						getApi().getBank().depositAll();
+						Sleep.sleepUntil(() -> getApi().getInventory().isEmpty(), 10000);
+						getApi().log("Depositing!");
+					}
 				}
-				getApi().getBank().depositAll();
-				Sleep.sleepUntil(() -> getApi().getInventory().isEmpty(), 10000);
 			}
 
 			// Withdrawing items
@@ -165,6 +196,36 @@ public class BankTask extends TaskSkeleton implements Task {
 					getApi().log("Changed item to: " + withdraw.getName());
 				}
 
+				// Withdrawing for pickaxes always picking the latets one
+				if (withdraw.getName().equalsIgnoreCase("axe")) {
+					if (getApi().getSkills().getStatic(Skill.WOODCUTTING) >= 1
+							&& getApi().getBank().contains("Bronze axe")) {
+						withdraw.setName("Bronze axe");
+					}
+					if (getApi().getSkills().getStatic(Skill.WOODCUTTING) >= 3
+							&& getApi().getBank().contains("Iron axe")) {
+						withdraw.setName("Iron axe");
+					}
+					if (getApi().getSkills().getStatic(Skill.WOODCUTTING) >= 6
+							&& getApi().getBank().contains("Steel axe")) {
+						withdraw.setName("Steel axe");
+					}
+					if (getApi().getSkills().getStatic(Skill.WOODCUTTING) >= 21
+							&& getApi().getBank().contains("Mithril axe")) {
+						withdraw.setName("Mithril axe");
+					}
+					if (getApi().getSkills().getStatic(Skill.WOODCUTTING) >= 31
+							&& getApi().getBank().contains("Adamant axe")) {
+						withdraw.setName("Adamant axe");
+					}
+					if (getApi().getSkills().getStatic(Skill.WOODCUTTING) >= 41
+							&& getApi().getBank().contains("Rune axe")) {
+						withdraw.setName("Rune axe");
+					}
+
+					getApi().log("Changed item to: " + withdraw.getName());
+				}
+
 				if (!getApi().getBank().isOpen()) {
 					getApi().getBank().open();
 					Sleep.sleepUntil(() -> getApi().getBank().isOpen(), 10000);
@@ -183,13 +244,27 @@ public class BankTask extends TaskSkeleton implements Task {
 
 				// If the item is supposed to be withdrawn noted, then click noted, otherwise
 				// click back to not noted
-				if (withdraw.isWithdrawNoted()) {
-					getApi().getBank().enableMode(BankMode.WITHDRAW_NOTE);
-					Sleep.sleepUntil(() -> getApi().getBank().getWithdrawMode().equals(BankMode.WITHDRAW_NOTE), 10000);
-				} else if (!withdraw.isWithdrawNoted()
-						&& getApi().getBank().getWithdrawMode().equals(BankMode.WITHDRAW_NOTE)) {
-					getApi().getBank().enableMode(BankMode.WITHDRAW_ITEM);
-					Sleep.sleepUntil(() -> getApi().getBank().getWithdrawMode().equals(BankMode.WITHDRAW_ITEM), 10000);
+
+				boolean finish = false;
+
+				while (!finish) {
+
+					if (withdraw.isWithdrawNoted()) {
+						getApi().getBank().enableMode(BankMode.WITHDRAW_NOTE);
+						Sleep.sleepUntil(() -> getApi().getBank().getWithdrawMode().equals(BankMode.WITHDRAW_NOTE),
+								10000);
+						finish = getApi().getBank().getWithdrawMode().equals(BankMode.WITHDRAW_NOTE);
+					} else if (!withdraw.isWithdrawNoted()
+							&& getApi().getBank().getWithdrawMode().equals(BankMode.WITHDRAW_NOTE)) {
+						getApi().getBank().enableMode(BankMode.WITHDRAW_ITEM);
+						Sleep.sleepUntil(() -> getApi().getBank().getWithdrawMode().equals(BankMode.WITHDRAW_ITEM),
+								10000);
+						finish = getApi().getBank().getWithdrawMode().equals(BankMode.WITHDRAW_ITEM);
+					} else {
+						finish = true;
+					}
+					getApi().log("Waiting for correct withdraw method in bank!");
+					Thread.sleep(2500);
 				}
 
 				// When not having enough, set the value to the current value in the bank
@@ -203,13 +278,27 @@ public class BankTask extends TaskSkeleton implements Task {
 					withdraw.setAmount(price);
 				}
 
-				if (getApi().getBank().withdraw(withdraw.getName(), withdraw.getAmount())) {
-					withdraw.setCompletedTask(true);
+				boolean withdrawn = false;
+
+				while (!withdrawn) {
+					getApi().getBank().withdraw(withdraw.getName(), withdraw.getAmount());
+
+					if (getApi().getInventory().getAmount(withdraw.getName()) >= withdraw.getAmount()) {
+						withdrawn = true;
+						withdraw.setCompletedTask(true);
+						getApi().log("Successfully withdraw");
+					} else {
+						getApi().log("Trying to withdraw.... failed");
+					}
+					Sleep.sleepUntil(() -> getApi().getInventory().contains(withdraw.getName())
+							&& getApi().getInventory().getAmount(
+									withdraw.getName()) == (withdraw.getAmount() + withdraw.getAmountBeforeAction()),
+							5000);
 				}
-				Sleep.sleepUntil(
-						() -> getApi().getInventory().contains(withdraw.getName()) && getApi().getInventory().getAmount(
-								withdraw.getName()) == (withdraw.getAmount() + withdraw.getAmountBeforeAction()),
-						10000);
+				// if ()) {
+				// withdraw.setCompletedTask(true);
+				// }
+
 			}
 
 			// Depositing items
@@ -237,6 +326,13 @@ public class BankTask extends TaskSkeleton implements Task {
 
 				if (getApi().getBank().deposit(deposit.getName(), deposit.getAmount())) {
 					deposit.setCompletedTask(true);
+				}
+
+				boolean deposited = false;
+				while (!deposited) {
+					Sleep.sleepUntil(() -> getApi().getBank().deposit(deposit.getName(), deposit.getAmount()), 5000);
+					deposited = getApi().getInventory().getAmount(deposit.getName()) <= 0;
+					getApi().log("Waiting for item to deposit...");
 				}
 
 				Sleep.sleepUntil(() -> deposit.getAmountBeforeAction() + deposit.getAmount() == getApi().getInventory()

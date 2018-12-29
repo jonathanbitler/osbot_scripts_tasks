@@ -1,6 +1,7 @@
 package osbot_scripts;
 
 import java.awt.Graphics2D;
+import java.io.IOException;
 
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.event.Event;
@@ -11,6 +12,7 @@ import org.osbot.rs07.script.ScriptManifest;
 import osbot_scripts.bot.utils.BotCommands;
 import osbot_scripts.bot.utils.Coordinates;
 import osbot_scripts.bot.utils.RandomUtil;
+import osbot_scripts.config.Config;
 import osbot_scripts.database.DatabaseTest;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
@@ -54,15 +56,20 @@ public class CookingAssistantQuest extends Script {
 				closeQuestCompleted.interact();
 			}
 
-			DatabaseUtilities.updateStageProgress(this, AccountStage.QUEST_DORICS_QUEST.name(), 0, login.getUsername(),
-					login);
+			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this, login).name(), 0,
+					login.getUsername(), login);
 			DatabaseUtilities.updateAccountBreakTill(this, getCooksAssistant().getEvent().getUsername(), 60, login);
 			BotCommands.killProcess((MethodProvider) this, (Script) this, "ALREADY COMPLETED THE QUEST COOKS", login);
 			return random(500, 600);
 		}
 
 		if (login.hasFinished()) {
-			getCooksAssistant().getTaskHandler().taskLoop();
+			try {
+				getCooksAssistant().getTaskHandler().taskLoop();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 
 		return random(500, 600);

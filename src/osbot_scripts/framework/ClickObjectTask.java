@@ -1,5 +1,6 @@
 package osbot_scripts.framework;
 
+import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -15,6 +16,7 @@ import osbot_scripts.qp7.progress.entities.Rock;
 import osbot_scripts.task.AreaInterface;
 import osbot_scripts.task.Task;
 import osbot_scripts.task.TaskSkeleton;
+import osbot_scripts.timeout.TimeoutValue;
 import osbot_scripts.util.Sleep;
 
 public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface {
@@ -45,6 +47,8 @@ public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface
 	private Rock rock;
 
 	private String[] chatboxContainingText;
+
+	private boolean tree;
 
 	/**
 	 * 
@@ -87,6 +91,19 @@ public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface
 		setTillInventoryFull(tillInventoryFull);
 		setQuest(quest);
 		setRock(rock);
+	}
+
+	public ClickObjectTask(String scriptName, int questProgress, int questConfig, MethodProvider prov, Area area,
+			int objectId, BankItem waitOnItems, boolean tillInventoryFull, QuestStep quest, boolean tree) {
+		setScriptName(scriptName);
+		setProv(prov);
+		setArea(area);
+		setCurrentQuestProgress(questProgress);
+		setObjectId(objectId);
+		setWaitOnItems(waitOnItems);
+		setTillInventoryFull(tillInventoryFull);
+		setQuest(quest);
+		setTree(tree);
 	}
 
 	public ClickObjectTask(String scriptName, int questProgress, int questConfig, MethodProvider prov, Area area,
@@ -202,7 +219,7 @@ public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface
 	}
 
 	@Override
-	public void loop() {
+	public void loop() throws IOException {
 		if (!ranOnStart()) {
 			onStart();
 		}
@@ -224,7 +241,9 @@ public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface
 				waitOnItems.setAmountBeforeAction(getApi().getInventory().getAmount(waitOnItems.getName()));
 			}
 
-			if (getInteractOption() != null && getInteractOption().length() > 0) {
+			if (isTree()) {
+				object.interact("Chop down");
+			} else if (getInteractOption() != null && getInteractOption().length() > 0) {
 				object.interact(getInteractOption());
 				setClickedObject(true);
 			} else {
@@ -243,13 +262,14 @@ public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface
 			}
 
 			// For mining
-			if (waitOnItems != null && getRock().hasOre(object, getApi()) && getRock() != null) {
+			if (waitOnItems != null && getRock() != null && getRock().hasOre(object, getApi())) {
 				getApi().log("has ore: " + getRock().hasOre(object, getApi()));
 
 				Sleep.sleepUntil(
 						() -> (getApi().getInventory()
 								.getAmount(waitOnItems.getName()) == (waitOnItems.getAmountBeforeAction()
 										+ waitOnItems.getAmount()))
+								|| (getApi().getDialogues().isPendingContinuation())
 								|| (!getRock().hasOre(
 										getApi().getObjects().closest(o -> o.getX() == object.getX()
 												&& o.getY() == object.getY() && o.getId() == object.getId()),
@@ -264,6 +284,30 @@ public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface
 		if (getFinalDestinationArea() != null && waitOnItems == null) {
 			// Waiting before player is in an area
 			Sleep.sleepUntil(() -> getFinalDestinationArea().contains(getApi().myPlayer()), 10000);
+		}
+
+		if (waitOnItems != null && isTree()) {
+
+			Sleep.sleepUntil(() ->
+
+			// (object != null &&
+			// getApi().getInventory().getAmount(
+			//
+			// waitOnItems.getName()) == (waitOnItems.getAmountBeforeAction() +
+			// waitOnItems.getAmount()))
+			//
+			// ||
+
+			((object != null && getApi().getObjects()
+					.closest(o -> o.getX() == object.getX() && o.getY() == object.getY() && o.getId() != getObjectId()
+							&& o.getName().contains("stump")) != null))
+
+					|| (getApi().getDialogues().isPendingContinuation()), getObjectId() == 1751 ? 120_000 : 30_000);
+
+			getApi().log("obj: " + ((object != null
+					&& getApi().getObjects().closest(o -> o.getX() == object.getX() && o.getY() == object.getY()
+							&& o.getId() != getObjectId() && o.getName().contains("stump")) != null)));
+
 		}
 
 		if (getWaitForItemString() != null && getWaitForItemString().length() > 0 && waitOnItems == null) {
@@ -523,6 +567,21 @@ public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface
 	 */
 	public void setChatboxContainingText(String[] chatboxContainingConfirmation) {
 		this.chatboxContainingText = chatboxContainingConfirmation;
+	}
+
+	/**
+	 * @return the tree
+	 */
+	public boolean isTree() {
+		return tree;
+	}
+
+	/**
+	 * @param tree
+	 *            the tree to set
+	 */
+	public void setTree(boolean tree) {
+		this.tree = tree;
 	}
 
 }

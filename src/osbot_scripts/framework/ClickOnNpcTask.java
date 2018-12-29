@@ -89,7 +89,7 @@ public class ClickOnNpcTask extends TaskSkeleton implements Task {
 
 			if (getWaitForItem() != null && getWaitForItem().length() > 0) {
 				Sleep.sleepUntil(() -> getApi().getInventory().contains(getWaitForItem())
-						&& npc.getArea(1).contains(getApi().myPlayer()), 10000, 2000);
+						&& npc.getArea(2).contains(getApi().myPlayer()), 3000);
 			} else {
 				Sleep.sleepUntil(() -> npc.getArea(2).contains(getApi().myPlayer()), 10000, 2000);
 			}

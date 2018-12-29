@@ -17,6 +17,7 @@ import osbot_scripts.framework.DropItemTask;
 import osbot_scripts.framework.PickupItemTask;
 import osbot_scripts.framework.WalkTask;
 import osbot_scripts.sections.total.progress.MainState;
+import osbot_scripts.taskhandling.TaskHandler;
 
 public class SheepShearerConfiguration extends QuestStep {
 
@@ -88,7 +89,7 @@ public class SheepShearerConfiguration extends QuestStep {
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("walk to sheeps", 1, QUEST_CONFIG, getBot().getMethods(), PATH_TO_SHEEPS,
-						PATH_TO_SHEEPS_AREA, getScript(), getEvent(), false, true));
+						PATH_TO_SHEEPS_AREA, getScript(), getEvent(), true, false));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new DropItemTask("drop items", 1, QUEST_CONFIG, getBot().getMethods(), "Drop",
@@ -142,6 +143,12 @@ public class SheepShearerConfiguration extends QuestStep {
 	public MainState getNextMainState() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	@Override
+	public void timeOutHandling(TaskHandler tasks) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

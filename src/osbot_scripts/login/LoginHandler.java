@@ -27,33 +27,33 @@ public class LoginHandler {
 			int pid = 0;
 			if (parameters != null) {
 				String[] params = parameters.split("_"); // split the _ character!!!!!!
-				
-				//Email and password
+
+				// Email and password
 				username = params[0];
 				password = params[1];
-				
-				//Pid
+
+				// Pid
 				pid = Integer.parseInt(params[2]);
-				
-				//Account stage
+
+				// Account stage
 				accountStage = params[3];
-				
-				//Username and NOT e-mail
+
+				// Username and NOT e-mail
 				actualUsername = params[4];
 
-				//DB
+				// DB
 				dbUsername = params[5];
 				dbName = params[6];
 				dbPassword = params[7];
 
-				//For muling, person to trade with
+				// For muling, person to trade with
 				if (params.length >= 9) {
-					//DB
+					// DB
 					dbUsername = params[4];
 					dbName = params[5];
 					dbPassword = params[6];
-					
-					//Mule trading
+
+					// Mule trading
 					tradeWith = params[7];
 					emailTradeWith = params[8];
 				}
@@ -61,12 +61,12 @@ public class LoginHandler {
 
 			}
 			loginEvent = new LoginEvent(username, password, pid, accountStage, p);
-			
-			//Database settings
+
+			// Database settings
 			loginEvent.setDbName(dbName);
 			loginEvent.setDbPassword(dbPassword);
 			loginEvent.setDbUsername(dbUsername);
-			
+
 			if (actualUsername != null) {
 				loginEvent.setActualUsername(actualUsername);
 			}

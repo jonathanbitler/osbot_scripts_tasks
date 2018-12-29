@@ -1,22 +1,21 @@
 package osbot_scripts;
 
 import java.awt.Graphics2D;
+import java.io.IOException;
 
-import org.osbot.rs07.api.ui.Skill;
-import org.osbot.rs07.event.Event;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 
 import osbot_scripts.bot.utils.BotCommands;
 import osbot_scripts.bot.utils.Coordinates;
-import osbot_scripts.bot.utils.RandomUtil;
 import osbot_scripts.config.Config;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.events.MandatoryEventsExecution;
 import osbot_scripts.login.LoginHandler;
 import osbot_scripts.qp7.progress.MiningLevelTo15Configuration;
+import osbot_scripts.scripttypes.MiningType;
 
 @ScriptManifest(author = "pim97", info = "MINING_LEVEL_TO_15", logo = "", name = "MINING_LEVEL_TO_15", version = 1.0)
 public class MiningLevelTo15 extends Script {
@@ -45,43 +44,37 @@ public class MiningLevelTo15 extends Script {
 			BotCommands.killProcess((MethodProvider) this, (Script) this, "SHOULD BE ON TUT ISLAND MINING 15", login);
 		}
 
-		// Account must have atleast 7 quest points, otherwise set it back to quesiton
-		if (getQuests().getQuestPoints() < 7) {
-			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0,
-					login.getUsername(), login);
-			BotCommands.killProcess((MethodProvider) this, (Script) this, "LESS THAN 7 QP MINING 15", login);
-		}
-
-		// If mining is equals or bigger than 15, then it can proceed to mining iron
-		if (getSkills().getStatic(Skill.MINING) >= 31) {
-			Thread.sleep(5000);
-			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this).name(), 0,
-					login.getUsername(), login);
-			BotCommands.killProcess((MethodProvider) this, (Script) this, "HIGHER THAN 15 MINING MINING 15", login);
-		}
-
 		log("G.E. task: "
 				+ (getGoldfarmMining().getGrandExchangeTask() != null ? getGoldfarmMining().getGrandExchangeTask()
 						: "NULL"));
 
 		if (login.hasFinished()) {
 			if (getGoldfarmMining().getGrandExchangeTask() == null) {
-				getGoldfarmMining().getTaskHandler().taskLoop();
+				try {
+					getGoldfarmMining().getTaskHandler().taskLoop();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			} else {
-				getGoldfarmMining().onLoop();
+				try {
+					getGoldfarmMining().onLoop();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		}
-
-		// Breaking for set amount of minutes because has done a few laps
-		// if (getGoldfarmMining().getDoneLaps() > 15) {
-		// log("Taking a break...");
-		// Thread.sleep(5000);
-		// DatabaseUtilities.updateAccountBreakTill(this,
-		// getGoldfarmMining().getEvent().getUsername(), 30);
-		// BotCommands.killProcess((MethodProvider)this, (Script) this);
-		// }
 		return random(20, 80);
 	}
+
+	// Breaking for set amount of minutes because has done a few laps
+	// if (getGoldfarmMining().getDoneLaps() > 15) {
+	// log("Taking a break...");
+	// Thread.sleep(5000);
+	// DatabaseUtilities.updateAccountBreakTill(this,
+	// getGoldfarmMining().getEvent().getUsername(), 30);
+	// BotCommands.killProcess((MethodProvider)this, (Script) this);
+	// }
+	// return random(20, 80);
 
 	@Override
 	public void onPaint(Graphics2D g) {
@@ -96,6 +89,7 @@ public class MiningLevelTo15 extends Script {
 			DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN", login);
 		}
 		goldfarmMining = new MiningLevelTo15Configuration(login, (Script) this);
+		goldfarmMining.setScriptAbstract(new MiningType());
 		getGoldfarmMining().setQuest(false);
 
 		if (!Config.NO_LOGIN) {

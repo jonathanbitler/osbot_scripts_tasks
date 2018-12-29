@@ -6,9 +6,11 @@ import java.util.List;
 
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.map.Position;
+import org.osbot.rs07.api.model.GroundItem;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 
+import osbot_scripts.bot.utils.BotCommands;
 import osbot_scripts.config.Config;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
@@ -23,6 +25,7 @@ import osbot_scripts.framework.WalkTask;
 import osbot_scripts.framework.parts.BankItem;
 import osbot_scripts.qp7.progress.entities.Rock;
 import osbot_scripts.sections.total.progress.MainState;
+import osbot_scripts.taskhandling.TaskHandler;
 
 public class DoricsQuestConfig extends QuestStep {
 
@@ -130,13 +133,13 @@ public class DoricsQuestConfig extends QuestStep {
 					new Position(3170, 3419, 0), new Position(3172, 3428, 0), new Position(3182, 3431, 0),
 					new Position(3183, 3431, 0), new Position(3184, 3436, 0)));
 
-	private static final ArrayList<Position> MINING_POSITION = new ArrayList<Position>(
+	public static final ArrayList<Position> MINING_POSITION = new ArrayList<Position>(
 			Arrays.asList(new Position(3180, 3370, 0)));
 
 	private static final Area BANK_VARROCK_EAST_AREA = new Area(new int[][] { { 3180, 3447 }, { 3180, 3433 },
 			{ 3186, 3433 }, { 3186, 3436 }, { 3189, 3436 }, { 3189, 3448 }, { 3180, 3448 } });
 
-	private static final Area MINING_AREA = new Area(new int[][] { { 3179, 3379 }, { 3170, 3366 }, { 3175, 3363 },
+	public static final Area MINING_AREA = new Area(new int[][] { { 3179, 3379 }, { 3170, 3366 }, { 3175, 3363 },
 			{ 3180, 3365 }, { 3184, 3373 }, { 3186, 3380 }, { 3182, 3381 } });
 
 	private static final Area NOT_IN_CORRECT_ZONE = new Area(
@@ -177,7 +180,7 @@ public class DoricsQuestConfig extends QuestStep {
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new ClickObjectTask("click mining", 0, QUEST_CONFIG, getBot().getMethods(),
 						new Area(new int[][] { { 3184, 3374 }, { 3179, 3374 }, { 3179, 3369 }, { 3184, 3369 } }), 7454,
-						new BankItem("Clay", 20, false), false, this, Rock.CLAY));
+						new BankItem("Clay", 1, false), true, this, Rock.CLAY));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("walk to varrock west bank", 0, QUEST_CONFIG, getBot().getMethods(),
@@ -195,7 +198,7 @@ public class DoricsQuestConfig extends QuestStep {
 				new GrandExchangeTask(this,
 						new BankItem[] { new BankItem("Copper ore", 436, 4, 150, true),
 								new BankItem("Iron ore", 440, 2, 250, true), new BankItem("Clay", 434, 6, 160, true), },
-						new BankItem[] { new BankItem("Clay", 434, 25, 1, true),
+						new BankItem[] { new BankItem("Clay", 434, 80, 1, true),
 								new BankItem("Uncut diamond", 1617, 1000, 1, true),
 								new BankItem("Uncut emerald", 1621, 1000, 1, true),
 								new BankItem("Uncut ruby", 1619, 1000, 1, true),
@@ -215,9 +218,10 @@ public class DoricsQuestConfig extends QuestStep {
 
 		// TODO wrong npc id and dialogue & dialogue step after talk
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-				new DialogueTask("talk with doric", 0, QUEST_CONFIG, getBot().getMethods(), DORIC_QUEST_START_AREA,
-						3893, 1, this, new String[] { "I wanted to use your anvils.",
-								"Yes, I will get you the materials.", "Certainly, I'll be right back!" }));
+				new DialogueTask("talk with doric", getQuestProgress() == 10 ? 10 : 0, QUEST_CONFIG,
+						getBot().getMethods(), DORIC_QUEST_START_AREA, 3893, 1, this,
+						new String[] { "I wanted to use your anvils.", "Yes, I will get you the materials.",
+								"Certainly, I'll be right back!" }));
 
 		/**
 		 * incorrect
@@ -348,18 +352,6 @@ public class DoricsQuestConfig extends QuestStep {
 			resetStage(AccountStage.QUEST_DORICS_QUEST.name());
 		}
 
-		// Account is in lumbridge, account must have died, checking next if the player
-		// still has the pickaxe in this inventory, otherwise it's out of money and will
-		// get stuck, because it can't mine anymore
-		if (new Area(new int[][] { { 3214, 3228 }, { 3215, 3208 }, { 3231, 3211 }, { 3229, 3228 }, { 3220, 3230 },
-				{ 3214, 3228 } }).contains(myPlayer())) {
-			if (!Config.doesntHaveAnyPickaxe(this)) {
-				DatabaseUtilities.updateStageProgress(this, "OUT_OF_MONEY", 0, getEvent().getUsername(), getEvent());
-			} else {
-				resetStage(AccountStage.QUEST_DORICS_QUEST.name());
-			}
-		}
-
 		if (new Area(new int[][] { { 2950, 3454 }, { 2950, 3449 }, { 2954, 3449 }, { 2954, 3455 }, { 2950, 3455 },
 				{ 2950, 3454 } }).contains(myPlayer()) && !inventoryContainsAllItems()) {
 			resetStage(AccountStage.QUEST_DORICS_QUEST.name());
@@ -390,6 +382,22 @@ public class DoricsQuestConfig extends QuestStep {
 	public MainState getNextMainState() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public void timeOutHandling(TaskHandler tasks) {
+
+		/**
+		 * Restarting when bank attempts > 10 to mining to 15
+		 */
+		if (tasks.isBankTask() && tasks.getTaskAttempts() > 10) {
+			DatabaseUtilities.updateStageProgress(tasks.getProvider(), AccountStage.MINING_LEVEL_TO_15.name(), 0,
+					getEvent().getUsername(), getEvent());
+
+			BotCommands.waitBeforeKill(tasks.getProvider(),
+					"BECAUSE TASK TIMEOUT ON ATTEMPTS E02 RESTARTING TO MINING");
+		}
+
 	}
 
 }

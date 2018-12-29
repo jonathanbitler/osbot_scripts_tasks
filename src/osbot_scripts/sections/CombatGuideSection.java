@@ -6,7 +6,6 @@ import org.osbot.rs07.api.model.Item;
 import org.osbot.rs07.api.model.NPC;
 import org.osbot.rs07.api.ui.EquipmentSlot;
 import org.osbot.rs07.api.ui.RS2Widget;
-import org.osbot.rs07.api.ui.Tab;
 
 import osbot_scripts.TutorialScript;
 import osbot_scripts.framework.TabWid;
@@ -22,6 +21,8 @@ public class CombatGuideSection extends TutorialSection {
 	}
 
 	private Position instructorPosition = new Position(3107, 9510, 0);
+	
+    private static final Area LADDER_AREA = new Area(3108, 9523, 3114, 9529);
 
 	@Override
 	public void onLoop() throws InterruptedException {
@@ -126,9 +127,13 @@ public class CombatGuideSection extends TutorialSection {
 			}
 			break;
 
-		case 500:
-			clickObject(9727, "Climb-up", new Position(3111, 9525, 0));
-			break;
+		 case 500:
+             if (!LADDER_AREA.contains(myPosition())) {
+                 getWalking().walk(LADDER_AREA);
+             } else if (getObjects().closest("Ladder").interact("Climb-up")) {
+                 Sleep.sleepUntil(() -> !LADDER_AREA.contains(myPosition()), 5000, 600);
+             }
+             break;
 
 		case 510:
 			TutorialScript.mainState = getNextMainState();
