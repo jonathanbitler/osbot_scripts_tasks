@@ -2,12 +2,12 @@ package osbot_scripts.framework;
 
 public enum Axe {
 	
-	BRONZE(30),
-	IRON(40),
-	STEEL(60),
-	MITHRIL(150),
-	ADAMANT(2000),
-	RUNE(5000);
+	BRONZE(300),
+	IRON(600),
+	STEEL(1500),
+	MITHRIL(2000),
+	ADAMANT(3000),
+	RUNE(8000);
 
 	private Axe(int price) {
 		this.setPrice(price);

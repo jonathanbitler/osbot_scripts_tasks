@@ -101,8 +101,7 @@ public class ClickOnNpcTask extends TaskSkeleton implements Task {
 	public boolean finished() {
 		if (npc != null) {
 			if (getWaitForItem() != null && getWaitForItem().length() > 0) {
-				return getApi().getInventory().contains(getWaitForItem())
-						&& getApi().getInventory().getAmount(getWaitForItem()) >= getRequiredAmountTask();
+				return getApi().getInventory().getAmount(getWaitForItem()) >= getRequiredAmountTask();
 			}
 			return npc.getArea(2).contains(getApi().myPlayer());
 		}

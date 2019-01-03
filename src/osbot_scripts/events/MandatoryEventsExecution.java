@@ -214,20 +214,20 @@ public class MandatoryEventsExecution {
 			}
 		}
 
-		if (!LUMRBDIGE.contains(getProvider().myPlayer())) {
-			if (!getProvider().getSettings().areRoofsEnabled()) {
-				if (pendingContinue()) {
-					selectContinue();
-				}
+		// if (!LUMRBDIGE.contains(getProvider().myPlayer())) {
+		if (!getProvider().getSettings().areRoofsEnabled()) {
+			if (pendingContinue()) {
+				selectContinue();
+			}
 
-				getProvider().getWalking().walk(getProvider().myPlayer().getPosition().translate(1, 1));
-				Event toggleRoofsHiddenEvent = new ToggleRoofsHiddenEvent();
-				getProvider().execute(toggleRoofsHiddenEvent);
-				if (getProvider().getTabs().getOpen() != Tab.INVENTORY) {
-					getProvider().getTabs().open(Tab.INVENTORY);
-				}
+			getProvider().getWalking().walk(getProvider().myPlayer().getPosition().translate(1, 1));
+			Event toggleRoofsHiddenEvent = new ToggleRoofsHiddenEvent();
+			getProvider().execute(toggleRoofsHiddenEvent);
+			if (getProvider().getTabs().getOpen() != Tab.INVENTORY) {
+				getProvider().getTabs().open(Tab.INVENTORY);
 			}
 		}
+		// }
 
 	}
 

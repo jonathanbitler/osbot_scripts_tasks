@@ -3,6 +3,7 @@ package osbot_scripts.framework;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.osbot.rs07.api.Chatbox;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.model.Item;
 import org.osbot.rs07.api.model.RS2Object;
@@ -27,6 +28,8 @@ public class ItemOnObjectTask extends TaskSkeleton implements Task, AreaInterfac
 
 	private boolean clickedObject;
 
+	private String[] chatboxContainingText;
+
 	/**
 	 * 
 	 * @param scriptName
@@ -44,6 +47,29 @@ public class ItemOnObjectTask extends TaskSkeleton implements Task, AreaInterfac
 		setCurrentQuestProgress(questProgress);
 		setObjectId(objectId);
 		setItemName(itemName);
+	}
+
+	public ItemOnObjectTask(String scriptName, int questProgress, int questConfig, MethodProvider prov, Area area,
+			int objectId, String[] names, String itemName) {
+		setScriptName(scriptName);
+		setProv(prov);
+		setArea(area);
+		setCurrentQuestProgress(questProgress);
+		setObjectId(objectId);
+		setItemName(itemName);
+		setChatboxContainingText(names);
+	}
+
+	public boolean contains() {
+		if (!getApi().getClient().isLoggedIn()) {
+			return false;
+		}
+		for (String a : getChatboxContainingText()) {
+			if (getApi().getChatbox().contains(Chatbox.MessageType.GAME, a)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -106,7 +132,7 @@ public class ItemOnObjectTask extends TaskSkeleton implements Task, AreaInterfac
 			}
 			// }
 			object.interact("Use");
-			
+
 			Sleep.sleepUntil(() -> amountBefore != getApi().getInventory().getAmount(getItemName()), 10000);
 
 			if (amountBefore != getApi().getInventory().getAmount(getItemName())) {
@@ -123,6 +149,12 @@ public class ItemOnObjectTask extends TaskSkeleton implements Task, AreaInterfac
 
 	@Override
 	public boolean finished() {
+		if (getApi().getInventory().getAmount(getItemName()) <= 0) {
+			return true;
+		}
+		if (getChatboxContainingText() != null && getChatboxContainingText().length > 0) {
+			return contains();
+		}
 		if (getWaitForItemString() != null && getWaitForItemString().length() > 0) {
 			return isClickedObject() && getApi().getInventory().contains(getWaitForItemString());
 		}
@@ -207,6 +239,21 @@ public class ItemOnObjectTask extends TaskSkeleton implements Task, AreaInterfac
 	 */
 	public void setItemName(String itemName) {
 		this.itemName = itemName;
+	}
+
+	/**
+	 * @return the chatboxContainingText
+	 */
+	public String[] getChatboxContainingText() {
+		return chatboxContainingText;
+	}
+
+	/**
+	 * @param chatboxContainingText
+	 *            the chatboxContainingText to set
+	 */
+	public void setChatboxContainingText(String[] chatboxContainingText) {
+		this.chatboxContainingText = chatboxContainingText;
 	}
 
 }

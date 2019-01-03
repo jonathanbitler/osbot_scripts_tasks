@@ -154,6 +154,8 @@ public class MiningLevelTo15Configuration extends QuestStep {
 	}
 
 	public void onPaint(Graphics2D g) {
+		g.drawString("MINING_CLAY", 60, 50);
+		g.drawString("Runtime " + (formatTime((System.currentTimeMillis() - beginTime))), 60, 75);
 //		g.setColor(Color.WHITE);
 //		int profit = ((currentAmount - beginAmount) + soldAmount) * 140;
 //		long profitPerHour = (long) (profit * (3600000.0 / (System.currentTimeMillis() - beginTime)));

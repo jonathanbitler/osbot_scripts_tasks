@@ -68,7 +68,7 @@ public class ThreadDemo extends MethodProvider implements Runnable {
 				// Account password is wrong when not logged in
 				if (!isLoggedIn() && isWrongEmail()) {
 					log("Account password is wrong, setting to invalid password");
-					DatabaseUtilities.updateAccountStatusInDatabase(this, "INVALID_PASSWORD",
+					DatabaseUtilities.updateAccountStatusInDatabase(this, "LOCKED",
 							getLoginEvent().getUsername(), getLoginEvent());
 					BotCommands.waitBeforeKill(this, "BECAUSE OF INVALID PASSWORD");
 				}
@@ -87,7 +87,7 @@ public class ThreadDemo extends MethodProvider implements Runnable {
 						&& loginEvent.hasFinished()) {
 
 					if (loginEvent.getScript() != null) {
-//						log("Seperate thread is currently running.. " + loginEvent.getScript());
+						// log("Seperate thread is currently running.. " + loginEvent.getScript());
 
 						// Resizable mode when logged in
 						if (!loginEvent.getScript().equalsIgnoreCase("TUT_ISLAND")) {

@@ -231,6 +231,8 @@ public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface
 			// Sleep.sleepUntil(() -> getArea().contains(getApi().myPlayer()), 10000);
 		}
 
+		getApi().log("Looking for object id: " + getObjectId());
+
 		RS2Object object = getApi().getObjects()
 				.closest(obj -> (getArea().contains(obj) && obj.getId() == getObjectId() || (getRock() != null
 						&& getRock().hasOre(obj, getApi()) && getApi().myPlayer().getArea(1).contains(obj))));
@@ -243,6 +245,10 @@ public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface
 
 			if (isTree()) {
 				object.interact("Chop down");
+
+				Sleep.sleepUntil(() -> getApi().myPlayer().isAnimating()
+						&& object.getPosition().distance(getApi().myPlayer()) <= 1, 5000);
+
 			} else if (getInteractOption() != null && getInteractOption().length() > 0) {
 				object.interact(getInteractOption());
 				setClickedObject(true);
@@ -302,7 +308,12 @@ public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface
 					.closest(o -> o.getX() == object.getX() && o.getY() == object.getY() && o.getId() != getObjectId()
 							&& o.getName().contains("stump")) != null))
 
-					|| (getApi().getDialogues().isPendingContinuation()), getObjectId() == 1751 ? 120_000 : 30_000);
+					|| getApi().getInventory().isFull() || (getApi().getDialogues().isPendingContinuation())
+					|| !getArea().contains(getApi().myPlayer())
+
+					|| (!getApi().myPlayer().isAnimating()),
+
+					getObjectId() == 1751 ? 120_000 : 30_000, 2_500);
 
 			getApi().log("obj: " + ((object != null
 					&& getApi().getObjects().closest(o -> o.getX() == object.getX() && o.getY() == object.getY()
@@ -379,7 +390,7 @@ public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface
 							{ 3220, 3230 }, { 3214, 3228 } }).contains(getApi().myPlayer()));
 		}
 		if (getWaitForItemString() != null && getWaitForItemString().length() > 0) {
-			return isClickedObject() && getApi().getInventory().contains(getWaitForItemString());
+			return getApi().getInventory().contains(getWaitForItemString());
 		}
 		if (getFinalDestinationArea() != null) {
 			return getFinalDestinationArea().contains(getApi().myPlayer()) && isClickedObject();

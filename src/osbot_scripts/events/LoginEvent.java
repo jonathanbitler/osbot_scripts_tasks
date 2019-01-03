@@ -76,7 +76,13 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 			setFinished();
 
 			getApi().log("SUCCESSFULLY LOGGED IN! SET FINISHED TO: " + hasFinished());
-			new Thread(() -> DatabaseUtilities.updateLoginStatus(api, username, "LOGGED_IN", this)).start();
+
+			if (DatabaseUtilities.isServerMuleTradingAccount(getApi(), this, getUsername())) {
+				new Thread(() -> DatabaseUtilities.updateLoginStatus("server_muling", api, username, "LOGGED_IN", this))
+						.start();
+			} else {
+				new Thread(() -> DatabaseUtilities.updateLoginStatus(api, username, "LOGGED_IN", this)).start();
+			}
 
 		} else if (getClient().isLoggedIn() && getLobbyButton() != null) {
 			clickHereToPlayButton();
@@ -171,7 +177,7 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 			BotCommands.waitBeforeKill(api, "BECAUSE OF ACCOUNT IS BANNED");
 		} else if (isWrongEmail()) {
 			log("Account password is wrong, setting to invalid password");
-			DatabaseUtilities.updateAccountStatusInDatabase(this, "INVALID_PASSWORD", this.username, this);
+			DatabaseUtilities.updateAccountStatusInDatabase(this, "LOCKED", this.username, this);
 			BotCommands.waitBeforeKill(api, "BECAUSE OF PASSWORD IS WRONG");
 		}
 
@@ -302,7 +308,7 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 
 		case 3:
 			log("Account password is wrong, setting to invalid password");
-			DatabaseUtilities.updateAccountStatusInDatabase(this, "INVALID_PASSWORD", this.username, this);
+			DatabaseUtilities.updateAccountStatusInDatabase(this, "LOCKED", this.username, this);
 			BotCommands.waitBeforeKill(api, "NULL");
 			break;
 

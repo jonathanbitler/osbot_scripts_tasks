@@ -79,8 +79,8 @@ public class WizardGuideSection extends TutorialSection {
 		return walkingEvent.hasFinished();
 	}
 
-	private static final Area CHICKEN_AREA = new Area(new int[][] { { 3137, 3092 }, { 3140, 3088 }, { 3144, 3088 },
-			{ 3144, 3089 }, { 3141, 3092 }, { 3137, 3092 } });
+	private static final Area CHICKEN_AREA = new Area(
+			new int[][] { { 3137, 3092 }, { 3141, 3092 }, { 3143, 3090 }, { 3139, 3090 } });
 
 	private boolean attackChicken() {
 		NPC chicken = getNpcs().closest("Chicken");

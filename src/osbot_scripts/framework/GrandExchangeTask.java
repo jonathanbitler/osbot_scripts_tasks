@@ -13,6 +13,7 @@ import org.osbot.rs07.script.Script;
 import org.osbot.rs07.utility.ConditionalSleep;
 
 import osbot_scripts.bot.utils.BotCommands;
+import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.framework.parts.BankItem;
 import osbot_scripts.qp7.progress.DoricsQuestConfig;
@@ -88,7 +89,11 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 		walkToGrandExchangeIfNotThere();
 
 		// Start bank tasks
-		openBankDepositItemsAndTakeItems(true);
+		if (DatabaseUtilities.getScriptConfigValue(getApi(), getLogin()).equalsIgnoreCase("OAK_LOGS")) {
+			openBankDepositItemsAndTakeItems(false);
+		} else {
+			openBankDepositItemsAndTakeItems(true);
+		}
 
 		getApi().log("Closing bank");
 		closeBank();
@@ -704,7 +709,7 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 				continue;
 			}
 
-			int gePrice = price.getSellingPrice(sell.getItemId());
+			int gePrice = price.getBuyingPrice(sell.getItemId());
 			totalPrice += gePrice;
 		}
 		return totalPrice;

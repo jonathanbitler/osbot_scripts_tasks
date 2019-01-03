@@ -13,6 +13,7 @@ import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 
 import osbot_scripts.bot.utils.BotCommands;
+import osbot_scripts.bot.utils.RandomUtil;
 import osbot_scripts.config.Config;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
@@ -48,11 +49,16 @@ public class WoodcuttingConfig extends QuestStep {
 					new Position(3171, 3393, 0), new Position(3172, 3390, 0), new Position(3177, 3381, 0),
 					new Position(3182, 3372, 0), new Position(3180, 3371, 0)));
 
-	private static final ArrayList<Position> MINING_AREA_TO_BANK = new ArrayList<Position>(
-			Arrays.asList(new Position(3183, 3371, 0), new Position(3178, 3380, 0), new Position(3173, 3389, 0),
-					new Position(3168, 3398, 0), new Position(3168, 3399, 0), new Position(3169, 3409, 0),
-					new Position(3170, 3419, 0), new Position(3172, 3428, 0), new Position(3182, 3431, 0),
-					new Position(3183, 3431, 0), new Position(3184, 3436, 0)));
+	private static final ArrayList<Position> BANK_TO_WC_AREA = new ArrayList<Position>(
+			Arrays.asList(new Position(3182, 3435, 0), new Position(3181, 3428, 0), new Position(3172, 3424, 0),
+					new Position(3168, 3422, 0), new Position(3164, 3413, 0)));
+
+	private static final ArrayList<Position> WC_AREA_TO_BANK = new ArrayList<Position>(
+			Arrays.asList(new Position(3165, 3380, 0), new Position(3164, 3390, 0), new Position(3164, 3390, 0),
+					new Position(3164, 3392, 0), new Position(3164, 3402, 0), new Position(3164, 3405, 0),
+					new Position(3167, 3415, 0), new Position(3167, 3415, 0), new Position(3168, 3420, 0),
+					new Position(3176, 3426, 0), new Position(3181, 3430, 0), new Position(3183, 3434, 0),
+					new Position(3183, 3437, 0), new Position(3182, 3437, 0)));
 
 	private static final ArrayList<Position> MINING_POSITION = new ArrayList<Position>(
 			Arrays.asList(new Position(3180, 3370, 0)));
@@ -72,7 +78,7 @@ public class WoodcuttingConfig extends QuestStep {
 
 	private String pickaxe;
 
-	private Ge2 grandExchangeActions;
+	private GrandExchangeHandlerWoodcutting grandExchangeActions;
 
 	private static final Area GRAND_EXCHANGE_AREA = new Area(
 			new int[][] { { 3159, 3492 }, { 3159, 3484 }, { 3170, 3485 }, { 3170, 3495 }, { 3159, 3494 } });
@@ -94,32 +100,50 @@ public class WoodcuttingConfig extends QuestStep {
 
 	private PlayersAround around = new PlayersAround(this);
 
-	public static final Area WC_AREA = new Area(new int[][] { { 3158, 3414 }, { 3160, 3406 }, { 3158, 3396 },
-			{ 3158, 3382 }, { 3166, 3372 }, { 3174, 3378 }, { 3169, 3388 }, { 3167, 3396 }, { 3170, 3402 },
-			{ 3171, 3410 }, { 3172, 3419 }, { 3168, 3423 }, { 3163, 3418 }, { 3158, 3418 } });
+	public static final Area WC_AREA = new Area(
+			new int[][] { { 3154, 3419 }, { 3158, 3413 }, { 3158, 3408 }, { 3153, 3395 }, { 3156, 3374 },
+					{ 3166, 3373 }, { 3175, 3378 }, { 3175, 3390 }, { 3173, 3401 }, { 3173, 3428 }, { 3156, 3424 } });
 
 	@Override
 	public void onStart() {
+		boolean loggedIn = false;
+
+		while (!loggedIn) {
+			loggedIn = getClient().isLoggedIn();
+			log("Waiting on logged in");
+			try {
+				Thread.sleep(1500);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
 		if (beginTime == -1) {
 			beginTime = System.currentTimeMillis();
 
+			getCamera().movePitch(RandomUtil.getRandomNumberInRange(50, 67));
 			// around.exchangeContext(getBot());
 			// new Thread(around).start();
 		}
 
 		boolean oak = getSkills().getStatic(Skill.WOODCUTTING) >= 15;
 
-		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-				new WalkTask("walk to varrock west bank from g.e.", -1, -1, getBot().getMethods(), FROM_GE_TO_BANK_PATH,
-						GRAND_EXCHANGE_AREA,
-						new Area(new int[][] { { 3180, 3441 }, { 3186, 3441 }, { 3186, 3433 }, { 3180, 3433 } }),
-						getScript(), getEvent(), false, true));
+		if (getEvent() != null && getEvent().hasFinished() && GRAND_EXCHANGE_AREA.contains(myPlayer())) {
+			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+					new WalkTask("walk to varrock west bank from g.e.", -1, -1, getBot().getMethods(),
+							FROM_GE_TO_BANK_PATH, GRAND_EXCHANGE_AREA,
+							new Area(new int[][] { { 3180, 3441 }, { 3186, 3441 }, { 3186, 3433 }, { 3180, 3433 } }),
+							getScript(), getEvent(), false, true));
+		} else {
+			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+					new WalkTask("walk to varrock west bank from mining", -1, -1, getBot().getMethods(),
+							WC_AREA_TO_BANK, WC_AREA, BANK_VARROCK_EAST_AREA, getScript(), getEvent(), false, true));
+		}
 
-		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new BankTask("withdraw axe", 0,
-				getBot().getMethods(), true, new BankItem[] { new BankItem("axe", 1, false) },
-				new Area(
-						new int[][] { { 3180, 3439 }, { 3180, 3433 }, { 3186, 3433 }, { 3186, 3440 }, { 3180, 3440 } }),
-				this));
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+				new BankTask("withdraw axe", 0, getBot().getMethods(), true,
+						new BankItem[] { new BankItem("axe", 1, false) }, BANK_VARROCK_EAST_AREA, this));
 
 		if (getEvent() != null && getEvent().hasFinished() && GRAND_EXCHANGE_AREA.contains(myPlayer())) {
 			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
@@ -137,24 +161,31 @@ public class WoodcuttingConfig extends QuestStep {
 						oak ? new BankItem("Oak logs", 1, false) : new BankItem("Logs", 1, false), true, this, true));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-				new WalkTask("walk to varrock west bank 2", -1, -1, getBot().getMethods(), MINING_AREA_TO_BANK,
-						MINING_AREA, BANK_VARROCK_EAST_AREA, getScript(), getEvent(), false, true));
+				new WalkTask("walk to varrock west bank 2", -1, -1, getBot().getMethods(), WC_AREA_TO_BANK, WC_AREA,
+						BANK_VARROCK_EAST_AREA, getScript(), getEvent(), false, true));
 
 	}
 
 	public void onPaint(Graphics2D g) {
-		g.setColor(Color.WHITE);
-		int profit = ((currentAmount - beginAmount) + soldAmount) * 140;
-		long profitPerHour = (long) (profit * (3600000.0 / (System.currentTimeMillis() - beginTime)));
-		g.drawString("Sold ores " + soldAmount, 60, 50);
-		g.drawString("Begin ores " + beginAmount, 60, 65);
-		g.drawString("Current ores " + currentAmount, 60, 80);
-		g.drawString("Total mined ores " + ((currentAmount - beginAmount) + soldAmount), 60, 95);
-		g.drawString("Money per hour " + (profitPerHour > 0 ? profitPerHour : "Need more data"), 60, 110);
-		g.drawString("Time taken " + (formatTime((System.currentTimeMillis() - beginTime))), 60, 125);
-
-		g.drawString((around.aroundMine < 0 ? "Calculating.."
-				: around.aroundMine + " / " + around.getPlayersAroundExceptMe()).toString(), 60, 150);
+		g.drawString("WOODCUTTING", 60, 50);
+		g.drawString("Runtime " + (formatTime((System.currentTimeMillis() - beginTime))), 60, 75);
+		// g.setColor(Color.WHITE);
+		// int profit = ((currentAmount - beginAmount) + soldAmount) * 140;
+		// long profitPerHour = (long) (profit * (3600000.0 /
+		// (System.currentTimeMillis() - beginTime)));
+		// g.drawString("Sold ores " + soldAmount, 60, 50);
+		// g.drawString("Begin ores " + beginAmount, 60, 65);
+		// g.drawString("Current ores " + currentAmount, 60, 80);
+		// g.drawString("Total mined ores " + ((currentAmount - beginAmount) +
+		// soldAmount), 60, 95);
+		// g.drawString("Money per hour " + (profitPerHour > 0 ? profitPerHour : "Need
+		// more data"), 60, 110);
+		// g.drawString("Time taken " + (formatTime((System.currentTimeMillis() -
+		// beginTime))), 60, 125);
+		//
+		// g.drawString((around.aroundMine < 0 ? "Calculating.."
+		// : around.aroundMine + " / " + around.getPlayersAroundExceptMe()).toString(),
+		// 60, 150);
 	}
 
 	@Override
@@ -187,12 +218,14 @@ public class WoodcuttingConfig extends QuestStep {
 			}
 		}
 
-		if (WC_AREA.contains(myPlayer()) && ((getInventory().contains(1349) || getInventory().contains(1351)
-				|| getInventory().contains(1353) || getInventory().contains(1355) || getInventory().contains(1357)
-				|| getInventory().contains(1359)))) {
-			log("Is at wc area wihout an axe, restarting tasks 2!");
-			resetStage(AccountStage.WOODCUTTING_GOLD_FARM.name());
-		}
+		// if (WC_AREA.contains(myPlayer()) && ((!getInventory().contains(1349) &&
+		// !getInventory().contains(1351)
+		// && !getInventory().contains(1353) && !getInventory().contains(1355) &&
+		// !getInventory().contains(1357)
+		// && !getInventory().contains(1359)))) {
+		// log("Is at wc area wihout an axe, restarting tasks 2!");
+		// resetStage(AccountStage.WOODCUTTING_GOLD_FARM.name());
+		// }
 
 		if (WC_AREA.contains(myPlayer()) && !getInventory().contains("Bronze axe")
 				&& !getInventory().contains("Iron axe") && !getInventory().contains("Steel axe")
@@ -202,13 +235,19 @@ public class WoodcuttingConfig extends QuestStep {
 			resetStage(AccountStage.WOODCUTTING_GOLD_FARM.name());
 		}
 
-		if (Config.doesntHaveAnyAxe(this) && !getBank().isOpen() && WC_AREA.contains(myPlayer())) {
-			log("Player doesn't have any pickaxe, getting it from bank");
-			resetStage(AccountStage.WOODCUTTING_GOLD_FARM.name());
+		if (getBank().isOpen() && Config.doesntHaveAnyAxe(this)) {
+			DatabaseUtilities.updateAccountStatusInDatabase(this, "BANNED", getEvent().getUsername(), getEvent());
+			BotCommands.waitBeforeKill(this, "BECAUSE DOESNT HAVE AXE IN BANK OR INVENTORY, SETTING ACCOUNT TO BANNED");
 		}
 
+		// if (Config.doesntHaveAnyAxe(this) && !getBank().isOpen() &&
+		// WC_AREA.contains(myPlayer())) {
+		// log("Player doesn't have any pickaxe, getting it from bank");
+		// resetStage(AccountStage.WOODCUTTING_GOLD_FARM.name());
+		// }
+
 		if (!WC_AREA.contains(myPlayer())) {
-			log("not in mining zone!");
+			log("not in a zone!");
 			resetStage(AccountStage.WOODCUTTING_GOLD_FARM.name());
 		}
 
@@ -221,7 +260,7 @@ public class WoodcuttingConfig extends QuestStep {
 		// also execute this task to get a new mining pickaxe
 		// When having more than 200 clay, then go to the g.e. and sell it
 		if (getBank().isOpen() && logsAmount > 200) {
-			setGrandExchangeActions(new Ge2(getEvent(), this));
+			setGrandExchangeActions(new GrandExchangeHandlerWoodcutting(getEvent(), this));
 		}
 
 		int clayAmount = -1;
@@ -267,29 +306,30 @@ public class WoodcuttingConfig extends QuestStep {
 
 		// This is made so when a player reaches a level, or doesn't have a base
 		// pickaxe, then it goes to the g.e. and buys one according to its mining level
-		if (totalAccountValue > Axe.BRONZE.getPrice() && getBank().isOpen() && getSkills().getStatic(Skill.MINING) <= 3
+		if (totalAccountValue > Axe.BRONZE.getPrice() && getBank().isOpen()
+				&& getSkills().getStatic(Skill.WOODCUTTING) <= 3
 				&& ((!getInventory().contains("Bronze axe") && !getBank().contains("Bronze axe")))) {
-			setGrandExchangeActions(new Ge2(getEvent(), this));
+			setGrandExchangeActions(new GrandExchangeHandlerWoodcutting(getEvent(), this));
 		} else if (totalAccountValue > Axe.IRON.getPrice() && getBank().isOpen()
-				&& getSkills().getStatic(Skill.MINING) > 3 && getSkills().getStatic(Skill.MINING) < 6
+				&& getSkills().getStatic(Skill.WOODCUTTING) > 3 && getSkills().getStatic(Skill.WOODCUTTING) < 6
 				&& ((!getInventory().contains("Iron axe") && !getBank().contains("Iron axe")))) {
-			setGrandExchangeActions(new Ge2(getEvent(), this));
+			setGrandExchangeActions(new GrandExchangeHandlerWoodcutting(getEvent(), this));
 		} else if (totalAccountValue > Axe.STEEL.getPrice() && getBank().isOpen()
-				&& getSkills().getStatic(Skill.MINING) >= 6 && getSkills().getStatic(Skill.MINING) < 21
+				&& getSkills().getStatic(Skill.WOODCUTTING) >= 6 && getSkills().getStatic(Skill.WOODCUTTING) < 21
 				&& ((!getInventory().contains("Steel axe") && !getBank().contains("Steel axe")))) {
-			setGrandExchangeActions(new Ge2(getEvent(), this));
+			setGrandExchangeActions(new GrandExchangeHandlerWoodcutting(getEvent(), this));
 		} else if (totalAccountValue > Axe.MITHRIL.getPrice() && getBank().isOpen()
-				&& getSkills().getStatic(Skill.MINING) >= 21
+				&& getSkills().getStatic(Skill.WOODCUTTING) >= 21
 				&& ((!getInventory().contains("Mithril axe") && !getBank().contains("Mithril axe")))) {
-			setGrandExchangeActions(new Ge2(getEvent(), this));
+			setGrandExchangeActions(new GrandExchangeHandlerWoodcutting(getEvent(), this));
 		} else if (totalAccountValue > Axe.ADAMANT.getPrice() && getBank().isOpen()
-				&& getSkills().getStatic(Skill.MINING) >= 31 && getSkills().getStatic(Skill.MINING) < 41
+				&& getSkills().getStatic(Skill.WOODCUTTING) >= 31 && getSkills().getStatic(Skill.WOODCUTTING) < 41
 				&& ((!getInventory().contains("Adamant axe") && !getBank().contains("Adamant axe")))) {
-			setGrandExchangeActions(new Ge2(getEvent(), this));
+			setGrandExchangeActions(new GrandExchangeHandlerWoodcutting(getEvent(), this));
 		} else if (totalAccountValue > Axe.RUNE.getPrice() && getBank().isOpen()
-				&& getSkills().getStatic(Skill.MINING) >= 41
+				&& getSkills().getStatic(Skill.WOODCUTTING) >= 41
 				&& ((!getInventory().contains("Rune axe") && !getBank().contains("Rune axe")))) {
-			setGrandExchangeActions(new Ge2(getEvent(), this));
+			setGrandExchangeActions(new GrandExchangeHandlerWoodcutting(getEvent(), this));
 		}
 
 		log("g.e. running " + getGrandExchangeTask() + " "
@@ -353,7 +393,7 @@ public class WoodcuttingConfig extends QuestStep {
 	/**
 	 * @return the grandExchangeActions
 	 */
-	public Ge2 getGrandExchangeTask() {
+	public GrandExchangeHandlerWoodcutting getGrandExchangeTask() {
 		return grandExchangeActions;
 	}
 
@@ -361,7 +401,7 @@ public class WoodcuttingConfig extends QuestStep {
 	 * @param grandExchangeActions
 	 *            the grandExchangeActions to set
 	 */
-	public void setGrandExchangeActions(Ge2 grandExchangeActions) {
+	public void setGrandExchangeActions(GrandExchangeHandlerWoodcutting grandExchangeActions) {
 		this.grandExchangeActions = grandExchangeActions;
 	}
 

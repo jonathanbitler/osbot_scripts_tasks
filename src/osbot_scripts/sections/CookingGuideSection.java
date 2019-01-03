@@ -22,6 +22,14 @@ public class CookingGuideSection extends TutorialSection {
 		// TODO Auto-generated constructor stub
 	}
 
+	public boolean deselectItem() {
+		if (inventory.isItemSelected()) {
+			int slot = inventory.getSlot(inventory.getSelectedItemName());
+			return getQuests().mouse.click(inventory.getMouseDestination(slot), true);
+		}
+		return false;
+	}
+
 	private void openDoor() {
 		RS2Object doorObject = getObjects().closest(9709);
 
@@ -51,6 +59,7 @@ public class CookingGuideSection extends TutorialSection {
 	}
 
 	private void doughOnFire() {
+		deselectItem();
 		RS2Object fireRange = getObjects().closest(9736);
 		if (fireRange != null) {
 			fireRange.interact("Cook");

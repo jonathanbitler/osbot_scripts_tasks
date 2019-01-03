@@ -143,6 +143,10 @@ public class WalkTask extends TaskSkeleton implements Task {
 	private static final Area COOKING_ASSISTANT_WRONG_PLACE = new Area(
 			new int[][] { { 3205, 3225 }, { 3205, 3218 }, { 3213, 3218 }, { 3213, 3227 }, { 3205, 3227 } });
 
+	public Area getArea(Position pos, int size) {
+		return new Area(pos.translate(-size, -size), pos.translate(size, size));
+	}
+
 	@Override
 	public void loop() {
 		// if (!ranOnStart) {
@@ -154,7 +158,7 @@ public class WalkTask extends TaskSkeleton implements Task {
 
 		// Not in begin area? Then walk to it by itself with webwalking
 		if (getBeginArea() != null && !getBeginArea().contains(getApi().myPlayer())) {
-			getApi().getWalking().webWalk(getPathToWalk().get(getPathToWalk().size() - 1));
+			getApi().getWalking().webWalk(getArea(getPathToWalk().get(getPathToWalk().size() - 1), 3));
 		}
 
 		if (!isWalkPathWithoutSteps()) {
@@ -217,7 +221,7 @@ public class WalkTask extends TaskSkeleton implements Task {
 				if (getFinishArea() != null) {
 					getApi().getWalking().webWalk(getFinishArea());
 				} else {
-					getApi().getWalking().webWalk(getPathToWalk().get(getPathToWalk().size() - 1));
+					getApi().getWalking().webWalk(getArea(getPathToWalk().get(getPathToWalk().size() - 1), 3));
 				}
 				getApi().log("Account stuck, trying to walk with webwalking");
 
@@ -232,7 +236,7 @@ public class WalkTask extends TaskSkeleton implements Task {
 						setWebWalking(false);
 					}
 				} else {
-					if (!getApi().getWalking().webWalk(getPathToWalk().get(getPathToWalk().size() - 1))) {
+					if (!getApi().getWalking().webWalk(getArea(getPathToWalk().get(getPathToWalk().size() - 1), 3))) {
 						setWebWalking(false);
 					}
 				}
@@ -246,8 +250,6 @@ public class WalkTask extends TaskSkeleton implements Task {
 				long lastWalk = System.currentTimeMillis();
 
 				for (int i = 0; i < getPathToWalk().size(); i++) {
-					// while (!getProv().myPlayer().getArea(20).contains(getPathToWalk().get(i))) {
-					// getProv().getDoorHandler().handleNextObstacle(getPathToWalk().get(i));
 					getApi().getDoorHandler().handleNextObstacle(getPathToWalk().get(i));
 					if (!getApi().getWalking().walk(getPathToWalk().get(i))) {
 						failToWalk++;
@@ -257,14 +259,6 @@ public class WalkTask extends TaskSkeleton implements Task {
 					long took = (endWalk - lastWalk) / 3600;
 					getApi().log("taking next path.. (" + i + "/" + getPathToWalk().size() + ")" + " took: " + took
 							+ " seconds");
-					// getProv().log("waiting for walking sleep..");
-					// try {
-					// Thread.sleep(1000);
-					// } catch (InterruptedException e) {
-					// // TODO Auto-generated catch block
-					// e.printStackTrace();
-					// }
-					// }
 				}
 			}
 		} else {
@@ -272,9 +266,13 @@ public class WalkTask extends TaskSkeleton implements Task {
 				if (getFinishArea() != null) {
 					getApi().getWalking().webWalk(getFinishArea());
 				} else {
-					getApi().getWalking().webWalk(getPathToWalk().get(getPathToWalk().size() - 1));
+					getApi().getWalking().webWalk(getArea(getPathToWalk().get(getPathToWalk().size() - 1), 3));
 				}
 			}
+		}
+
+		if (getFinishArea() != null && !getFinishArea().contains(getApi().myPlayer())) {
+			getApi().getWalking().webWalk(getFinishArea());
 		}
 	}
 

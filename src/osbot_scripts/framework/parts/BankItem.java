@@ -1,5 +1,9 @@
 package osbot_scripts.framework.parts;
 
+import java.io.IOException;
+
+import osbot_scripts.framework.GEPrice;
+
 public class BankItem {
 
 	private String name;
@@ -33,7 +37,18 @@ public class BankItem {
 		setName(name);
 		setItemId(itemId);
 		setAmount(amount);
-		setPrice(sellPrice);
+
+		if (sellPrice == 1) {
+			GEPrice price = new GEPrice();
+			try {
+				setPrice(price.getBuyingPrice(itemId));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else {
+			setPrice(sellPrice);
+		}
 		setWithdrawNoted(withdrawNoted);
 	}
 

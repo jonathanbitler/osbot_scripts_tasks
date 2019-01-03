@@ -148,8 +148,10 @@ public class CookingsAssistant extends QuestStep {
 				new WalkTask("path to wind mill", 1, QUEST_CONFIG, getBot().getMethods(),
 						new ArrayList<Position>(Arrays.asList(new Position(3165, 3308, 2))), WHEAT_FLOOR_2, getScript(),
 						getEvent(), true, false));
-		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new ItemOnObjectTask("grain on machine", 1,
-				QUEST_CONFIG, getBot().getMethods(), FLOWER_AREA, 24961, "Grain"));
+
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+				new ItemOnObjectTask("grain on machine", 1, QUEST_CONFIG, getBot().getMethods(), FLOWER_AREA, 24961,
+						new String[] { "There is already grain in the hopper." }, "Grain"));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new ClickObjectTask("operate", 1, QUEST_CONFIG, getBot().getMethods(), WHEAT_FLOOR_2, 24964, 24967,
@@ -193,7 +195,7 @@ public class CookingsAssistant extends QuestStep {
 	@Override
 	public void timeOutHandling(TaskHandler tasks) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }

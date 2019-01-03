@@ -7,6 +7,8 @@ import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.script.Script;
 
+import osbot_scripts.bot.utils.BotCommands;
+import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.framework.AccountStage;
 import osbot_scripts.framework.ClickObjectTask;
@@ -144,11 +146,27 @@ public class SheepShearerConfiguration extends QuestStep {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
+
 	@Override
 	public void timeOutHandling(TaskHandler tasks) {
-		// TODO Auto-generated method stub
-		
+		boolean clickNpc = tasks.getCurrentTask().getClass().getSimpleName().equalsIgnoreCase("ClickOnNpcTask");
+		boolean clickOnWidgetTask = tasks.getCurrentTask().getClass().getSimpleName()
+				.equalsIgnoreCase("ClickOnWidgetTask");
+
+		if (clickOnWidgetTask && tasks.getTaskAttempts() > 350) {
+			DatabaseUtilities.updateAccountStatusInDatabase(this, "BANNED", getEvent().getUsername(), getEvent());
+			BotCommands.waitBeforeKill(this, "BECAUSE DEAD AND TIMEOUT ON OBJECT");
+		}
+
+		// Clicking npcs when also having ball of wools in inventory & in that area
+		if (clickNpc && tasks.getTaskAttempts() > 50 && getInventory().contains("Ball of wool")
+				&& new Area(new int[][] { { 3193, 3277 }, { 3205, 3277 }, { 3206, 3276 }, { 3210, 3276 },
+						{ 3212, 3274 }, { 3212, 3270 }, { 3213, 3269 }, { 3213, 3257 }, { 3194, 3257 }, { 3193, 3258 },
+						{ 3193, 3259 }, { 3192, 3260 }, { 3192, 3261 }, { 3193, 3262 }, { 3193, 3277 } })
+								.contains(myPlayer())) {
+			getInventory().dropAll("Ball of wool");
+			// BotCommands.waitBeforeKill(this, "BECAUSE TOO MANY TIMES CLICKED ON SHEEP!");
+		}
 	}
 
 }

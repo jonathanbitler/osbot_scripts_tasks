@@ -21,14 +21,14 @@ public class CombatGuideSection extends TutorialSection {
 	}
 
 	private Position instructorPosition = new Position(3107, 9510, 0);
-	
-    private static final Area LADDER_AREA = new Area(3108, 9523, 3114, 9529);
+
+	private static final Area LADDER_AREA = new Area(3108, 9523, 3114, 9529);
 
 	@Override
 	public void onLoop() throws InterruptedException {
 		// TODO Auto-generated method stub
 		log(getProgress());
-		
+
 		if (pendingContinue()) {
 			selectContinue();
 			return;
@@ -37,19 +37,21 @@ public class CombatGuideSection extends TutorialSection {
 		switch (getProgress()) {
 		case 370:
 			if (!myPlayer().getArea(5).contains(getInstructorPosition())) {
-				getWalking().walk(getInstructorPosition());
+				if (!getWalking().walk(getInstructorPosition())) {
+					getWalking().webWalk(getInstructorPosition());
+				}
 			} else {
 				talkAndContinueWithInstructor();
 			}
 			break;
 
 		case 390:
-//			getTabs().open(Tab.EQUIPMENT);
+			// getTabs().open(Tab.EQUIPMENT);
 			Tabs.openTab(this, TabWid.EQUIPMENT);
 			break;
 
 		case 400:
-//			getTabs().open(Tab.EQUIPMENT);
+			// getTabs().open(Tab.EQUIPMENT);
 			Tabs.openTab(this, TabWid.EQUIPMENT);
 			RS2Widget statsWidget = getWidgets().get(387, 18);
 			if (statsWidget != null) {
@@ -90,7 +92,7 @@ public class CombatGuideSection extends TutorialSection {
 			break;
 
 		case 430:
-//			getTabs().open(Tab.ATTACK);
+			// getTabs().open(Tab.ATTACK);
 			Tabs.openTab(this, TabWid.COMBAT);
 			break;
 
@@ -127,13 +129,13 @@ public class CombatGuideSection extends TutorialSection {
 			}
 			break;
 
-		 case 500:
-             if (!LADDER_AREA.contains(myPosition())) {
-                 getWalking().walk(LADDER_AREA);
-             } else if (getObjects().closest("Ladder").interact("Climb-up")) {
-                 Sleep.sleepUntil(() -> !LADDER_AREA.contains(myPosition()), 5000, 600);
-             }
-             break;
+		case 500:
+			if (!LADDER_AREA.contains(myPosition())) {
+				getWalking().walk(LADDER_AREA);
+			} else if (getObjects().closest("Ladder").interact("Climb-up")) {
+				Sleep.sleepUntil(() -> !LADDER_AREA.contains(myPosition()), 5000, 600);
+			}
+			break;
 
 		case 510:
 			TutorialScript.mainState = getNextMainState();
