@@ -36,12 +36,23 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 
 	private QuestStep quest;
 
+	/**
+	 * 
+	 * @param prov
+	 * @param toBuy
+	 * @param toSell
+	 * @param login
+	 * @param script
+	 * @param quest
+	 */
 	public GrandExchangeTask(MethodProvider prov, BankItem[] toBuy, BankItem[] toSell, LoginEvent login, Script script,
 			QuestStep quest) {
 
 		setProv(prov);
+
 		setItemsToBuy(new ArrayList<BankItem>(Arrays.asList(toBuy)));
 		setItemsToSell(new ArrayList<BankItem>(Arrays.asList(toSell)));
+
 		setLogin(login);
 		setScript(script);
 		setQuest(quest);
@@ -503,7 +514,7 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 	private int takeItemsToBuyAndSell(boolean editPriceWhenTooMuchDifference) {
 		for (BankItem sell : itemsToSell) {
 			if (sell.isCompletedTask() || (getApi().getBank().getAmount(sell.getItemId()) <= 0
-					&& getApi().getInventory().getAmount(sell.getItemId()) <= 0)) {
+					&& getApi().getInventory().getAmount(sell.getItemId()) <= 0) || sell.getItemId() < 0) {
 				getApi().log("Skipped to sell this items, didnt have this item in the bank " + sell.getName());
 				sell.setCompletedTask(true);
 				continue;

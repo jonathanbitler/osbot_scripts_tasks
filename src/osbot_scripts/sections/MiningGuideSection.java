@@ -10,6 +10,7 @@ import org.osbot.rs07.api.ui.Tab;
 import org.osbot.rs07.script.MethodProvider;
 
 import osbot_scripts.TutorialScript;
+import osbot_scripts.bot.utils.RandomUtil;
 import osbot_scripts.framework.TabWid;
 import osbot_scripts.framework.Tabs;
 import osbot_scripts.sections.total.progress.MainState;
@@ -129,6 +130,9 @@ public class MiningGuideSection extends TutorialSection {
 	private static final Area SMITH_AREA = new Area(3076, 9497, 3082, 9504);
 
 	private void smith() {
+		if (RandomUtil.getRandomNumberInRange(0, 10) == 0) {
+			super.deselectItem();
+		}
 		if (!SMITH_AREA.contains(myPosition())) {
 			getWalking().walk(SMITH_AREA);
 		} else if (!"Bronze bar".equals(getInventory().getSelectedItemName())) {

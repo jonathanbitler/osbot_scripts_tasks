@@ -14,6 +14,10 @@ import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 
+import osbot_scripts.anti_ban.GaussianRandom;
+import osbot_scripts.anti_ban.MovementManager;
+import osbot_scripts.anti_ban.RandomCameraEvent;
+import osbot_scripts.anti_ban.RandomMouseEvent;
 import osbot_scripts.bot.utils.BotCommands;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
@@ -29,12 +33,32 @@ import osbot_scripts.util.Sleep;
 public abstract class QuestStep extends MethodProvider {
 
 	/**
+	 * Handler for random events (anti-ban)
+	 */
+	private final MovementManager movementManager = new MovementManager();
+
+	/**
 	 * Handling tasks per quest
 	 * 
 	 * @param tasks
 	 */
 	public abstract void timeOutHandling(TaskHandler tasks);
-	
+
+	public void waitOnLoggedIn() {
+		boolean loggedIn = false;
+
+		while (!loggedIn) {
+			loggedIn = getClient().isLoggedIn();
+			log("Waiting on logged in");
+			try {
+				Thread.sleep(1500);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
 	/**
 	 * 
 	 */
@@ -176,13 +200,22 @@ public abstract class QuestStep extends MethodProvider {
 	}
 
 	public boolean killTask = false;
-	
+
 	public boolean isKillTask() {
 		return killTask;
 	}
 
 	public void setKillTask(boolean killTask) {
 		this.killTask = killTask;
+	}
+
+	public void initializeMovementManager() {
+		int frequency = 100000, deviation = 80000;
+		movementManager.register(new RandomCameraEvent(frequency, deviation));
+		movementManager.register(new RandomMouseEvent(frequency, deviation));
+		// log("Registered two gaussian-random input movement events.");
+		// log("Movement event frequency: " + frequency + "ms, deviation: " + deviation
+		// + "ms");
 	}
 
 	/**
@@ -441,7 +474,11 @@ public abstract class QuestStep extends MethodProvider {
 	 *            the questStageStep to set
 	 */
 	public void setQuestStageStep(int questStageStep) {
-		this.questStageStep = questStageStep;
+		try {
+			this.questStageStep = questStageStep;
+		} catch (Exception e) {
+			BotCommands.killProcess(this, getScript(), "BECAUSE COULDN'T FETCH STAGE STEP PROGRESS E01", getEvent());
+		}
 	}
 
 	/**
@@ -564,6 +601,14 @@ public abstract class QuestStep extends MethodProvider {
 	public void setScriptAbstract(ScriptAbstract scriptAbstract) {
 		this.scriptAbstract = scriptAbstract;
 		initializeAbstract();
+		initializeMovementManager();
+	}
+
+	/**
+	 * @return the movementManager
+	 */
+	public MovementManager getMovementManager() {
+		return movementManager;
 	}
 
 }

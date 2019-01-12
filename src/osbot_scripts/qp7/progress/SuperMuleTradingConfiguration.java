@@ -34,11 +34,21 @@ public class SuperMuleTradingConfiguration extends QuestStep {
 		demo.setLoginEvent(getEvent());
 		new Thread(demo).start();
 	}
-	
+
 	@Override
 	public void timeOutHandling(TaskHandler tasks) {
 		// TODO Auto-generated method stub
-		
+
+	}
+
+	private String accountStatus;
+
+	public String getAccountStatus() {
+		return accountStatus;
+	}
+
+	public void setAccountStatus(String accountStatus) {
+		this.accountStatus = accountStatus;
 	}
 
 	private ThreadDemo demo;
@@ -61,14 +71,21 @@ public class SuperMuleTradingConfiguration extends QuestStep {
 
 	@Override
 	public void onLoop() throws InterruptedException {
-
+		if (getAccountStatus() == null) {
+			setAccountStatus(DatabaseUtilities.getAccountStatus(this, getEvent().getUsername(), getEvent()));
+			
+			if (getAccountStatus() == null) {
+				return;
+			}
+		}
+		
 		if (getEvent().hasFinished() && !isLoggedIn()) {
 			BotCommands.killProcess(this, getScript(), "BECAUSE NOT LOGGED IN 01 MULE TRADING", getEvent());
 		}
 
 		log("Running the side loop..");
 
-		System.out.println("STATUS: " + DatabaseUtilities.getAccountStatus(this, getEvent().getUsername(), getEvent()));
+		System.out.println("STATUS: " + getAccountStatus());
 
 		// If the player is not in the grand exchange area, then walk to it
 		if (!new Area(new int[][] { { 3161, 3492 }, { 3168, 3492 }, { 3168, 3485 }, { 3161, 3485 } })
@@ -81,8 +98,7 @@ public class SuperMuleTradingConfiguration extends QuestStep {
 
 		if (tradingDone) {
 
-			if (DatabaseUtilities.getAccountStatus(this, getEvent().getUsername(), getEvent())
-					.equalsIgnoreCase("MULE")) {
+			if (getAccountStatus().equalsIgnoreCase("MULE")) {
 				// if (update) {
 				DatabaseUtilities.updateAccountValue(this, getEvent().getUsername(), 0, getEvent());
 				DatabaseUtilities.updateStageProgress(this, "UNKNOWN", 0, getEvent().getUsername(), getEvent());
@@ -158,19 +174,19 @@ public class SuperMuleTradingConfiguration extends QuestStep {
 
 		tries++;
 
-		if (tries > (DatabaseUtilities.getAccountStatus(this, getEvent().getUsername(), getEvent())
-				.equalsIgnoreCase("MULE") ? 300 : 300)) {
+		if (tries > (getAccountStatus().equalsIgnoreCase("MULE") ? 300 : 300)) {
 			tradingDone = true;
 			// update = true;
 			log("Failed to trade it over");
 		}
 
-		if (DatabaseUtilities.getAccountStatus(this, getEvent().getUsername(), getEvent()).equalsIgnoreCase("MULE")) {
+		if (getAccountStatus().equalsIgnoreCase("MULE")) {
 
 			log("currently trading: " + getTrade().isCurrentlyTrading());
 			if ((getTrade().isCurrentlyTrading() || getTrade().isFirstInterfaceOpen()
 					|| getTrade().isSecondInterfaceOpen()) && itemMap.size() > 0) {
 				trade(getEvent().getTradeWith(), itemMap, false);
+				Thread.sleep(2500);
 				log("currently trading");
 				return;
 			}
@@ -197,7 +213,7 @@ public class SuperMuleTradingConfiguration extends QuestStep {
 					}
 				}
 
-				Thread.sleep(5000);
+				Thread.sleep(2500);
 
 				getBank().depositAll();
 				Sleep.sleepUntil(() -> getInventory().isEmpty(), 5000);
@@ -216,6 +232,7 @@ public class SuperMuleTradingConfiguration extends QuestStep {
 
 			if (itemMap.size() > 0 && getInventory().contains(995)) {
 				trade(getEvent().getTradeWith(), itemMap, false);
+				Thread.sleep(2500);
 			}
 
 			// Open bank
@@ -256,6 +273,7 @@ public class SuperMuleTradingConfiguration extends QuestStep {
 			if (lastTradedPlayer != null && lastTradedPlayer.equalsIgnoreCase(getEvent().getTradeWith())
 					&& !getInventory().contains(995)) {
 				trade(getEvent().getTradeWith(), new HashMap<String, Integer>(), true);
+				Thread.sleep(2500);
 				log("Accepting trade request... doing actions...");
 			} else if (getPlayers().closest(getEvent().getTradeWith()) != null && getBank().isOpen()) {
 				log("Player is near and having bank open, closing...");

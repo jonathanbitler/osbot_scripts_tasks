@@ -4,20 +4,18 @@ import java.awt.Graphics2D;
 import java.io.IOException;
 
 import org.osbot.rs07.api.ui.RS2Widget;
-import org.osbot.rs07.event.Event;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 
+import osbot_scripts.anti_ban.RandomCameraEvent;
+import osbot_scripts.anti_ban.RandomMouseEvent;
 import osbot_scripts.bot.utils.BotCommands;
 import osbot_scripts.bot.utils.Coordinates;
 import osbot_scripts.bot.utils.RandomUtil;
-import osbot_scripts.config.Config;
-import osbot_scripts.database.DatabaseTest;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.events.MandatoryEventsExecution;
-import osbot_scripts.framework.AccountStage;
 import osbot_scripts.login.LoginHandler;
 import osbot_scripts.qp7.progress.CookingsAssistant;
 
@@ -80,7 +78,7 @@ public class CookingAssistantQuest extends Script {
 		login = LoginHandler.login(this, getParameters());
 		login.setScript("QUEST_COOK_ASSISTANT");
 		cooksAssistant = new CookingsAssistant(4626, 29, login, (Script) this);
-		DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN", login);
+//		DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN", login);
 
 		if (login != null && login.getUsername() != null) {
 			getCooksAssistant().setQuestStageStep(

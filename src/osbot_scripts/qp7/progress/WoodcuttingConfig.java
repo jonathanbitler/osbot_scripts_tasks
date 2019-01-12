@@ -27,6 +27,11 @@ import osbot_scripts.framework.GenieLamp;
 import osbot_scripts.framework.WalkTask;
 import osbot_scripts.framework.parts.BankItem;
 import osbot_scripts.hopping.WorldHop;
+import osbot_scripts.scripttypes.templates.WoodcuttingLocationTemplate;
+import osbot_scripts.scripttypes.templates.WoodcuttingTemplateFactory;
+import osbot_scripts.scripttypes.types.WoodcuttingType;
+import osbot_scripts.scripttypes.woodcutting.logs.LogsCuttingWestOfVarrock;
+import osbot_scripts.scripttypes.woodcutting.oak.OakCuttingWestOfVarrock;
 import osbot_scripts.sections.total.progress.MainState;
 import osbot_scripts.taskhandling.TaskHandler;
 
@@ -37,87 +42,17 @@ public class WoodcuttingConfig extends QuestStep {
 		// TODO Auto-generated constructor stub
 	}
 
-	static final Area MINING_ZONE = new Area(new int[][] { { 3132, 3534 }, { 3224, 3527 }, { 3274, 3456 },
-			{ 3242, 3352 }, { 3151, 3352 }, { 3083, 3429 } });
-
-	private static final ArrayList<Position> BANK_POSITION_VARROCK_EAST = new ArrayList<Position>(
-			Arrays.asList(new Position(3184, 3436, 0)));
-
-	private static final ArrayList<Position> BANK_PATH_TO_MINING_AREA = new ArrayList<Position>(
-			Arrays.asList(new Position(3182, 3435, 0), new Position(3181, 3429, 0), new Position(3172, 3424, 0),
-					new Position(3170, 3423, 0), new Position(3171, 3413, 0), new Position(3172, 3403, 0),
-					new Position(3171, 3393, 0), new Position(3172, 3390, 0), new Position(3177, 3381, 0),
-					new Position(3182, 3372, 0), new Position(3180, 3371, 0)));
-
-	private static final ArrayList<Position> BANK_TO_WC_AREA = new ArrayList<Position>(
-			Arrays.asList(new Position(3182, 3435, 0), new Position(3181, 3428, 0), new Position(3172, 3424, 0),
-					new Position(3168, 3422, 0), new Position(3164, 3413, 0)));
-
-	private static final ArrayList<Position> WC_AREA_TO_BANK = new ArrayList<Position>(
-			Arrays.asList(new Position(3165, 3380, 0), new Position(3164, 3390, 0), new Position(3164, 3390, 0),
-					new Position(3164, 3392, 0), new Position(3164, 3402, 0), new Position(3164, 3405, 0),
-					new Position(3167, 3415, 0), new Position(3167, 3415, 0), new Position(3168, 3420, 0),
-					new Position(3176, 3426, 0), new Position(3181, 3430, 0), new Position(3183, 3434, 0),
-					new Position(3183, 3437, 0), new Position(3182, 3437, 0)));
-
-	private static final ArrayList<Position> MINING_POSITION = new ArrayList<Position>(
-			Arrays.asList(new Position(3180, 3370, 0)));
-
-	private static final Area BANK_VARROCK_EAST_AREA = new Area(new int[][] { { 3180, 3447 }, { 3180, 3433 },
-			{ 3186, 3433 }, { 3186, 3436 }, { 3189, 3436 }, { 3189, 3448 }, { 3180, 3448 } });
-
-	private static final Area MINING_AREA = new Area(new int[][] { { 3179, 3379 }, { 3170, 3366 }, { 3175, 3363 },
-			{ 3180, 3365 }, { 3184, 3373 }, { 3186, 3380 }, { 3182, 3381 } });
-
-	private static final Area NOT_IN_CORRECT_ZONE = new Area(
-			new int[][] { { 3187, 3449 }, { 3163, 3447 }, { 3145, 3415 }, { 3149, 3380 }, { 3173, 3344 },
-					{ 3210, 3358 }, { 3232, 3387 }, { 3230, 3438 }, { 3227, 3456 } });
-
-	public static final Area WHOLE_ACTION_AREA = new Area(
-			new int[][] { { 2942, 3519 }, { 3332, 3519 }, { 3335, 3328 }, { 3250, 3175 }, { 2934, 3294 } });
-
 	private String pickaxe;
 
 	private GrandExchangeHandlerWoodcutting grandExchangeActions;
 
-	private static final Area GRAND_EXCHANGE_AREA = new Area(
-			new int[][] { { 3159, 3492 }, { 3159, 3484 }, { 3170, 3485 }, { 3170, 3495 }, { 3159, 3494 } });
-
-	private static final ArrayList<Position> FROM_GE_TO_BANK_PATH = new ArrayList<Position>(
-			Arrays.asList(new Position(3165, 3485, 0), new Position(3165, 3475, 0), new Position(3165, 3465, 0),
-					new Position(3164, 3460, 0), new Position(3173, 3455, 0), new Position(3182, 3450, 0),
-					new Position(3184, 3449, 0), new Position(3183, 3439, 0), new Position(3182, 3435, 0)));
-
-	private static final ArrayList<Position> FROM_BANK_TO_WC_POSITION = new ArrayList<Position>(
-			Arrays.asList(new Position(3182, 3435, 0), new Position(3182, 3428, 0), new Position(3173, 3427, 0),
-					new Position(3168, 3418, 0), new Position(3165, 3412, 0)));
-
-	private static final ArrayList<Position> FROM_GE_TO_WC_POSITION = new ArrayList<Position>(
-			Arrays.asList(new Position(3164, 3484, 0), new Position(3165, 3474, 0), new Position(3166, 3464, 0),
-					new Position(3167, 3454, 0), new Position(3168, 3452, 0), new Position(3172, 3443, 0),
-					new Position(3176, 3436, 0), new Position(3172, 3427, 0), new Position(3168, 3418, 0),
-					new Position(3164, 3412, 0)));
-
 	private PlayersAround around = new PlayersAround(this);
 
-	public static final Area WC_AREA = new Area(
-			new int[][] { { 3154, 3419 }, { 3158, 3413 }, { 3158, 3408 }, { 3153, 3395 }, { 3156, 3374 },
-					{ 3166, 3373 }, { 3175, 3378 }, { 3175, 3390 }, { 3173, 3401 }, { 3173, 3428 }, { 3156, 3424 } });
+	private WoodcuttingLocationTemplate woodcuttingTemplate;
 
 	@Override
 	public void onStart() {
-		boolean loggedIn = false;
-
-		while (!loggedIn) {
-			loggedIn = getClient().isLoggedIn();
-			log("Waiting on logged in");
-			try {
-				Thread.sleep(1500);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+		waitOnLoggedIn();
 
 		if (beginTime == -1) {
 			beginTime = System.currentTimeMillis();
@@ -129,40 +64,61 @@ public class WoodcuttingConfig extends QuestStep {
 
 		boolean oak = getSkills().getStatic(Skill.WOODCUTTING) >= 15;
 
-		if (getEvent() != null && getEvent().hasFinished() && GRAND_EXCHANGE_AREA.contains(myPlayer())) {
+		// Setting a woodcutting template
+		if (getWoodcuttingTemplate() == null) {
+			setWoodcuttingTemplate(
+					oak ? WoodcuttingTemplateFactory.getWoodcuttingOakTemplate() : new LogsCuttingWestOfVarrock());
+		} else if (oak && getWoodcuttingTemplate() != null) {
+			int chanceToSwitchWoodcuttingLocation = RandomUtil.getRandomNumberInRange(0, 4);
+
+			if (chanceToSwitchWoodcuttingLocation == 0) {
+				setWoodcuttingTemplate(
+						oak ? WoodcuttingTemplateFactory.getWoodcuttingOakTemplate() : new LogsCuttingWestOfVarrock());
+			}
+		}
+		log("Got woodcutting template: " + getWoodcuttingTemplate().getClass().getSimpleName());
+
+		if (getEvent() != null && getEvent().hasFinished() && Locations.GRAND_EXCHANGE_AREA.contains(myPlayer())) {
 			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 					new WalkTask("walk to varrock west bank from g.e.", -1, -1, getBot().getMethods(),
-							FROM_GE_TO_BANK_PATH, GRAND_EXCHANGE_AREA,
-							new Area(new int[][] { { 3180, 3441 }, { 3186, 3441 }, { 3186, 3433 }, { 3180, 3433 } }),
-							getScript(), getEvent(), false, true));
+							getWoodcuttingTemplate().getPositionsFromGeToBank(), Locations.GRAND_EXCHANGE_AREA,
+							getWoodcuttingTemplate().getBankAreaLocation(), getScript(), getEvent(), false, true));
 		} else {
 			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 					new WalkTask("walk to varrock west bank from mining", -1, -1, getBot().getMethods(),
-							WC_AREA_TO_BANK, WC_AREA, BANK_VARROCK_EAST_AREA, getScript(), getEvent(), false, true));
+							getWoodcuttingTemplate().getPositionsFromWoodcuttingSpotToBank(),
+							getWoodcuttingTemplate().getAreaOfWoodcuttingLocation(),
+							getWoodcuttingTemplate().getBankAreaLocation(), getScript(), getEvent(), false, true));
 		}
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new BankTask("withdraw axe", 0, getBot().getMethods(), true,
-						new BankItem[] { new BankItem("axe", 1, false) }, BANK_VARROCK_EAST_AREA, this));
+						new BankItem[] { new BankItem("axe", 1, false) },
+						getWoodcuttingTemplate().getBankAreaLocation(), this));
 
-		if (getEvent() != null && getEvent().hasFinished() && GRAND_EXCHANGE_AREA.contains(myPlayer())) {
+		if (getEvent() != null && getEvent().hasFinished() && Locations.GRAND_EXCHANGE_AREA.contains(myPlayer())) {
 			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 					new WalkTask("walk to woodcutting area (normal)", -1, -1, getBot().getMethods(),
-							FROM_GE_TO_WC_POSITION, GRAND_EXCHANGE_AREA, WC_AREA, getScript(), getEvent(), false,
-							true));
+							getWoodcuttingTemplate().getPositionsFromGeToWoodcuttingPosition(),
+							Locations.GRAND_EXCHANGE_AREA, getWoodcuttingTemplate().getAreaOfWoodcuttingLocation(),
+							getScript(), getEvent(), false, true));
 		} else {
-			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-					new WalkTask("walk to woodcutting area", -1, -1, getBot().getMethods(), FROM_BANK_TO_WC_POSITION,
-							BANK_VARROCK_EAST_AREA, WC_AREA, getScript(), getEvent(), false, true));
+			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new WalkTask("walk to woodcutting area",
+					-1, -1, getBot().getMethods(), getWoodcuttingTemplate().getPositionsFromBankToWoodcuttingSpot(),
+					getWoodcuttingTemplate().getBankAreaLocation(),
+					getWoodcuttingTemplate().getAreaOfWoodcuttingLocation(), getScript(), getEvent(), false, true));
 		}
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-				new ClickObjectTask("click tree", -1, -1, getBot().getMethods(), WC_AREA, oak ? 1751 : 1276,
+				new ClickObjectTask("click tree", -1, -1, getBot().getMethods(),
+						getWoodcuttingTemplate().getAreaOfWoodcuttingLocation(), oak ? 1751 : 1276,
 						oak ? new BankItem("Oak logs", 1, false) : new BankItem("Logs", 1, false), true, this, true));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-				new WalkTask("walk to varrock west bank 2", -1, -1, getBot().getMethods(), WC_AREA_TO_BANK, WC_AREA,
-						BANK_VARROCK_EAST_AREA, getScript(), getEvent(), false, true));
+				new WalkTask("walk to varrock west bank 2", -1, -1, getBot().getMethods(),
+						getWoodcuttingTemplate().getPositionsFromWoodcuttingSpotToBank(),
+						getWoodcuttingTemplate().getAreaOfWoodcuttingLocation(),
+						getWoodcuttingTemplate().getBankAreaLocation(), getScript(), getEvent(), false, true));
 
 	}
 
@@ -218,20 +174,19 @@ public class WoodcuttingConfig extends QuestStep {
 			}
 		}
 
-		// if (WC_AREA.contains(myPlayer()) && ((!getInventory().contains(1349) &&
-		// !getInventory().contains(1351)
-		// && !getInventory().contains(1353) && !getInventory().contains(1355) &&
-		// !getInventory().contains(1357)
-		// && !getInventory().contains(1359)))) {
-		// log("Is at wc area wihout an axe, restarting tasks 2!");
-		// resetStage(AccountStage.WOODCUTTING_GOLD_FARM.name());
-		// }
+		if ((getWoodcuttingTemplate().getAreaOfWoodcuttingLocation().contains(myPlayer()))
+				&& ((!getInventory().contains(1349) && !getInventory().contains(1351) && !getInventory().contains(1353)
+						&& !getInventory().contains(1355) && !getInventory().contains(1357)
+						&& !getInventory().contains(1359)))) {
+			log("Is at wc area wihout an axe, restarting tasks 2!");
+			resetStage(AccountStage.WOODCUTTING_GOLD_FARM.name());
+		}
 
-		if (WC_AREA.contains(myPlayer()) && !getInventory().contains("Bronze axe")
-				&& !getInventory().contains("Iron axe") && !getInventory().contains("Steel axe")
-				&& !getInventory().contains("Mithril axe") && !getInventory().contains("Adamant axe")
-				&& !getInventory().contains("Rune axe")) {
-			log("Is at mining area wihout an axe, restarting tasks!");
+		if ((getWoodcuttingTemplate().getAreaOfWoodcuttingLocation().contains(myPlayer()))
+				&& (!getInventory().contains("Bronze axe") && !getInventory().contains("Iron axe")
+						&& !getInventory().contains("Steel axe") && !getInventory().contains("Mithril axe")
+						&& !getInventory().contains("Adamant axe") && !getInventory().contains("Rune axe"))) {
+			log("Is at woodcutting area wihout an axe, restarting tasks!");
 			resetStage(AccountStage.WOODCUTTING_GOLD_FARM.name());
 		}
 
@@ -246,7 +201,7 @@ public class WoodcuttingConfig extends QuestStep {
 		// resetStage(AccountStage.WOODCUTTING_GOLD_FARM.name());
 		// }
 
-		if (!WC_AREA.contains(myPlayer())) {
+		if (!getWoodcuttingTemplate().getAreaOfOperating().contains(myPlayer())) {
 			log("not in a zone!");
 			resetStage(AccountStage.WOODCUTTING_GOLD_FARM.name());
 		}
@@ -282,7 +237,7 @@ public class WoodcuttingConfig extends QuestStep {
 			int coinsAmount = (int) getBank().getAmount(995);
 
 			// If has more than 100k then start tradinig it over to the mule
-			if (coinsAmount > 44_000) {
+			if (coinsAmount > 15_000) {
 
 				// Setting the status of the account that it wants to mule to another account
 				// in
@@ -410,6 +365,21 @@ public class WoodcuttingConfig extends QuestStep {
 		// if (tasks.getTaskAttempts() > 5000) {
 		// getScript().stop(false);
 		// }
+	}
+
+	/**
+	 * @return the woodcuttingTemplate
+	 */
+	public WoodcuttingLocationTemplate getWoodcuttingTemplate() {
+		return woodcuttingTemplate;
+	}
+
+	/**
+	 * @param woodcuttingTemplate
+	 *            the woodcuttingTemplate to set
+	 */
+	public void setWoodcuttingTemplate(WoodcuttingLocationTemplate woodcuttingTemplate) {
+		this.woodcuttingTemplate = woodcuttingTemplate;
 	}
 
 }

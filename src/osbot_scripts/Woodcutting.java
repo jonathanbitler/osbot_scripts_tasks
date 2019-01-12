@@ -15,7 +15,7 @@ import osbot_scripts.events.LoginEvent;
 import osbot_scripts.events.MandatoryEventsExecution;
 import osbot_scripts.login.LoginHandler;
 import osbot_scripts.qp7.progress.WoodcuttingConfig;
-import osbot_scripts.scripttypes.WoodcuttingType;
+import osbot_scripts.scripttypes.types.WoodcuttingType;
 
 @ScriptManifest(author = "pim97", info = "WOODCUTTING_GOLD_FARM", logo = "", name = "WOODCUTTING_GOLD_FARM", version = 1.0)
 public class Woodcutting extends Script {
@@ -78,7 +78,7 @@ public class Woodcutting extends Script {
 
 			if (login != null) {
 				login.setScript("WOODCUTTING_GOLD_FARM");
-				DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN", login);
+//				DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN", login);
 			}
 		}
 		goldfarmMining = new WoodcuttingConfig(login, (Script) this);

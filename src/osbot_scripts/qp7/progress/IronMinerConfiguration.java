@@ -31,6 +31,7 @@ import osbot_scripts.sections.total.progress.MainState;
 import osbot_scripts.taskhandling.TaskHandler;
 import osbot_scripts.util.Sleep;
 
+@Deprecated
 public class IronMinerConfiguration extends QuestStep {
 
 	public IronMinerConfiguration(LoginEvent event, Script script) {
@@ -248,9 +249,9 @@ public class IronMinerConfiguration extends QuestStep {
 			resetStage(AccountStage.MINING_IRON_ORE.name());
 		}
 
-		if (!MiningLevelTo15Configuration.MINING_ZONE.contains(myPlayer())) {
-			resetStage(AccountStage.MINING_IRON_ORE.name());
-		}
+//		if (!MiningLevelTo15Configuration.MINING_ZONE.contains(myPlayer())) {
+//			resetStage(AccountStage.MINING_IRON_ORE.name());
+//		}
 
 		// When having more than 200 clay, then go to the g.e. and sell it
 		if (getBank().isOpen() && getBank().getAmount("Iron ore") > 200) {

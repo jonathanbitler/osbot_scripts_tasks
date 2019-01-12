@@ -8,6 +8,8 @@ import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.script.Script;
 
+import osbot_scripts.bot.utils.BotCommands;
+import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.framework.AccountStage;
 import osbot_scripts.framework.ClickObjectTask;
@@ -195,7 +197,17 @@ public class CookingsAssistant extends QuestStep {
 	@Override
 	public void timeOutHandling(TaskHandler tasks) {
 		// TODO Auto-generated method stub
+		boolean isClickTask = tasks.getCurrentTask().getClass().getSimpleName().equalsIgnoreCase("ClickObjectTask");
 
+		if (new Area(new int[][] { { 3253, 3271 }, { 3253, 3255 }, { 3266, 3255 }, { 3266, 3296 }, { 3253, 3296 },
+				{ 3240, 3296 }, { 3241, 3295 }, { 3241, 3294 }, { 3242, 3293 }, { 3242, 3290 }, { 3241, 3289 },
+				{ 3241, 3288 }, { 3240, 3287 }, { 3240, 3285 }, { 3244, 3281 }, { 3244, 3280 }, { 3246, 3278 },
+				{ 3249, 3278 }, { 3251, 3276 }, { 3251, 3274 }, { 3253, 3272 }, { 3253, 3271 } }).contains(myPlayer())
+				&& isClickTask && tasks.getTaskAttempts() > 20) {
+			DatabaseUtilities.updateAccountStatusInDatabase(tasks.getProvider(), "MANUAL_REVIEW", getEvent().getUsername(),
+					tasks.getEvent());
+			BotCommands.waitBeforeKill(tasks.getProvider(), "BECAUSE OF ACCOUNT IS BANNED");
+		}
 	}
 
 }

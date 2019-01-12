@@ -89,7 +89,7 @@ public class RomeoAndJulietQuest extends Script {
 		// TODO Auto-generated method stub
 		login = LoginHandler.login(this, getParameters());
 		login.setScript("QUEST_ROMEO_AND_JULIET");
-		DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN", login);
+//		DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN", login);
 		romeoAndJuliet = new RomeoAndJuliet(login, (Script) this);
 
 		if (login != null && login.getUsername() != null) {

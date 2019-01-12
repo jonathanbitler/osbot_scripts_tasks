@@ -8,6 +8,7 @@ import org.osbot.rs07.api.ui.Tab;
 import osbot_scripts.TutorialScript;
 import osbot_scripts.framework.TabWid;
 import osbot_scripts.framework.Tabs;
+import osbot_scripts.sections.decide.CheckInWhatArea;
 import osbot_scripts.sections.total.progress.MainState;
 
 public class QuestGuideSection extends TutorialSection {
@@ -44,7 +45,7 @@ public class QuestGuideSection extends TutorialSection {
 			break;
 
 		case 230:
-//			getTabs().open(Tab.QUEST);
+			// getTabs().open(Tab.QUEST);
 			Tabs.openTab(this, TabWid.QUEST);
 			break;
 
@@ -58,6 +59,15 @@ public class QuestGuideSection extends TutorialSection {
 
 		case 260:
 			TutorialScript.mainState = getNextMainState();
+			break;
+
+		case 510:
+			getWalking()
+					.webWalk(new Area(new int[][] { { 3119, 3124 }, { 3119, 3119 }, { 3125, 3119 }, { 3125, 3124 } }));
+			if (new Area(new int[][] { { 3119, 3124 }, { 3119, 3119 }, { 3125, 3119 }, { 3125, 3124 } })
+					.contains(myPlayer())) {
+				TutorialScript.mainState = CheckInWhatArea.getState(this);
+			}
 			break;
 		}
 

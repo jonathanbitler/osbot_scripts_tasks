@@ -247,6 +247,11 @@ public class TaskHandler {
 					}
 
 					/**
+					 * Movement manager
+					 */
+					getQuest().getMovementManager().roll(getProvider());
+					
+					/**
 					 * Timeout handling for quests specific
 					 */
 					getQuest().timeOutHandling(this);
@@ -297,7 +302,7 @@ public class TaskHandler {
 
 		// When all the tasks are complete, start with a new one with fresh variables
 		if (!getQuest().isQuest()
-				&& getQuest().getQuestStageStep() >= (getQuest().getTaskHandler().getTasks().size() - 1)
+				&& getQuest().getQuestStageStep() > (getQuest().getTaskHandler().getTasks().size() - 1)
 				&& (getCurrentTask() != null
 						&& !getCurrentTask().getClass().getSimpleName().equalsIgnoreCase("GrandExchangeTask"))) {
 			// getQuest().resetStage(null);

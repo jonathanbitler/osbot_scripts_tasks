@@ -1,20 +1,16 @@
 package osbot_scripts.qp7.progress;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 
 import org.osbot.rs07.api.map.Area;
-import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.model.GroundItem;
-import org.osbot.rs07.api.model.Player;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 
 import osbot_scripts.bot.utils.BotCommands;
+import osbot_scripts.bot.utils.RandomUtil;
 import osbot_scripts.config.Config;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
@@ -29,6 +25,9 @@ import osbot_scripts.framework.WalkTask;
 import osbot_scripts.framework.parts.BankItem;
 import osbot_scripts.hopping.WorldHop;
 import osbot_scripts.qp7.progress.entities.Rock;
+import osbot_scripts.scripttypes.mining.clay.ClayMiningWestOfVarrock;
+import osbot_scripts.scripttypes.mining.clay.IronMiningWestOfVarrock;
+import osbot_scripts.scripttypes.templates.MiningLocationTemplate;
 import osbot_scripts.sections.total.progress.MainState;
 import osbot_scripts.taskhandling.TaskHandler;
 import osbot_scripts.util.Sleep;
@@ -40,65 +39,18 @@ public class MiningLevelTo15Configuration extends QuestStep {
 		// TODO Auto-generated constructor stub
 	}
 
-	static final Area MINING_ZONE = new Area(new int[][] { { 3132, 3534 }, { 3224, 3527 }, { 3274, 3456 },
-			{ 3242, 3352 }, { 3151, 3352 }, { 3083, 3429 } });
-
-	private static final ArrayList<Position> BANK_POSITION_VARROCK_EAST = new ArrayList<Position>(
-			Arrays.asList(new Position(3184, 3436, 0)));
-
-	private static final ArrayList<Position> BANK_PATH_TO_MINING_AREA = new ArrayList<Position>(
-			Arrays.asList(new Position(3182, 3435, 0), new Position(3181, 3429, 0), new Position(3172, 3424, 0),
-					new Position(3170, 3423, 0), new Position(3171, 3413, 0), new Position(3172, 3403, 0),
-					new Position(3171, 3393, 0), new Position(3172, 3390, 0), new Position(3177, 3381, 0),
-					new Position(3182, 3372, 0), new Position(3180, 3371, 0)));
-
-	private static final ArrayList<Position> MINING_AREA_TO_BANK = new ArrayList<Position>(
-			Arrays.asList(new Position(3183, 3371, 0), new Position(3178, 3380, 0), new Position(3173, 3389, 0),
-					new Position(3168, 3398, 0), new Position(3168, 3399, 0), new Position(3169, 3409, 0),
-					new Position(3170, 3419, 0), new Position(3172, 3428, 0), new Position(3182, 3431, 0),
-					new Position(3183, 3431, 0), new Position(3184, 3436, 0)));
-
-	private static final ArrayList<Position> MINING_POSITION = new ArrayList<Position>(
-			Arrays.asList(new Position(3180, 3370, 0)));
-
-	private static final Area BANK_VARROCK_EAST_AREA = new Area(new int[][] { { 3180, 3447 }, { 3180, 3433 },
-			{ 3186, 3433 }, { 3186, 3436 }, { 3189, 3436 }, { 3189, 3448 }, { 3180, 3448 } });
-
-	private static final Area MINING_AREA = new Area(new int[][] { { 3179, 3379 }, { 3170, 3366 }, { 3175, 3363 },
-			{ 3180, 3365 }, { 3184, 3373 }, { 3186, 3380 }, { 3182, 3381 } });
-
-	private static final Area NOT_IN_CORRECT_ZONE = new Area(
-			new int[][] { { 3187, 3449 }, { 3163, 3447 }, { 3145, 3415 }, { 3149, 3380 }, { 3173, 3344 },
-					{ 3210, 3358 }, { 3232, 3387 }, { 3230, 3438 }, { 3227, 3456 } });
-
-	public static final Area WHOLE_ACTION_AREA = new Area(
-			new int[][] { { 2942, 3519 }, { 3332, 3519 }, { 3335, 3328 }, { 3250, 3175 }, { 2934, 3294 } });
+	private MiningLocationTemplate miningTemplate;
 
 	private String pickaxe;
 
 	private Ge2 grandExchangeActions;
 
-	private static final Area GRAND_EXCHANGE_AREA = new Area(
-			new int[][] { { 3159, 3492 }, { 3159, 3484 }, { 3170, 3485 }, { 3170, 3495 }, { 3159, 3494 } });
-
-	private static final ArrayList<Position> FROM_GE_TO_BANK_PATH = new ArrayList<Position>(
-			Arrays.asList(new Position(3165, 3485, 0), new Position(3165, 3475, 0), new Position(3165, 3465, 0),
-					new Position(3164, 3460, 0), new Position(3173, 3455, 0), new Position(3182, 3450, 0),
-					new Position(3184, 3449, 0), new Position(3183, 3439, 0), new Position(3182, 3435, 0)));
-
-	private static final ArrayList<Position> FROM_GE_TO_MINING_POSITION = new ArrayList<Position>(
-			Arrays.asList(new Position(3164, 3485, 0), new Position(3164, 3475, 0), new Position(3164, 3465, 0),
-					new Position(3164, 3455, 0), new Position(3165, 3451, 0), new Position(3174, 3447, 0),
-					new Position(3175, 3446, 0), new Position(3173, 3436, 0), new Position(3171, 3426, 0),
-					new Position(3169, 3416, 0), new Position(3167, 3413, 0), new Position(3169, 3403, 0),
-					new Position(3171, 3393, 0), new Position(3173, 3383, 0), new Position(3173, 3383, 0),
-					new Position(3182, 3378, 0), new Position(3187, 3375, 0), new Position(3179, 3369, 0),
-					new Position(3177, 3367, 0)));
-
 	private PlayersAround around = new PlayersAround(this);
 
 	@Override
 	public void onStart() {
+		waitOnLoggedIn();
+
 		if (beginTime == -1) {
 			beginTime = System.currentTimeMillis();
 
@@ -106,68 +58,88 @@ public class MiningLevelTo15Configuration extends QuestStep {
 			new Thread(around).start();
 		}
 
-		if (getEvent() != null && getEvent().hasFinished() && GRAND_EXCHANGE_AREA.contains(myPlayer())) {
+		boolean iron = getSkills().getStatic(Skill.MINING) >= 15 && getQuests().getQuestPoints() >= 7;
+
+		if (iron) {
+			setMiningTemplate(new IronMiningWestOfVarrock());
+		} else {
+			setMiningTemplate(new ClayMiningWestOfVarrock());
+		}
+
+		boolean isDoingIronMining = getMiningTemplate() instanceof IronMiningWestOfVarrock;
+
+		log("Set mining template to: " + getMiningTemplate() + " iron: " + isDoingIronMining);
+
+		if (getEvent() != null && getEvent().hasFinished() && Locations.GRAND_EXCHANGE_AREA.contains(myPlayer())) {
 			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 					new WalkTask("walk to varrock west bank from g.e.", -1, -1, getBot().getMethods(),
-							FROM_GE_TO_BANK_PATH, GRAND_EXCHANGE_AREA,
-							new Area(new int[][] { { 3180, 3441 }, { 3186, 3441 }, { 3186, 3433 }, { 3180, 3433 } }),
-							getScript(), getEvent(), false, true));
+							getMiningTemplate().getPositionsFromGeToBank(), Locations.GRAND_EXCHANGE_AREA,
+							getMiningTemplate().getBankAreaLocation(), getScript(), getEvent(), false, true));
 		} else {
 			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 					new WalkTask("walk to varrock west bank from mining", -1, -1, getBot().getMethods(),
-							MINING_AREA_TO_BANK,
-							new Area(new int[][] { { 3174, 3379 }, { 3186, 3379 }, { 3185, 3366 }, { 3176, 3362 },
-									{ 3169, 3364 }, { 3171, 3372 } }),
-							new Area(new int[][] { { 3180, 3441 }, { 3186, 3441 }, { 3186, 3433 }, { 3180, 3433 } }),
+							getMiningTemplate().getPositionsFromMiningSpotToBank(),
+							getMiningTemplate().getAreaOfMiningLocation(), getMiningTemplate().getBankAreaLocation(),
 							getScript(), getEvent(), false, true));
 		}
 
-		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new BankTask("withdraw pickaxe", 0,
-				getBot().getMethods(), true, new BankItem[] { new BankItem("pickaxe", 1, false) },
-				new Area(
-						new int[][] { { 3180, 3439 }, { 3180, 3433 }, { 3186, 3433 }, { 3186, 3440 }, { 3180, 3440 } }),
-				this));
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+				new BankTask("withdraw pickaxe", 0, getBot().getMethods(), true,
+						new BankItem[] { new BankItem("pickaxe", 1, false) }, getMiningTemplate().getBankAreaLocation(),
+						this));
 
-		if (getEvent().hasFinished() && GRAND_EXCHANGE_AREA.contains(myPlayer())) {
+		if (getEvent() != null && getEvent().hasFinished() && Locations.GRAND_EXCHANGE_AREA.contains(myPlayer())) {
 			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 					new WalkTask("walk to mining area (normal)", -1, -1, getBot().getMethods(),
-							FROM_GE_TO_MINING_POSITION, GRAND_EXCHANGE_AREA, MINING_AREA, getScript(), getEvent(),
-							false, true));
+							getMiningTemplate().getPositionsFromGeToMiningPosition(), Locations.GRAND_EXCHANGE_AREA,
+							getMiningTemplate().getBankAreaLocation(), getScript(), getEvent(), false, true));
 		} else {
 			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-					new WalkTask("walk to mining area", -1, -1, getBot().getMethods(), BANK_PATH_TO_MINING_AREA,
-							BANK_VARROCK_EAST_AREA, MINING_AREA, getScript(), getEvent(), false, true));
+					new WalkTask("walk to mining area", -1, -1, getBot().getMethods(),
+							getMiningTemplate().gePositionsFromBankToMiningSpot(),
+							getMiningTemplate().getBankAreaLocation(), getMiningTemplate().getAreaOfMiningLocation(),
+							getScript(), getEvent(), false, true));
 		}
 
-		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new WalkTask("walk to mining spot", -1, -1,
-				getBot().getMethods(), MINING_POSITION, MINING_AREA, getScript(), getEvent(), false, true));
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+				new WalkTask("walk to mining spot", -1, -1, getBot().getMethods(),
+						getMiningTemplate().getExactMiningSpotPosition(), getMiningTemplate().getAreaOfMiningLocation(),
+						getScript(), getEvent(), false, true));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new ClickObjectTask("click mining", -1, -1, getBot().getMethods(),
-						new Area(new int[][] { { 3184, 3374 }, { 3179, 3374 }, { 3179, 3369 }, { 3184, 3369 } }), 7454,
-						new BankItem("Clay", 1, false), true, this, Rock.CLAY));
+						getMiningTemplate().exactMiningPositionArea(), isDoingIronMining ? 7488 : 7454,
+						isDoingIronMining ? new BankItem("Iron ore", 1, false) : new BankItem("Clay", 1, false), true,
+						this, isDoingIronMining ? Rock.IRON : Rock.CLAY));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-				new WalkTask("walk to varrock west bank 2", -1, -1, getBot().getMethods(), MINING_AREA_TO_BANK,
-						MINING_AREA, BANK_VARROCK_EAST_AREA, getScript(), getEvent(), false, true));
+				new WalkTask("walk to varrock west bank 2", -1, -1, getBot().getMethods(),
+						getMiningTemplate().getPositionsFromMiningSpotToBank(),
+						getMiningTemplate().getAreaOfMiningLocation(), getMiningTemplate().getBankAreaLocation(),
+						getScript(), getEvent(), false, true));
 
 	}
 
 	public void onPaint(Graphics2D g) {
 		g.drawString("MINING_CLAY", 60, 50);
 		g.drawString("Runtime " + (formatTime((System.currentTimeMillis() - beginTime))), 60, 75);
-//		g.setColor(Color.WHITE);
-//		int profit = ((currentAmount - beginAmount) + soldAmount) * 140;
-//		long profitPerHour = (long) (profit * (3600000.0 / (System.currentTimeMillis() - beginTime)));
-//		g.drawString("Sold ores " + soldAmount, 60, 50);
-//		g.drawString("Begin ores " + beginAmount, 60, 65);
-//		g.drawString("Current ores " + currentAmount, 60, 80);
-//		g.drawString("Total mined ores " + ((currentAmount - beginAmount) + soldAmount), 60, 95);
-//		g.drawString("Money per hour " + (profitPerHour > 0 ? profitPerHour : "Need more data"), 60, 110);
-//		g.drawString("Time taken " + (formatTime((System.currentTimeMillis() - beginTime))), 60, 125);
-//
-//		g.drawString((around.aroundMine < 0 ? "Calculating.."
-//				: around.aroundMine + " / " + around.getPlayersAroundExceptMe()).toString(), 60, 150);
+		// g.setColor(Color.WHITE);
+		// int profit = ((currentAmount - beginAmount) + soldAmount) * 140;
+		// long profitPerHour = (long) (profit * (3600000.0 /
+		// (System.currentTimeMillis() - beginTime)));
+		// g.drawString("Sold ores " + soldAmount, 60, 50);
+		// g.drawString("Begin ores " + beginAmount, 60, 65);
+		// g.drawString("Current ores " + currentAmount, 60, 80);
+		// g.drawString("Total mined ores " + ((currentAmount - beginAmount) +
+		// soldAmount), 60, 95);
+		// g.drawString("Money per hour " + (profitPerHour > 0 ? profitPerHour : "Need
+		// more data"), 60, 110);
+		// g.drawString("Time taken " + (formatTime((System.currentTimeMillis() -
+		// beginTime))), 60, 125);
+		//
+		// g.drawString((around.aroundMine < 0 ? "Calculating.."
+		// : around.aroundMine + " / " + around.getPlayersAroundExceptMe()).toString(),
+		// 60, 150);
 	}
 
 	@Override
@@ -206,27 +178,28 @@ public class MiningLevelTo15Configuration extends QuestStep {
 			Sleep.sleepUntil(() -> !getCombat().isFighting() && !myPlayer().isUnderAttack(), 5000);
 		}
 
-		if (MINING_AREA.contains(myPlayer()) && ((getInventory().contains(1266) || getInventory().contains(1268)
-				|| getInventory().contains(1270) || getInventory().contains(1272) || getInventory().contains(1274)
-				|| getInventory().contains(1276)))) {
+		if (getMiningTemplate().getAreaOfMiningLocation().contains(myPlayer()) && ((getInventory().contains(1266)
+				|| getInventory().contains(1268) || getInventory().contains(1270) || getInventory().contains(1272)
+				|| getInventory().contains(1274) || getInventory().contains(1276)))) {
 			log("Is at mining area wihout a pickaxe, restarting tasks 2!");
 			resetStage(AccountStage.MINING_LEVEL_TO_15.name());
 		}
 
-		if (MINING_AREA.contains(myPlayer()) && !getInventory().contains("Bronze pickaxe")
-				&& !getInventory().contains("Iron pickaxe") && !getInventory().contains("Steel pickaxe")
-				&& !getInventory().contains("Mithril pickaxe") && !getInventory().contains("Adamant pickaxe")
-				&& !getInventory().contains("Rune pickaxe")) {
+		if (getMiningTemplate().getAreaOfMiningLocation().contains(myPlayer())
+				&& !getInventory().contains("Bronze pickaxe") && !getInventory().contains("Iron pickaxe")
+				&& !getInventory().contains("Steel pickaxe") && !getInventory().contains("Mithril pickaxe")
+				&& !getInventory().contains("Adamant pickaxe") && !getInventory().contains("Rune pickaxe")) {
 			log("Is at mining area wihout a pickaxe, restarting tasks!");
 			resetStage(AccountStage.MINING_LEVEL_TO_15.name());
 		}
 
-		if (Config.doesntHaveAnyPickaxe(this) && !getBank().isOpen() && MINING_AREA.contains(myPlayer())) {
+		if (Config.doesntHaveAnyPickaxe(this) && !getBank().isOpen()
+				&& getMiningTemplate().getAreaOfMiningLocation().contains(myPlayer())) {
 			log("Player doesn't have any pickaxe, getting it from bank");
 			resetStage(AccountStage.MINING_LEVEL_TO_15.name());
 		}
 
-		if (!MINING_ZONE.contains(myPlayer())) {
+		if (!getMiningTemplate().getAreaOfOperating().contains(myPlayer())) {
 			log("not in mining zone!");
 			resetStage(AccountStage.MINING_LEVEL_TO_15.name());
 		}
@@ -235,7 +208,8 @@ public class MiningLevelTo15Configuration extends QuestStep {
 		// corresponding with this skill level, when the player is in lumrbidge, then
 		// also execute this task to get a new mining pickaxe
 		// When having more than 200 clay, then go to the g.e. and sell it
-		if (getBank().isOpen() && getBank().getAmount("Clay") > 200) {
+		if (getBank().isOpen() && (getBank().getAmount("Clay") > 200
+				|| (getBank().getAmount("Iron ore") > 200 && getQuests().getQuestPoints() >= 7))) {
 			setGrandExchangeActions(new Ge2(getEvent(), this));
 		}
 
@@ -294,13 +268,22 @@ public class MiningLevelTo15Configuration extends QuestStep {
 		}
 
 		int clayAmount = -1;
+		int ironAmount = -1;
 		int totalAccountValue = -1;
 		if (getBank().isOpen()) {
 			clayAmount = (int) getBank().getAmount("Clay");
+			ironAmount = (int) getBank().getAmount("Iron ore");
 			totalAccountValue += (int) getBank().getAmount(995);
-			totalAccountValue += (clayAmount * 90);
+			totalAccountValue += (clayAmount * 60);
+
+			if (getQuests().getQuestPoints() >= 7) {
+				totalAccountValue += (ironAmount * 90);
+			}
 
 			int bankedAmount = (int) getBank().getAmount("Clay");
+			if (getQuests().getQuestPoints() >= 7) {
+				bankedAmount += (int) getBank().getAmount("Iron ore");
+			}
 			if (beginAmount == -1) {
 				beginAmount = bankedAmount;
 			}
@@ -312,7 +295,7 @@ public class MiningLevelTo15Configuration extends QuestStep {
 			int coinsAmount = (int) getBank().getAmount(995);
 
 			// If has more than 100k then start tradinig it over to the mule
-			if (coinsAmount > 44_000) {
+			if (coinsAmount > 30_000) {
 
 				// Setting the status of the account that it wants to mule to another account in
 				// the database
@@ -373,8 +356,12 @@ public class MiningLevelTo15Configuration extends QuestStep {
 
 		// Setting a G.E. task
 		if (getGrandExchangeTask() != null && getGrandExchangeTask().getTask() == null) {
-			getGrandExchangeTask().exchangeContext(getBot());
-			getGrandExchangeTask().setTask();
+			if (getBank().isOpen()) {
+				getGrandExchangeTask().exchangeContext(getBot());
+				getGrandExchangeTask().setTask();
+			} else {
+				setGrandExchangeActions(null);
+			}
 		}
 
 		if (getGrandExchangeTask() != null && getGrandExchangeTask().getTask() != null
@@ -438,11 +425,26 @@ public class MiningLevelTo15Configuration extends QuestStep {
 	public void setGrandExchangeActions(Ge2 grandExchangeActions) {
 		this.grandExchangeActions = grandExchangeActions;
 	}
-	
+
 	@Override
 	public void timeOutHandling(TaskHandler tasks) {
 		// TODO Auto-generated method stub
-		
+
+	}
+
+	/**
+	 * @return the miningTemplate
+	 */
+	public MiningLocationTemplate getMiningTemplate() {
+		return miningTemplate;
+	}
+
+	/**
+	 * @param miningTemplate
+	 *            the miningTemplate to set
+	 */
+	public void setMiningTemplate(MiningLocationTemplate miningTemplate) {
+		this.miningTemplate = miningTemplate;
 	}
 
 }

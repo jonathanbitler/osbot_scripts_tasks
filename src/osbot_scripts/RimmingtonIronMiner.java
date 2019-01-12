@@ -18,7 +18,7 @@ import osbot_scripts.events.MandatoryEventsExecution;
 import osbot_scripts.login.LoginHandler;
 import osbot_scripts.qp7.progress.IronMinerConfiguration;
 import osbot_scripts.qp7.progress.RimmingTonIronConfig;
-import osbot_scripts.scripttypes.MiningType;
+import osbot_scripts.scripttypes.types.MiningType;
 
 @ScriptManifest(author = "pim97", info = "RIMMINGTON_IRON_ORE", logo = "", name = "RIMMINGTON_IRON_ORE", version = 1.0)
 public class RimmingtonIronMiner extends Script {
@@ -101,7 +101,7 @@ public class RimmingtonIronMiner extends Script {
 	public void onStart() throws InterruptedException {
 		login = LoginHandler.login(this, getParameters());
 		login.setScript("RIMMINGTON_IRON_ORE");
-		DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN", login);
+//		DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN", login);
 		goldfarmMining = new RimmingTonIronConfig(login, (Script) this);
 		goldfarmMining.setScriptAbstract(new MiningType());
 

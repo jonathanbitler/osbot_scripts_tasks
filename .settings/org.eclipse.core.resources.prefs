@@ -1,6 +1,7 @@
 eclipse.preferences.version=1
 encoding//src/osbot_scripts/CookingAssistantQuest.java=UTF-8
 encoding//src/osbot_scripts/DoricsQuest.java=UTF-8
+encoding//src/osbot_scripts/anti_ban/RandomCameraEvent.java=UTF-8
 encoding//src/osbot_scripts/database/DatabaseConnection.java=UTF-8
 encoding//src/osbot_scripts/events/LoginEvent.java=UTF-8
 encoding//src/osbot_scripts/ge/api/ApiTest.java=UTF-8

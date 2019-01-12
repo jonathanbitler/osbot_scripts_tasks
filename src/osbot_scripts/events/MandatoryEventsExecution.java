@@ -201,7 +201,8 @@ public class MandatoryEventsExecution {
 		}
 
 		if (!isAudioDisabled) {
-			isAudioDisabled = disableAudio();
+			disableAudio();
+			isAudioDisabled = true;
 			getProvider().getTabs().open(Tab.INVENTORY);
 			if (getProvider().getTabs().getOpen() != Tab.INVENTORY) {
 				getProvider().getTabs().open(Tab.INVENTORY);

@@ -345,29 +345,34 @@ public class DatabaseUtilities {
 	}
 
 	public static boolean isServerMuleTradingAccount(MethodProvider api, LoginEvent login, String email) {
+		boolean finish = false;
+
 		String sql = "SELECT email FROM server_muling.account";
 		String emailName = null;
 
-		try {
-			Connection conn = DatabaseConnection.getDatabase().getConnection(api, login);
-			ResultSet results = conn.createStatement().executeQuery(sql);
+		while (!finish) {
+			try {
+				Connection conn = DatabaseConnection.getDatabase().getConnection(api, login);
+				ResultSet results = conn.createStatement().executeQuery(sql);
 
-			while (results.next()) {
-				try {
-					emailName = results.getString("email");
+				while (results.next()) {
+					try {
+						emailName = results.getString("email");
 
-					if (emailName.equalsIgnoreCase(email)) {
-						return true;
+						if (emailName.equalsIgnoreCase(email)) {
+							return true;
+						}
+					} catch (SQLException e) {
+						// TODO Auto-generated catch block
+						api.log(exceptionToString(e));
 					}
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					api.log(exceptionToString(e));
 				}
+				finish = true;
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				api.log(exceptionToString(e));
+//				BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E02");
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			api.log(exceptionToString(e));
-			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E02");
 		}
 		return false;
 	}

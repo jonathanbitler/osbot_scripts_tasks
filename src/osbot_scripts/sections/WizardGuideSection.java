@@ -7,6 +7,7 @@ import org.osbot.rs07.api.ui.Spells;
 import org.osbot.rs07.api.ui.Tab;
 import org.osbot.rs07.event.WalkingEvent;
 
+import osbot_scripts.bot.utils.RandomUtil;
 import osbot_scripts.framework.TabWid;
 import osbot_scripts.framework.Tabs;
 import osbot_scripts.sections.total.progress.MainState;
@@ -51,11 +52,10 @@ public class WizardGuideSection extends TutorialSection {
 			break;
 
 		case 650:
-			if (!CHICKEN_AREA.contains(myPosition())) {
-				walkToChickenArea();
-			} else {
-				attackChicken();
-			}
+			// if (!CHICKEN_AREA.contains(myPosition())) {
+			getWalking().walk(CHICKEN_AREA);
+			// }
+			attackChicken();
 			break;
 
 		case 670:
@@ -69,14 +69,6 @@ public class WizardGuideSection extends TutorialSection {
 			break;
 		}
 
-	}
-
-	private boolean walkToChickenArea() {
-		WalkingEvent walkingEvent = new WalkingEvent(CHICKEN_AREA);
-		walkingEvent.setMinDistanceThreshold(0);
-		walkingEvent.setMiniMapDistanceThreshold(0);
-		execute(walkingEvent);
-		return walkingEvent.hasFinished();
 	}
 
 	private static final Area CHICKEN_AREA = new Area(

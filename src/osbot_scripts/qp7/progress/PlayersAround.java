@@ -24,15 +24,15 @@ public class PlayersAround extends MethodProvider implements Runnable {
 	@Override
 	public void run() {
 		while (run) {
-			try {
-				log("Trying to calculate players around me that are mine... ");
-
-				aroundMine = getAccountsThatsAreMy();
-
-				Thread.sleep(35_000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+//			try {
+//				log("Trying to calculate players around me that are mine... ");
+//
+//				aroundMine = getAccountsThatsAreMy();
+//
+//				Thread.sleep(35_000);
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			}
 		}
 	}
 

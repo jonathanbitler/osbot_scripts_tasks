@@ -1,5 +1,6 @@
 package osbot_scripts.framework;
 
+import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.model.RS2Object;
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.script.MethodProvider;
@@ -103,6 +104,15 @@ public class ClickOnWidgetTask extends TaskSkeleton implements Task {
 		if (!ranOnStart()) {
 			// here something only run once
 		}
+		if (getApi().getCombat().isFighting() || getApi().myPlayer().isUnderAttack()) {
+			getApi().log("Being attacked while doing some sheep actions, walking around!");
+			getApi().getWalking()
+					.webWalk(new Area(new int[][] { { 3218, 3220 }, { 3222, 3221 }, { 3222, 3215 }, { 3218, 3215 } }));
+			getApi().getWalking()
+					.webWalk(new Area(new int[][] { { 3208, 3218 }, { 3214, 3218 }, { 3214, 3212 }, { 3208, 3212 } })
+							.setPlane(1));
+		}
+
 		if (getRS2WidgetInterface() == null && getApi().myPlayer().getAnimation() == -1
 				&& !getApi().myPlayer().isAnimating() && (System.currentTimeMillis() - lastClick > 40000)) {
 

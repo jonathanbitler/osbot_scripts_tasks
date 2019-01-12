@@ -78,13 +78,15 @@ public class MuleTrading extends Script {
 	public void onStart() throws InterruptedException {
 		login = LoginHandler.login(this, getParameters());
 		login.setScript("MULE_TRADING");
-		DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN", login);
+//		DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN", login);
 		muleTrading = new MuleTradingConfiguration(login, (Script) this);
 
-		if (login != null && login.getUsername() != null) {
-			getMuleTrading().setQuestStageStep(
-					Integer.parseInt(DatabaseUtilities.getQuestProgress(this, login.getUsername(), login)));
-		}
+		// if (login != null && login.getUsername() != null) {
+		// getMuleTrading().setQuestStageStep(0);
+		//
+		//// Integer.parseInt(DatabaseUtilities.getQuestProgress(this,
+		// login.getUsername(), login)));
+		// }
 
 		getMuleTrading().exchangeContext(getBot());
 		getMuleTrading().onStart();

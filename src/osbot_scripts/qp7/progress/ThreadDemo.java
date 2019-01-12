@@ -60,16 +60,47 @@ public class ThreadDemo extends MethodProvider implements Runnable {
 
 	private boolean relog = false;
 
+	private int[] location = new int[6];
+
+	private boolean animated = false;
+
+	private int ticker = 0;
+
 	@Override
 	public void run() {
 		while (run) {
 			try {
 
+				if (getClient().isLoggedIn()) {
+					if (myPlayer().isAnimating() || myPlayer().isMoving()) {
+						animated = true;
+						ticker = 0;
+						location[0] = myPlayer().getX();
+						location[1] = myPlayer().getY();
+						location[2] = myPlayer().getZ();
+					} else {
+						animated = false;
+					}
+
+					if (location[0] == myPlayer().getX() && location[1] == myPlayer().getY()
+							&& location[2] == myPlayer().getZ() && !animated) {
+
+						if (ticker > 120) {
+							log("Player standing still too long! Restarting right now!");
+							Thread.sleep(20_000);
+							System.exit(1);
+						}
+
+						ticker++;
+						log("Current ticker is: " + ticker);
+					}
+				}
+
 				// Account password is wrong when not logged in
 				if (!isLoggedIn() && isWrongEmail()) {
 					log("Account password is wrong, setting to invalid password");
-					DatabaseUtilities.updateAccountStatusInDatabase(this, "LOCKED",
-							getLoginEvent().getUsername(), getLoginEvent());
+					DatabaseUtilities.updateAccountStatusInDatabase(this, "LOCKED", getLoginEvent().getUsername(),
+							getLoginEvent());
 					BotCommands.waitBeforeKill(this, "BECAUSE OF INVALID PASSWORD");
 				}
 

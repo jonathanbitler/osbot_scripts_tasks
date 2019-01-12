@@ -77,13 +77,14 @@ public class SuperMuleTrading extends Script {
 	public void onStart() throws InterruptedException {
 		login = LoginHandler.login(this, getParameters());
 		login.setScript("SUPERMULE_TRADING");
-		DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN", login);
+//		DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN", login);
 		muleTrading = new SuperMuleTradingConfiguration(login, (Script) this);
 
-		if (login != null && login.getUsername() != null) {
-			getMuleTrading().setQuestStageStep(
-					Integer.parseInt(DatabaseUtilities.getQuestProgress(this, login.getUsername(), login)));
-		}
+		// if (login != null && login.getUsername() != null) {
+		// getMuleTrading().setQuestStageStep(
+		// Integer.parseInt(DatabaseUtilities.getQuestProgress(this,
+		// login.getUsername(), login)));
+		// }
 
 		getMuleTrading().exchangeContext(getBot());
 		getMuleTrading().onStart();

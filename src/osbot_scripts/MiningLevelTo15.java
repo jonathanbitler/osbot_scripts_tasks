@@ -15,7 +15,7 @@ import osbot_scripts.events.LoginEvent;
 import osbot_scripts.events.MandatoryEventsExecution;
 import osbot_scripts.login.LoginHandler;
 import osbot_scripts.qp7.progress.MiningLevelTo15Configuration;
-import osbot_scripts.scripttypes.MiningType;
+import osbot_scripts.scripttypes.types.MiningType;
 
 @ScriptManifest(author = "pim97", info = "MINING_LEVEL_TO_15", logo = "", name = "MINING_LEVEL_TO_15", version = 1.0)
 public class MiningLevelTo15 extends Script {
@@ -48,7 +48,23 @@ public class MiningLevelTo15 extends Script {
 				+ (getGoldfarmMining().getGrandExchangeTask() != null ? getGoldfarmMining().getGrandExchangeTask()
 						: "NULL"));
 
-		if (login.hasFinished()) {
+		if (Config.TEST) {
+			if (login.hasFinished()) {
+				if (getGoldfarmMining().getGrandExchangeTask() == null) {
+					try {
+						getGoldfarmMining().getTaskHandler().taskLoop();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				} else {
+					try {
+						getGoldfarmMining().onLoop();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		} else {
 			if (getGoldfarmMining().getGrandExchangeTask() == null) {
 				try {
 					getGoldfarmMining().getTaskHandler().taskLoop();
@@ -86,7 +102,8 @@ public class MiningLevelTo15 extends Script {
 		if (!Config.NO_LOGIN) {
 			login = LoginHandler.login(this, getParameters());
 			login.setScript("MINING_LEVEL_TO_15");
-			DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN", login);
+			// DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN",
+			// login);
 		}
 		goldfarmMining = new MiningLevelTo15Configuration(login, (Script) this);
 		goldfarmMining.setScriptAbstract(new MiningType());

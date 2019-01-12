@@ -41,6 +41,8 @@ public class MuleTradingConfiguration extends QuestStep {
 	// new int[][] { { 3160, 3489 }, { 3169, 3489 }, { 3169, 3483 }, { 3160, 3483 }
 	// });
 
+	private String accountStatus;
+	
 	private HashMap<String, Integer> itemMap = new HashMap<String, Integer>();
 
 	private boolean tradingDone = false;
@@ -173,6 +175,7 @@ public class MuleTradingConfiguration extends QuestStep {
 			if ((getTrade().isCurrentlyTrading() || getTrade().isFirstInterfaceOpen()
 					|| getTrade().isSecondInterfaceOpen()) && itemMap.size() > 0) {
 				trade(getEvent().getTradeWith(), itemMap, false);
+				Thread.sleep(2500);
 				log("currently trading");
 				return;
 			}
@@ -199,7 +202,7 @@ public class MuleTradingConfiguration extends QuestStep {
 					}
 				}
 
-				Thread.sleep(5000);
+				Thread.sleep(2500);
 
 				getBank().depositAll();
 				Sleep.sleepUntil(() -> getInventory().isEmpty(), 5000);
@@ -218,6 +221,7 @@ public class MuleTradingConfiguration extends QuestStep {
 
 			if (itemMap.size() > 0 && getInventory().contains(995)) {
 				trade(getEvent().getTradeWith(), itemMap, false);
+				Thread.sleep(2500);
 			}
 
 			// Open bank
@@ -258,6 +262,7 @@ public class MuleTradingConfiguration extends QuestStep {
 			if (lastTradedPlayer != null && lastTradedPlayer.equalsIgnoreCase(getEvent().getTradeWith())
 					&& !getInventory().contains(995)) {
 				trade(getEvent().getTradeWith(), new HashMap<String, Integer>(), true);
+				Thread.sleep(2500);
 				log("Accepting trade request... doing actions...");
 			} else if (getPlayers().closest(getEvent().getTradeWith()) != null && getBank().isOpen()) {
 				log("Player is near and having bank open, closing...");
@@ -272,6 +277,7 @@ public class MuleTradingConfiguration extends QuestStep {
 					String name = getTrade().getLastRequestingPlayer().getName();
 
 					trade(name, new HashMap<String, Integer>(), true);
+					Thread.sleep(2500);
 					log("Accepting trade request... contains in database.. doing actions...");
 
 					getEvent().setTradeWith(name);

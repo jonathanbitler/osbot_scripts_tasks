@@ -1,14 +1,12 @@
-package osbot_scripts.scripttypes;
+package osbot_scripts.scripttypes.types;
 
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.model.GroundItem;
-import org.osbot.rs07.api.ui.Spells;
 
-import osbot_scripts.bot.utils.BotCommands;
 import osbot_scripts.config.Config;
 import osbot_scripts.qp7.progress.DoricsQuestConfig;
+import osbot_scripts.scripttypes.ScriptAbstract;
 import osbot_scripts.taskhandling.TaskHandler;
-import osbot_scripts.util.Sleep;
 
 public class MiningType extends ScriptAbstract {
 
@@ -93,7 +91,6 @@ public class MiningType extends ScriptAbstract {
 	@Override
 	public void taskOutTaskAttempts(TaskHandler tasks) {
 
-		
 	}
 
 }

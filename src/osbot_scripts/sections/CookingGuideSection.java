@@ -25,7 +25,7 @@ public class CookingGuideSection extends TutorialSection {
 	public boolean deselectItem() {
 		if (inventory.isItemSelected()) {
 			int slot = inventory.getSlot(inventory.getSelectedItemName());
-			return getQuests().mouse.click(inventory.getMouseDestination(slot), true);
+			return getQuests().mouse.click(inventory.getMouseDestination(slot), false);
 		}
 		return false;
 	}

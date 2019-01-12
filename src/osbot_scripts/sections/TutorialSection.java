@@ -97,6 +97,14 @@ public abstract class TutorialSection extends MethodProvider {
 			selectContinue();
 		}
 	}
+	
+	public boolean deselectItem() {
+		if (inventory.isItemSelected()) {
+			int slot = inventory.getSlot(inventory.getSelectedItemName());
+			return getQuests().mouse.click(inventory.getMouseDestination(slot), false);
+		}
+		return false;
+	}
 
 	/**
 	 * Loops through the section

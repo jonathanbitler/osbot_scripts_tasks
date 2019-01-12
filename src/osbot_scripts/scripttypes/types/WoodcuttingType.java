@@ -1,9 +1,10 @@
-package osbot_scripts.scripttypes;
+package osbot_scripts.scripttypes.types;
 
+import osbot_scripts.scripttypes.ScriptAbstract;
 import osbot_scripts.taskhandling.TaskHandler;
 
 public class WoodcuttingType extends ScriptAbstract {
-
+	
 	@Override
 	public void loop() {
 		// TODO Auto-generated method stub

@@ -197,11 +197,6 @@ public class TutorialScript extends Script {
 		if (!Config.NO_LOGIN) {
 			login = LoginHandler.login(this, getParameters());
 			login.setScript("TUT_ISLAND");
-			if (DatabaseUtilities.isServerMuleTradingAccount(this, getLogin(), getLogin().getUsername())) {
-				DatabaseUtilities.updateLoginStatus("server_muling", this, login.getUsername(), "LOGGED_IN", login);
-			} else {
-				DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN", login);
-			}
 		}
 		if (events.getLogin() == null) {
 			events.setLogin(login);

@@ -16,8 +16,8 @@ import osbot_scripts.events.LoginEvent;
 import osbot_scripts.events.MandatoryEventsExecution;
 import osbot_scripts.login.LoginHandler;
 import osbot_scripts.qp7.progress.DoricsQuestConfig;
-import osbot_scripts.scripttypes.MiningType;
 import osbot_scripts.scripttypes.ScriptType;
+import osbot_scripts.scripttypes.types.MiningType;
 
 @ScriptManifest(author = "pim97", info = "QUEST_DORICS_QUEST", logo = "", name = "QUEST_DORICS_QUEST", version = 1.0)
 public class DoricsQuest extends Script {
@@ -79,7 +79,7 @@ public class DoricsQuest extends Script {
 		login = LoginHandler.login(this, getParameters());
 		if (login != null) {
 			login.setScript("QUEST_DORICS_QUEST");
-			DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN", login);
+//			DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN", login);
 		}
 		goblinsDiplomacy = new DoricsQuestConfig(3893, 31, login, (Script) this);
 		goblinsDiplomacy.setScriptAbstract(new MiningType());

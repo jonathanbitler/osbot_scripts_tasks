@@ -78,11 +78,11 @@ public class ServerMuleTrading extends Script {
 	public void onStart() throws InterruptedException {
 		login = LoginHandler.login(this, getParameters());
 		login.setScript("SERVERMULE_TRADING");
-		if (DatabaseUtilities.isServerMuleTradingAccount(this, login, login.getUsername())) {
-			DatabaseUtilities.updateLoginStatus("server_muling", this, login.getUsername(), "LOGGED_IN", login);
-		} else {
-			DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN", login);
-		}
+//		if (DatabaseUtilities.isServerMuleTradingAccount(this, login, login.getUsername())) {
+//			DatabaseUtilities.updateLoginStatus("server_muling", this, login.getUsername(), "LOGGED_IN", login);
+//		} else {
+//			DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN", login);
+//		}
 		muleTrading = new ServerMuleTradingConfiguration(login, (Script) this);
 
 		// if (login != null && login.getUsername() != null) {

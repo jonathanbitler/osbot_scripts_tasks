@@ -33,6 +33,8 @@ public class PlayerTask {
 			return new ClayOre();
 		} else if (type.equalsIgnoreCase("OAK_LOGS")) {
 			return new WoodcuttingType();
+		} else if (type.equalsIgnoreCase("IRON_MINING")) {
+			return new IronMiningType();
 		}
 		return new Default();
 	}
