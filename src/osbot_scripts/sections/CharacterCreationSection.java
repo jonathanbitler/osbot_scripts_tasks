@@ -16,7 +16,7 @@ import osbot_scripts.util.Sleep;
 
 public class CharacterCreationSection extends TutorialSection {
 
-    private final CachedWidget creationScreenWidget = new CachedWidget("Head");
+	private final CachedWidget creationScreenWidget = new CachedWidget("Head");
 	/**
 	 * Current progress
 	 */
@@ -133,45 +133,49 @@ public class CharacterCreationSection extends TutorialSection {
 	public boolean isCompleted() {
 		return getProgress() == 0 && getWidgets().get(269, 96) == null ? true : false;
 	}
-	
+
 	private void createRandomCharacter() throws InterruptedException {
-        // letting all the widgets show up
-        sleep(2000);
+		// letting all the widgets show up
+		sleep(2000);
 
-        if (new Random().nextInt(2) == 1) {
-            getWidgets().getWidgetContainingText("Female").interact();
-        }
+		if (getClient().isLoggedIn()) {
 
-        final RS2Widget[] childWidgets = getWidgets().getWidgets(creationScreenWidget.get(getWidgets()).get().getRootId());
-        Collections.shuffle(Arrays.asList(childWidgets));
+			if (new Random().nextInt(2) == 1) {
+				getWidgets().getWidgetContainingText("Female").interact();
+			}
 
-        for (final RS2Widget childWidget : childWidgets) {
-            if (childWidget.getToolTip() == null) {
-                continue;
-            }
-            if (childWidget.getToolTip().contains("Change") || childWidget.getToolTip().contains("Recolour")) {
-                clickRandomTimes(childWidget);
-            }
-        }
+			final RS2Widget[] childWidgets = getWidgets()
+					.getWidgets(creationScreenWidget.get(getWidgets()).get().getRootId());
+			Collections.shuffle(Arrays.asList(childWidgets));
 
-        if (getWidgets().getWidgetContainingText("Accept").interact()) {
-            Sleep.sleepUntil(() -> !isCreationScreenVisible(), 3000, 600);
-        }
-    }
-	
+			for (final RS2Widget childWidget : childWidgets) {
+				if (childWidget.getToolTip() == null) {
+					continue;
+				}
+				if (childWidget.getToolTip().contains("Change") || childWidget.getToolTip().contains("Recolour")) {
+					clickRandomTimes(childWidget);
+				}
+			}
+
+			if (getWidgets() != null && getWidgets().getWidgetContainingText("Accept").interact()) {
+				Sleep.sleepUntil(() -> !isCreationScreenVisible(), 3000, 600);
+			}
+		}
+	}
+
 	private boolean isCreationScreenVisible() {
-        return creationScreenWidget.get(getWidgets()).filter(RS2Widget::isVisible).isPresent();
-    }
+		return creationScreenWidget.get(getWidgets()).filter(RS2Widget::isVisible).isPresent();
+	}
 
-    private void clickRandomTimes(final RS2Widget widget) throws InterruptedException {
-        int clickCount = new Random().nextInt(8);
+	private void clickRandomTimes(final RS2Widget widget) throws InterruptedException {
+		int clickCount = new Random().nextInt(8);
 
-        for (int i = 0; i < clickCount; i++) {
-            if (widget.interact()) {
-                MethodProvider.sleep(150);
-            }
-        }
-    }
+		for (int i = 0; i < clickCount; i++) {
+			if (widget.interact()) {
+				MethodProvider.sleep(150);
+			}
+		}
+	}
 
 	/**
 	 * Creates an unique character design
@@ -180,116 +184,131 @@ public class CharacterCreationSection extends TutorialSection {
 	 */
 	private void createCharacterDesign() throws InterruptedException {
 		typeCharacterName();
-		
+
 		createRandomCharacter();
 
-//		if (progress == CharacterCreationSectionProgress.CREATING_RANDOM_CHARACTER) {
-//			progress = CharacterCreationSectionProgress.CHOOSING_HEAD;
-//		} else if (progress == CharacterCreationSectionProgress.CHOOSING_HEAD) {
-//			RS2Widget designCharacterWidgetHead = getWidgets().get(DESIGN_CHARACTER_PARENT_ID, 113);
-//			if (designCharacterWidgetHead != null && designCharacterWidgetHead.isVisible()) {
-//				Random rand = new Random();
-//				int random = rand.nextInt(3) + 1;
-//				for (int i = 0; i < random; i++) {
-//					sleep(rand.nextInt(TIME_BETWEEN_DESIGN_CHARACTER));
-//					designCharacterWidgetHead.interact("Change head");
-//
-//					RS2Widget recolor = getWidgets().get(DESIGN_CHARACTER_PARENT_ID, 121);
-//					if (recolor != null) {
-//						recolor.interact("Recolour hair");
-//					}
-//				}
-//			}
-//			progress = CharacterCreationSectionProgress.CHOOSING_JAW;
-//		} else if (progress == CharacterCreationSectionProgress.CHOOSING_JAW) {
-//			RS2Widget designCharacterWidgetJaw = getWidgets().get(DESIGN_CHARACTER_PARENT_ID, 114);
-//			if (designCharacterWidgetJaw != null && designCharacterWidgetJaw.isVisible()) {
-//				Random rand = new Random();
-//				int random = rand.nextInt(3) + 1;
-//				for (int i = 0; i < random; i++) {
-//					sleep(rand.nextInt(TIME_BETWEEN_DESIGN_CHARACTER));
-//					designCharacterWidgetJaw.interact("Change jaw");
-//				}
-//			}
-//			progress = CharacterCreationSectionProgress.CHOOSING_TORSO;
-//		} else if (progress == CharacterCreationSectionProgress.CHOOSING_TORSO) {
-//			RS2Widget designCharacterWidgetTorso = getWidgets().get(DESIGN_CHARACTER_PARENT_ID, 115);
-//			if (designCharacterWidgetTorso != null && designCharacterWidgetTorso.isVisible()) {
-//				Random rand = new Random();
-//				int random = rand.nextInt(3) + 1;
-//				for (int i = 0; i < random; i++) {
-//					sleep(rand.nextInt(TIME_BETWEEN_DESIGN_CHARACTER));
-//					designCharacterWidgetTorso.interact("Change torso");
-//
-//					RS2Widget recolor = getWidgets().get(DESIGN_CHARACTER_PARENT_ID, 127);
-//					if (recolor != null) {
-//						recolor.interact("Recolour torso");
-//					}
-//				}
-//			}
-//			progress = CharacterCreationSectionProgress.CHOOSING_ARMS;
-//		} else if (progress == CharacterCreationSectionProgress.CHOOSING_ARMS) {
-//			RS2Widget designCharacterWidgetArms = getWidgets().get(DESIGN_CHARACTER_PARENT_ID, 116);
-//			if (designCharacterWidgetArms != null && designCharacterWidgetArms.isVisible()) {
-//				Random rand = new Random();
-//				int random = rand.nextInt(3) + 1;
-//				for (int i = 0; i < random; i++) {
-//					sleep(rand.nextInt(TIME_BETWEEN_DESIGN_CHARACTER));
-//					designCharacterWidgetArms.interact("Change arms");
-//				}
-//			}
-//			progress = CharacterCreationSectionProgress.CHOOSING_HANDS;
-//		} else if (progress == CharacterCreationSectionProgress.CHOOSING_HANDS) {
-//			RS2Widget designCharacterWidgetHands = getWidgets().get(DESIGN_CHARACTER_PARENT_ID, 117);
-//			if (designCharacterWidgetHands != null && designCharacterWidgetHands.isVisible()) {
-//				Random rand = new Random();
-//				int random = rand.nextInt(3) + 1;
-//				for (int i = 0; i < random; i++) {
-//					sleep(rand.nextInt(TIME_BETWEEN_DESIGN_CHARACTER));
-//					designCharacterWidgetHands.interact("Change hands");
-//				}
-//			}
-//			progress = CharacterCreationSectionProgress.CHOOSING_LEGS;
-//		} else if (progress == CharacterCreationSectionProgress.CHOOSING_LEGS) {
-//			RS2Widget designCharacterWidgetLegs = getWidgets().get(DESIGN_CHARACTER_PARENT_ID, 118);
-//			if (designCharacterWidgetLegs != null && designCharacterWidgetLegs.isVisible()) {
-//				Random rand = new Random();
-//				int random = rand.nextInt(3) + 1;
-//				for (int i = 0; i < random; i++) {
-//					sleep(rand.nextInt(TIME_BETWEEN_DESIGN_CHARACTER));
-//					designCharacterWidgetLegs.interact("Change legs");
-//
-//					RS2Widget recolor = getWidgets().get(DESIGN_CHARACTER_PARENT_ID, 129);
-//					if (recolor != null) {
-//						recolor.interact("Recolour legs");
-//					}
-//				}
-//			}
-//			progress = CharacterCreationSectionProgress.CHOOSING_FEET;
-//		} else if (progress == CharacterCreationSectionProgress.CHOOSING_FEET) {
-//			RS2Widget designCharacterWidgetFeet = getWidgets().get(DESIGN_CHARACTER_PARENT_ID, 119);
-//			if (designCharacterWidgetFeet != null && designCharacterWidgetFeet.isVisible()) {
-//				Random rand = new Random();
-//				int random = rand.nextInt(3) + 1;
-//				for (int i = 0; i < random; i++) {
-//					sleep(rand.nextInt(TIME_BETWEEN_DESIGN_CHARACTER));
-//					designCharacterWidgetFeet.interact("Change feet");
-//
-//					RS2Widget recolor = getWidgets().get(DESIGN_CHARACTER_PARENT_ID, 130);
-//					if (recolor != null) {
-//						recolor.interact("Recolour feet");
-//					}
-//				}
-//			}
-//			progress = CharacterCreationSectionProgress.ACCEPT_CHARACTER;
-//		} else if (progress == CharacterCreationSectionProgress.ACCEPT_CHARACTER) {
-//			RS2Widget widgetAcceptCharacter = getWidgets().get(DESIGN_CHARACTER_PARENT_ID, 100);
-//			if (widgetAcceptCharacter.interact("Accept")) {
-//				progress = CharacterCreationSectionProgress.TALK_WITH_NPC_1;
-//			} else {
-//				progress = CharacterCreationSectionProgress.CREATING_RANDOM_CHARACTER;
-//			}
-//		}
+		// if (progress == CharacterCreationSectionProgress.CREATING_RANDOM_CHARACTER) {
+		// progress = CharacterCreationSectionProgress.CHOOSING_HEAD;
+		// } else if (progress == CharacterCreationSectionProgress.CHOOSING_HEAD) {
+		// RS2Widget designCharacterWidgetHead =
+		// getWidgets().get(DESIGN_CHARACTER_PARENT_ID, 113);
+		// if (designCharacterWidgetHead != null &&
+		// designCharacterWidgetHead.isVisible()) {
+		// Random rand = new Random();
+		// int random = rand.nextInt(3) + 1;
+		// for (int i = 0; i < random; i++) {
+		// sleep(rand.nextInt(TIME_BETWEEN_DESIGN_CHARACTER));
+		// designCharacterWidgetHead.interact("Change head");
+		//
+		// RS2Widget recolor = getWidgets().get(DESIGN_CHARACTER_PARENT_ID, 121);
+		// if (recolor != null) {
+		// recolor.interact("Recolour hair");
+		// }
+		// }
+		// }
+		// progress = CharacterCreationSectionProgress.CHOOSING_JAW;
+		// } else if (progress == CharacterCreationSectionProgress.CHOOSING_JAW) {
+		// RS2Widget designCharacterWidgetJaw =
+		// getWidgets().get(DESIGN_CHARACTER_PARENT_ID, 114);
+		// if (designCharacterWidgetJaw != null && designCharacterWidgetJaw.isVisible())
+		// {
+		// Random rand = new Random();
+		// int random = rand.nextInt(3) + 1;
+		// for (int i = 0; i < random; i++) {
+		// sleep(rand.nextInt(TIME_BETWEEN_DESIGN_CHARACTER));
+		// designCharacterWidgetJaw.interact("Change jaw");
+		// }
+		// }
+		// progress = CharacterCreationSectionProgress.CHOOSING_TORSO;
+		// } else if (progress == CharacterCreationSectionProgress.CHOOSING_TORSO) {
+		// RS2Widget designCharacterWidgetTorso =
+		// getWidgets().get(DESIGN_CHARACTER_PARENT_ID, 115);
+		// if (designCharacterWidgetTorso != null &&
+		// designCharacterWidgetTorso.isVisible()) {
+		// Random rand = new Random();
+		// int random = rand.nextInt(3) + 1;
+		// for (int i = 0; i < random; i++) {
+		// sleep(rand.nextInt(TIME_BETWEEN_DESIGN_CHARACTER));
+		// designCharacterWidgetTorso.interact("Change torso");
+		//
+		// RS2Widget recolor = getWidgets().get(DESIGN_CHARACTER_PARENT_ID, 127);
+		// if (recolor != null) {
+		// recolor.interact("Recolour torso");
+		// }
+		// }
+		// }
+		// progress = CharacterCreationSectionProgress.CHOOSING_ARMS;
+		// } else if (progress == CharacterCreationSectionProgress.CHOOSING_ARMS) {
+		// RS2Widget designCharacterWidgetArms =
+		// getWidgets().get(DESIGN_CHARACTER_PARENT_ID, 116);
+		// if (designCharacterWidgetArms != null &&
+		// designCharacterWidgetArms.isVisible()) {
+		// Random rand = new Random();
+		// int random = rand.nextInt(3) + 1;
+		// for (int i = 0; i < random; i++) {
+		// sleep(rand.nextInt(TIME_BETWEEN_DESIGN_CHARACTER));
+		// designCharacterWidgetArms.interact("Change arms");
+		// }
+		// }
+		// progress = CharacterCreationSectionProgress.CHOOSING_HANDS;
+		// } else if (progress == CharacterCreationSectionProgress.CHOOSING_HANDS) {
+		// RS2Widget designCharacterWidgetHands =
+		// getWidgets().get(DESIGN_CHARACTER_PARENT_ID, 117);
+		// if (designCharacterWidgetHands != null &&
+		// designCharacterWidgetHands.isVisible()) {
+		// Random rand = new Random();
+		// int random = rand.nextInt(3) + 1;
+		// for (int i = 0; i < random; i++) {
+		// sleep(rand.nextInt(TIME_BETWEEN_DESIGN_CHARACTER));
+		// designCharacterWidgetHands.interact("Change hands");
+		// }
+		// }
+		// progress = CharacterCreationSectionProgress.CHOOSING_LEGS;
+		// } else if (progress == CharacterCreationSectionProgress.CHOOSING_LEGS) {
+		// RS2Widget designCharacterWidgetLegs =
+		// getWidgets().get(DESIGN_CHARACTER_PARENT_ID, 118);
+		// if (designCharacterWidgetLegs != null &&
+		// designCharacterWidgetLegs.isVisible()) {
+		// Random rand = new Random();
+		// int random = rand.nextInt(3) + 1;
+		// for (int i = 0; i < random; i++) {
+		// sleep(rand.nextInt(TIME_BETWEEN_DESIGN_CHARACTER));
+		// designCharacterWidgetLegs.interact("Change legs");
+		//
+		// RS2Widget recolor = getWidgets().get(DESIGN_CHARACTER_PARENT_ID, 129);
+		// if (recolor != null) {
+		// recolor.interact("Recolour legs");
+		// }
+		// }
+		// }
+		// progress = CharacterCreationSectionProgress.CHOOSING_FEET;
+		// } else if (progress == CharacterCreationSectionProgress.CHOOSING_FEET) {
+		// RS2Widget designCharacterWidgetFeet =
+		// getWidgets().get(DESIGN_CHARACTER_PARENT_ID, 119);
+		// if (designCharacterWidgetFeet != null &&
+		// designCharacterWidgetFeet.isVisible()) {
+		// Random rand = new Random();
+		// int random = rand.nextInt(3) + 1;
+		// for (int i = 0; i < random; i++) {
+		// sleep(rand.nextInt(TIME_BETWEEN_DESIGN_CHARACTER));
+		// designCharacterWidgetFeet.interact("Change feet");
+		//
+		// RS2Widget recolor = getWidgets().get(DESIGN_CHARACTER_PARENT_ID, 130);
+		// if (recolor != null) {
+		// recolor.interact("Recolour feet");
+		// }
+		// }
+		// }
+		// progress = CharacterCreationSectionProgress.ACCEPT_CHARACTER;
+		// } else if (progress == CharacterCreationSectionProgress.ACCEPT_CHARACTER) {
+		// RS2Widget widgetAcceptCharacter =
+		// getWidgets().get(DESIGN_CHARACTER_PARENT_ID, 100);
+		// if (widgetAcceptCharacter.interact("Accept")) {
+		// progress = CharacterCreationSectionProgress.TALK_WITH_NPC_1;
+		// } else {
+		// progress = CharacterCreationSectionProgress.CREATING_RANDOM_CHARACTER;
+		// }
+		// }
 
 	}
 }

@@ -112,6 +112,7 @@ public class MandatoryEventsExecution {
 					}
 				}
 			}
+			Thread.sleep(1500);
 		}
 	}
 
@@ -185,7 +186,9 @@ public class MandatoryEventsExecution {
 
 					}
 				}
+				Thread.sleep(1500);
 			}
+			Thread.sleep(1500);
 		}
 	}
 
@@ -201,8 +204,7 @@ public class MandatoryEventsExecution {
 		}
 
 		if (!isAudioDisabled) {
-			disableAudio();
-			isAudioDisabled = true;
+			isAudioDisabled = disableAudio();
 			getProvider().getTabs().open(Tab.INVENTORY);
 			if (getProvider().getTabs().getOpen() != Tab.INVENTORY) {
 				getProvider().getTabs().open(Tab.INVENTORY);
@@ -240,7 +242,8 @@ public class MandatoryEventsExecution {
 	private RS2Widget getContinueWidget() {
 		return getProvider().getWidgets().singleFilter(getProvider().getWidgets().getAll(),
 				widget -> widget.isVisible() && (widget.getMessage().contains("Click here to continue")
-						|| widget.getMessage().contains("Click to continue")));
+						|| widget.getMessage().contains("Click to continue")
+						|| widget.getMessage().contains("Please wait...")));
 	}
 
 	protected boolean selectContinue() {

@@ -238,6 +238,7 @@ public class MiningLevelTo15Configuration extends QuestStep {
 					if (getInventory().contains("Bronze pickaxe")) {
 						log("Got bronze pickaxe, walking to position!");
 					}
+					Thread.sleep(1500);
 
 				}
 
@@ -245,16 +246,15 @@ public class MiningLevelTo15Configuration extends QuestStep {
 				while (bronzePickaxeLocation.contains(myPlayer()) && (getInventory().contains("Bronze pickaxe"))) {
 					getWalking().webWalk(DoricsQuestConfig.MINING_AREA);
 					getWalking().walkPath(DoricsQuestConfig.MINING_POSITION);
+					Thread.sleep(1500);
 				}
 
 			} else {
 
 				Ge2 ge = new Ge2(getEvent(), this);
 
-				GrandExchangeTask task = new GrandExchangeTask(this,
-						new BankItem[] { new BankItem("Bronze pickaxe", 1265, 1, Pickaxe.BRONZE.getPrice(), false) },
-						new BankItem[] {
-								// new BankItem("Iron ore", 440, 1000, 1, true),
+				GrandExchangeTask task = new GrandExchangeTask(this, new BankItem[] {},
+						new BankItem[] { new BankItem("Iron ore", 440, 1000, 1, true),
 								new BankItem("Uncut diamond", 1617, 1000, 1, true),
 								new BankItem("Uncut emerald", 1621, 1000, 1, true),
 								new BankItem("Uncut ruby", 1619, 1000, 1, true),
@@ -300,9 +300,22 @@ public class MiningLevelTo15Configuration extends QuestStep {
 				// Setting the status of the account that it wants to mule to another account in
 				// the database
 				if (getEvent() != null && getEvent().getUsername() != null
-						&& DatabaseUtilities.getMuleTradingFreeAccounts(this, getEvent()) < 3) {
+						&& DatabaseUtilities.getMuleTradingFreeAccounts(this, getEvent()) < 5) {
 
 					ConcreteWalking.walkToGe(this);
+
+					Ge2 ge = new Ge2(getEvent(), this);
+
+					GrandExchangeTask task = new GrandExchangeTask(this, new BankItem[] {}, new BankItem[] {
+							// new BankItem("Iron ore", 440, 1000, 1, true),
+							new BankItem("Uncut diamond", 1617, 1000, 1, true),
+							new BankItem("Uncut emerald", 1621, 1000, 1, true),
+							new BankItem("Uncut ruby", 1619, 1000, 1, true),
+							new BankItem("Uncut sapphire", 1623, 1000, 1, true),
+							new BankItem("Clay", 434, 1000, 1, true) }, getEvent(), getScript(), this);
+
+					ge.setTask(task);
+					setGrandExchangeActions(ge);
 
 					DatabaseUtilities.updateStageProgress(this, "MULE_TRADING", 0, getEvent().getUsername(),
 							getEvent());

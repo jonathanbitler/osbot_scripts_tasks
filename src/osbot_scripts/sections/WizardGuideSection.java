@@ -56,6 +56,9 @@ public class WizardGuideSection extends TutorialSection {
 			getWalking().walk(CHICKEN_AREA);
 			// }
 			attackChicken();
+			if (getMagic().isSpellSelected()) {
+				getMagic().deselectSpell();
+			}
 			break;
 
 		case 670:

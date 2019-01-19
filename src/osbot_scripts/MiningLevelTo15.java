@@ -79,7 +79,7 @@ public class MiningLevelTo15 extends Script {
 				}
 			}
 		}
-		return random(20, 80);
+		return random(20, 40);
 	}
 
 	// Breaking for set amount of minutes because has done a few laps

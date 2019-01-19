@@ -23,7 +23,7 @@ public class PlayersAround extends MethodProvider implements Runnable {
 
 	@Override
 	public void run() {
-		while (run) {
+//		while (run) {
 //			try {
 //				log("Trying to calculate players around me that are mine... ");
 //
@@ -33,7 +33,7 @@ public class PlayersAround extends MethodProvider implements Runnable {
 //			} catch (InterruptedException e) {
 //				e.printStackTrace();
 //			}
-		}
+//		}
 	}
 
 	public void stop() {

@@ -249,7 +249,7 @@ public class TaskHandler {
 					/**
 					 * Movement manager
 					 */
-					getQuest().getMovementManager().roll(getProvider());
+//					getQuest().getMovementManager().roll(getProvider());
 					
 					/**
 					 * Timeout handling for quests specific

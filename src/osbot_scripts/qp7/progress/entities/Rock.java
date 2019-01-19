@@ -14,10 +14,10 @@ public enum Rock {
 	Rock(final short[] colours) {
 		this.colours = colours;
 	}
-	
 
 	public boolean hasOre(final Entity rockEntity, MethodProvider api) {
-		if (rockEntity.getDefinition() == null || rockEntity == null) {
+		if (rockEntity == null || rockEntity.getDefinition() == null
+				|| rockEntity.getDefinition().getModifiedModelColors() == null) {
 			return false;
 		}
 
@@ -26,7 +26,7 @@ public enum Rock {
 		if (colours == null) {
 			return false;
 		}
-		
+
 		for (short rockColour : this.colours) {
 			for (short entityColour : colours) {
 				if (rockColour == entityColour) {

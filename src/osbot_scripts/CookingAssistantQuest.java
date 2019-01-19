@@ -8,8 +8,6 @@ import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 
-import osbot_scripts.anti_ban.RandomCameraEvent;
-import osbot_scripts.anti_ban.RandomMouseEvent;
 import osbot_scripts.bot.utils.BotCommands;
 import osbot_scripts.bot.utils.Coordinates;
 import osbot_scripts.bot.utils.RandomUtil;

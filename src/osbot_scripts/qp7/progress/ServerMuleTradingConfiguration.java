@@ -154,6 +154,10 @@ public class ServerMuleTradingConfiguration extends QuestStep {
 						BotCommands.killProcess(this, getScript(), "BECAUSE OF DONE WITH UNKNOWN TRADING", getEvent());
 						getScript().stop();
 					}
+					
+					if (getBank().isOpen()) {
+						getBank().close();
+					}
 
 					newPartnerFindTries++;
 				}
@@ -186,7 +190,7 @@ public class ServerMuleTradingConfiguration extends QuestStep {
 			if ((getTrade().isCurrentlyTrading() || getTrade().isFirstInterfaceOpen()
 					|| getTrade().isSecondInterfaceOpen()) && itemMap.size() > 0) {
 				trade(getEvent().getTradeWith(), itemMap, false);
-				Thread.sleep(2500);
+				Thread.sleep(6000);
 				log("currently trading");
 				return;
 			}
@@ -213,7 +217,7 @@ public class ServerMuleTradingConfiguration extends QuestStep {
 					}
 				}
 
-				Thread.sleep(2500);
+				Thread.sleep(6000);
 
 				getBank().depositAll();
 				Sleep.sleepUntil(() -> getInventory().isEmpty(), 5000);
@@ -232,7 +236,7 @@ public class ServerMuleTradingConfiguration extends QuestStep {
 
 			if (itemMap.size() > 0 && getInventory().contains(995)) {
 				trade(getEvent().getTradeWith(), itemMap, false);
-				Thread.sleep(2500);
+				Thread.sleep(6000);
 			}
 
 			// Open bank
@@ -273,7 +277,7 @@ public class ServerMuleTradingConfiguration extends QuestStep {
 			if (lastTradedPlayer != null && lastTradedPlayer.equalsIgnoreCase(getEvent().getTradeWith())
 					&& !getInventory().contains(995)) {
 				trade(getEvent().getTradeWith(), new HashMap<String, Integer>(), true);
-				Thread.sleep(2500);
+				Thread.sleep(6000);
 				log("Accepting trade request... doing actions...");
 			} else if (getPlayers().closest(getEvent().getTradeWith()) != null && getBank().isOpen()) {
 				log("Player is near and having bank open, closing...");
@@ -285,7 +289,7 @@ public class ServerMuleTradingConfiguration extends QuestStep {
 
 				// Only trade when the person trading is actually from the database
 				log("Found player in database: " + inDatabase);
-				
+
 				if (inDatabase) {
 					String name = getTrade().getLastRequestingPlayer().getName();
 
@@ -358,14 +362,29 @@ public class ServerMuleTradingConfiguration extends QuestStep {
 	public void trade(String name, HashMap<String, Integer> itemSet, boolean acceptLast) throws InterruptedException {
 		String cleanName = name.replaceAll(" ", "\\u00a0");
 		Player player = getScript().getPlayers().closest(cleanName);
-		if (player != null && !isTrading() && player.interact("trade with")) {
-			log("1");
-			new ConditionalSleep(10000) {
-				@Override
-				public boolean condition() {
-					return isTrading();
+
+		if (!getAccountStatus().equalsIgnoreCase("SUPER_MULE")) {
+			if (getTrade().getLastRequestingPlayer() != null) {
+				if (player != null && !isTrading() && player.interact("trade with")) {
+					log("1");
+					new ConditionalSleep(10000) {
+						@Override
+						public boolean condition() {
+							return isTrading();
+						}
+					}.sleep();
 				}
-			}.sleep();
+			}
+		} else {
+			if (player != null && !isTrading() && player.interact("trade with")) {
+				log("1");
+				new ConditionalSleep(10000) {
+					@Override
+					public boolean condition() {
+						return isTrading();
+					}
+				}.sleep();
+			}
 		}
 
 		if (isTrading() && getTrade().isFirstInterfaceOpen()) {

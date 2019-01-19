@@ -13,13 +13,14 @@ import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 
+import osbot_scripts.PlayerPrice;
 import osbot_scripts.bot.utils.BotCommands;
 import osbot_scripts.bot.utils.RandomUtil;
 import osbot_scripts.config.Config;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.events.MandatoryEventsExecution;
-import osbot_scripts.framework.AccountStage;
+import osbot_scripts.framework.GEPrice;
 import osbot_scripts.framework.GrandExchangeTask;
 import osbot_scripts.framework.Pickaxe;
 import osbot_scripts.framework.parts.BankItem;
@@ -61,6 +62,7 @@ public class Ge2 extends Script {
 		// }
 
 		if (getTask() == null) {
+			log("Trying to get a task...");
 			sideLoop();
 		}
 
@@ -128,209 +130,137 @@ public class Ge2 extends Script {
 		return (int) (getBank().getAmount("Clay") + (int) (getInventory().getAmount("Clay")));
 	}
 
+	/**
+	 * Opens a bank
+	 * 
+	 * @return
+	 * @throws InterruptedException
+	 */
+	private boolean openBank() throws InterruptedException {
+		boolean finish = false;
+
+		while (!finish) {
+			if (getBank().isOpen()) {
+				break;
+			}
+			getBank().open();
+			log("Opening bank...");
+
+			Sleep.sleepUntil(() -> getBank().isOpen(), 10000);
+
+			finish = getBank().isOpen();
+		}
+		return true;
+	}
+
+	private boolean depositItems() {
+		boolean finish = false;
+
+		while (!finish) {
+			if (getInventory().isEmpty()) {
+				break;
+			}
+
+			RS2Widget depositAll = getWidgets().get(12, 42);
+			Sleep.sleepUntil(() -> depositAll != null, 10000);
+
+			// Wait until it clicked on the button and inventory is empty
+			if (depositAll != null) {
+				depositAll.interact("Deposit inventory");
+			}
+			getBank().depositAll();
+
+			Sleep.sleepUntil(() -> getInventory().isEmpty(), 10000);
+		}
+		return true;
+	}
+
 	public void sideLoop() throws InterruptedException {
 		log("Running the side loop..");
 
-		if (getClient().isLoggedIn() && myPlayer() != null && myPlayer().isVisible()) {
-			boolean iron = getSkills().getStatic(Skill.MINING) >= 15 && getQuests().getQuestPoints() >= 7;
+		boolean iron = getSkills().getStatic(Skill.MINING) >= 15 && getQuests().getQuestPoints() >= 7;
 
-			if (tries > 15 && getTask() == null) {
-				if (!getBank().isOpen()) {
-					getBank().open();
-				}
+		// Opening bank
+		openBank();
+		log("Waiting till bank is open...");
 
-				Sleep.sleepUntil(() -> getBank().isOpen(), 10000);
+		depositItems();
+		log("Depositing items");
 
-				// Finding the deposit button
-				RS2Widget depositAll = getWidgets().get(12, 42);
-				Sleep.sleepUntil(() -> depositAll != null, 10000);
+		// PlayerPrice price = new PlayerPrice();
+		// price.exchangeContext(getBot());
+		//
+		// int totalAccountValue = price.getTotalAccountValue();
 
-				// Wait until it clicked on the button and inventory is empty
-				if (depositAll != null) {
-					depositAll.interact("Deposit inventory");
-				}
-				Sleep.sleepUntil(() -> getInventory().isEmpty(), 10000);
-				log("[GRAND EXCHANGE] inventory deposited");
+		int ironAmount = -1;
+		int clayAmount = -1;
+		int totalAccountValue = -1;
+		int coinsAmount = -1, coinsInventoryAmount = -1, ironAmountInventory = -1, clayAmountInventory = -1;
 
-				// When having more than 200 clay, then go to the g.e. and sell it
-				if (getBank().isOpen()) {
+		openBank();
 
-					int ironOreAmount = (int) (getAmountOfItemInBankAndInventory("Iron ore"));
-					int clayAmount = (int) (getAmountOfItemInBankAndInventory("Clay"));
-					setTask(new GrandExchangeTask(this, new BankItem[] {},
-							new BankItem[] {
-									iron ? new BankItem("Iron ore", 440, ironOreAmount, 1, true)
-											: new BankItem("null", -1, -1, -1, false),
-									new BankItem("Uncut diamond", 1617, 1000, 1, true),
-									new BankItem("Uncut emerald", 1621, 1000, 1, true),
-									new BankItem("Uncut ruby", 1619, 1000, 1, true),
-									new BankItem("Uncut sapphire", 1623, 1000, 1, true),
-									new BankItem("Clay", 434, clayAmount, 1, true) },
-							login, (Script) this, getQuest()));
-				}
-			}
+		ironAmount = (int) getBank().getAmount("Iron ore");
+		ironAmountInventory = (int) getInventory().getAmount("Iron ore");
 
-			if (!getBank().isOpen()) {
-				getBank().open();
-			}
+		clayAmountInventory = (int) getInventory().getAmount("Clay");
+		clayAmount = (int) getBank().getAmount("Clay");
 
-			// When having more than 200 clay, then go to the g.e. and sell it
-			if (getBank().isOpen() && (getAmountOfItemInBankAndInventory("Iron ore") > 200
-					|| getAmountOfItemInBankAndInventory("Clay") > 200)) {
-				int ironOreAmount = (int) (getAmountOfItemInBankAndInventory("Iron ore"));
-				int clayAmount = (int) (getAmountOfItemInBankAndInventory("Clay"));
-				setTask(new GrandExchangeTask(this, new BankItem[] {},
-						new BankItem[] {
-								iron ? new BankItem("Iron ore", 440, ironOreAmount, 1, true)
-										: new BankItem("null", -1, -1, -1, false),
-								new BankItem("Uncut diamond", 1617, 1000, 1, true),
-								new BankItem("Uncut emerald", 1621, 1000, 1, true),
-								new BankItem("Uncut ruby", 1619, 1000, 1, true),
-								new BankItem("Uncut sapphire", 1623, 1000, 1, true),
-								new BankItem("Clay", 434, clayAmount, 1, true) },
-						login, (Script) this, getQuest()));
-			}
+		coinsAmount = (int) getBank().getAmount(995);
+		coinsInventoryAmount = (int) getInventory().getAmount(995);
 
-			int ironAmount = -1;
-			int clayAmount = -1;
-			int totalAccountValue = -1;
-			int coinsAmount = -1, coinsInventoryAmount = -1, ironAmountInventory = -1, clayAmountInventory = -1;
-			if (getBank().isOpen()) {
-				ironAmount = (int) getBank().getAmount("Iron ore");
-				ironAmountInventory = (int) getInventory().getAmount("Iron ore");
-				clayAmountInventory = (int) getInventory().getAmount("Clay");
-				clayAmount = (int) getBank().getAmount("Clay");
-				coinsAmount = (int) getBank().getAmount(995);
-				coinsInventoryAmount = (int) getInventory().getAmount(995);
-				totalAccountValue += coinsAmount;
-				totalAccountValue += coinsInventoryAmount;
-				totalAccountValue += (ironAmount * 100);
-				totalAccountValue += (ironAmountInventory * 100);
-				totalAccountValue += (clayAmount * 90);
-				totalAccountValue += (clayAmountInventory * 90);
-			}
+		totalAccountValue += coinsAmount;
+		totalAccountValue += coinsInventoryAmount;
 
-			log("[ESTIMATED] account value is: " + totalAccountValue);
-			if (login != null && login.getUsername() != null && totalAccountValue > 0) {
-				DatabaseUtilities.updateAccountValue(this, login.getUsername(), totalAccountValue, login);
-			}
+		/**
+		 * Prices for iron ore & clay ore
+		 */
+		int ironOrePrice = 0;
+		try {
+			ironOrePrice = (int) (new GEPrice().getBuyingPrice(440) * 0.9);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		int clayOrePrice = 0;
+		try {
+			clayOrePrice = (int) (new GEPrice().getBuyingPrice(434) * 0.9);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
-			if (!getBank().isOpen()) {
-				getBank().open();
+		totalAccountValue += (ironAmount * clayOrePrice);
+		totalAccountValue += (ironAmountInventory * clayOrePrice);
+		totalAccountValue += (clayAmount * ironOrePrice);
+		totalAccountValue += (clayAmountInventory * ironOrePrice);
 
-				if (Config.doesntHaveAnyPickaxe(this)) {
+		log("[ESTIMATED] account value is: " + totalAccountValue);
+		if (login != null && login.getUsername() != null && totalAccountValue > 0) {
+			DatabaseUtilities.updateAccountValue(this, login.getUsername(), totalAccountValue, login);
+		}
 
-					// if (totalAccountValue >= 0 && totalAccountValue < Pickaxe.BRONZE.getPrice())
-					// {
-					//// DatabaseUtilities.updateStageProgress(this,
-					// AccountStage.OUT_OF_MONEY.name(), 0,
-					//// login.getUsername(), login);
-					// log("Not enough money.. closing for next stage");
-					// BotCommands.waitBeforeKill(this, "BECAUSE OF NOT HAVING ENOUGH MONEY E02");
-					// }
+		// Opening bank
+		openBank();
 
-					if (totalAccountValue > Pickaxe.BRONZE.getPrice()) {
-						setTask(new GrandExchangeTask(this,
-								new BankItem[] {
-										new BankItem("Bronze pickaxe", 1265, 1, Pickaxe.BRONZE.getPrice(), false) },
-								new BankItem[] {
-										iron ? new BankItem("Iron ore", 440, 1000, 1, true)
-												: new BankItem("null", -1, -1, -1, false),
-										new BankItem("Uncut diamond", 1617, 1000, 1, true),
-										new BankItem("Uncut emerald", 1621, 1000, 1, true),
-										new BankItem("Uncut ruby", 1619, 1000, 1, true),
-										new BankItem("Uncut sapphire", 1623, 1000, 1, true),
-										new BankItem("Clay", 434, 1000, 1, true) },
-								login, (Script) this, getQuest()));
-					} else if (totalAccountValue > Pickaxe.IRON.getPrice() && getBank().isOpen()
-							&& getSkills().getStatic(Skill.MINING) > 3 && getSkills().getStatic(Skill.MINING) < 6) {
-						setTask(new GrandExchangeTask(this,
-								new BankItem[] {
-										new BankItem("Iron pickaxe", 1267, 1, Pickaxe.IRON.getPrice(), false) },
-								new BankItem[] {
-										iron ? new BankItem("Iron ore", 440, 1000, 1, true)
-												: new BankItem("null", -1, -1, -1, false),
-										new BankItem("Clay", 434, 1000, 1, true),
-										new BankItem("Uncut diamond", 1617, 1000, 1, true),
-										new BankItem("Uncut emerald", 1621, 1000, 1, true),
-										new BankItem("Uncut ruby", 1619, 1000, 1, true),
-										new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
-								login, (Script) this, getQuest()));
+		// When having more than 200 clay, then go to the g.e. and sell it
+		if (getBank().isOpen() && (getAmountOfItemInBankAndInventory("Iron ore") > 200
+				|| getAmountOfItemInBankAndInventory("Clay") > 200)) {
+			int ironOreAmount = (int) (getAmountOfItemInBankAndInventory("Iron ore"));
+			int clayAmount1 = (int) (getAmountOfItemInBankAndInventory("Clay"));
+			setTask(new GrandExchangeTask(this, new BankItem[] {}, new BankItem[] {
+					iron ? new BankItem("Iron ore", 440, ironOreAmount, 1, true)
+							: new BankItem("null", -1, -1, -1, false),
+					new BankItem("Uncut diamond", 1617, 1000, 1, true),
+					new BankItem("Uncut emerald", 1621, 1000, 1, true), new BankItem("Uncut ruby", 1619, 1000, 1, true),
+					new BankItem("Uncut sapphire", 1623, 1000, 1, true),
+					new BankItem("Clay", 434, clayAmount1, 1, true) }, login, (Script) this, getQuest()));
+			return;
 
-					} else if (totalAccountValue > Pickaxe.STEEL.getPrice() && getBank().isOpen()
-							&& getSkills().getStatic(Skill.MINING) >= 6 && getSkills().getStatic(Skill.MINING) < 21) {
-						setTask(new GrandExchangeTask(this,
-								new BankItem[] {
-										new BankItem("Steel pickaxe", 1269, 1, Pickaxe.STEEL.getPrice(), false) },
-								new BankItem[] {
-										iron ? new BankItem("Iron ore", 440, 1000, 1, true)
-												: new BankItem("null", -1, -1, -1, false),
-										new BankItem("Clay", 434, 1000, 1, true),
-										new BankItem("Uncut diamond", 1617, 1000, 1, true),
-										new BankItem("Uncut emerald", 1621, 1000, 1, true),
-										new BankItem("Uncut ruby", 1619, 1000, 1, true),
-										new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
-								login, (Script) this, getQuest()));
+		}
 
-					} else if (totalAccountValue > Pickaxe.MITHRIL.getPrice() && getBank().isOpen()
-							&& getSkills().getStatic(Skill.MINING) >= 21 && getSkills().getStatic(Skill.MINING) < 31) {
-						setTask(new GrandExchangeTask(this,
-								new BankItem[] {
-										new BankItem("Mithril pickaxe", 1273, 1, Pickaxe.MITHRIL.getPrice(), false) },
-								new BankItem[] {
-										iron ? new BankItem("Iron ore", 440, 1000, 1, true)
-												: new BankItem("null", -1, -1, -1, false),
-										new BankItem("Uncut diamond", 1617, 1000, 1, true),
-										new BankItem("Uncut emerald", 1621, 1000, 1, true),
-										new BankItem("Uncut ruby", 1619, 1000, 1, true),
-										new BankItem("Uncut sapphire", 1623, 1000, 1, true),
-										new BankItem("Clay", 434, 1000, 1, true) },
-								login, (Script) this, getQuest()));
+		if (Config.doesntHaveAnyPickaxe(this)) {
 
-					} else if (totalAccountValue > Pickaxe.ADAMANT.getPrice() && getBank().isOpen()
-							&& getSkills().getStatic(Skill.MINING) >= 31 && getSkills().getStatic(Skill.MINING) < 41) {
-						setTask(new GrandExchangeTask(this,
-								new BankItem[] {
-										new BankItem("Adamant pickaxe", 1271, 1, Pickaxe.ADAMANT.getPrice(), false) },
-								new BankItem[] {
-										iron ? new BankItem("Iron ore", 440, 1000, 1, true)
-												: new BankItem("null", -1, -1, -1, false),
-										new BankItem("Uncut diamond", 1617, 1000, 1, true),
-										new BankItem("Uncut emerald", 1621, 1000, 1, true),
-										new BankItem("Uncut ruby", 1619, 1000, 1, true),
-										new BankItem("Uncut sapphire", 1623, 1000, 1, true),
-										new BankItem("Clay", 434, 1000, 1, true) },
-								login, (Script) this, getQuest()));
-
-					} else if (totalAccountValue > Pickaxe.RUNE.getPrice() && getBank().isOpen()
-							&& getSkills().getStatic(Skill.MINING) >= 41) {
-
-						setTask(new GrandExchangeTask(this,
-								new BankItem[] {
-										new BankItem("Rune pickaxe", 1275, 1, Pickaxe.RUNE.getPrice(), false) },
-								new BankItem[] {
-										iron ? new BankItem("Iron ore", 440, 1000, 1, true)
-												: new BankItem("null", -1, -1, -1, false),
-										new BankItem("Clay", 434, 1000, 1, true),
-										new BankItem("Uncut diamond", 1617, 1000, 1, true),
-										new BankItem("Uncut emerald", 1621, 1000, 1, true),
-										new BankItem("Uncut ruby", 1619, 1000, 1, true),
-										new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
-								login, (Script) this, getQuest()));
-					}
-
-				}
-			}
-
-			// The tasks of getting new pickaxes, looking for the skill and then the pickaxe
-			// corresponding with this skill level, when the player is in lumrbidge, then
-			// also execute this task to get a new mining pickaxe
-			// This is made so when a player reaches a level, or doesn't have a base
-			// pickaxe, then it goes to the g.e. and buys one according to its mining level
-			if (totalAccountValue > Pickaxe.BRONZE.getPrice() && getBank().isOpen()
-					&& getSkills().getStatic(Skill.MINING) <= 3
-					&& ((!getInventory().contains("Bronze pickaxe") && !getBank().contains("Bronze pickaxe")))) {
-
+			if (totalAccountValue > Pickaxe.BRONZE.getPrice()) {
 				setTask(new GrandExchangeTask(this,
 						new BankItem[] { new BankItem("Bronze pickaxe", 1265, 1, Pickaxe.BRONZE.getPrice(), false) },
 						new BankItem[] {
@@ -342,10 +272,10 @@ public class Ge2 extends Script {
 								new BankItem("Uncut sapphire", 1623, 1000, 1, true),
 								new BankItem("Clay", 434, 1000, 1, true) },
 						login, (Script) this, getQuest()));
-			} else if (totalAccountValue > Pickaxe.IRON.getPrice() && getBank().isOpen()
-					&& getSkills().getStatic(Skill.MINING) > 3 && getSkills().getStatic(Skill.MINING) < 6
-					&& ((!getInventory().contains("Iron pickaxe") && !getBank().contains("Iron pickaxe")))) {
+				return;
 
+			} else if (totalAccountValue > Pickaxe.IRON.getPrice() && getBank().isOpen()
+					&& getSkills().getStatic(Skill.MINING) > 3 && getSkills().getStatic(Skill.MINING) < 6) {
 				setTask(new GrandExchangeTask(this,
 						new BankItem[] { new BankItem("Iron pickaxe", 1267, 1, Pickaxe.IRON.getPrice(), false) },
 						new BankItem[] {
@@ -357,10 +287,10 @@ public class Ge2 extends Script {
 								new BankItem("Uncut ruby", 1619, 1000, 1, true),
 								new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
 						login, (Script) this, getQuest()));
-			} else if (totalAccountValue > Pickaxe.STEEL.getPrice() && getBank().isOpen()
-					&& getSkills().getStatic(Skill.MINING) >= 6 && getSkills().getStatic(Skill.MINING) < 21
-					&& ((!getInventory().contains("Steel pickaxe") && !getBank().contains("Steel pickaxe")))) {
+				return;
 
+			} else if (totalAccountValue > Pickaxe.STEEL.getPrice() && getBank().isOpen()
+					&& getSkills().getStatic(Skill.MINING) >= 6 && getSkills().getStatic(Skill.MINING) < 21) {
 				setTask(new GrandExchangeTask(this,
 						new BankItem[] { new BankItem("Steel pickaxe", 1269, 1, Pickaxe.STEEL.getPrice(), false) },
 						new BankItem[] {
@@ -372,10 +302,10 @@ public class Ge2 extends Script {
 								new BankItem("Uncut ruby", 1619, 1000, 1, true),
 								new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
 						login, (Script) this, getQuest()));
-			} else if (totalAccountValue > Pickaxe.MITHRIL.getPrice() && getBank().isOpen()
-					&& getSkills().getStatic(Skill.MINING) >= 21 && getSkills().getStatic(Skill.MINING) < 31
-					&& ((!getInventory().contains("Mithril pickaxe") && !getBank().contains("Mithril pickaxe")))) {
+				return;
 
+			} else if (totalAccountValue > Pickaxe.MITHRIL.getPrice() && getBank().isOpen()
+					&& getSkills().getStatic(Skill.MINING) >= 21 && getSkills().getStatic(Skill.MINING) < 31) {
 				setTask(new GrandExchangeTask(this,
 						new BankItem[] { new BankItem("Mithril pickaxe", 1273, 1, Pickaxe.MITHRIL.getPrice(), false) },
 						new BankItem[] {
@@ -387,10 +317,10 @@ public class Ge2 extends Script {
 								new BankItem("Uncut sapphire", 1623, 1000, 1, true),
 								new BankItem("Clay", 434, 1000, 1, true) },
 						login, (Script) this, getQuest()));
-			} else if (totalAccountValue > Pickaxe.ADAMANT.getPrice() && getBank().isOpen()
-					&& getSkills().getStatic(Skill.MINING) >= 31 && getSkills().getStatic(Skill.MINING) < 41
-					&& ((!getInventory().contains("Adamant pickaxe") && !getBank().contains("Adamant pickaxe")))) {
+				return;
 
+			} else if (totalAccountValue > Pickaxe.ADAMANT.getPrice() && getBank().isOpen()
+					&& getSkills().getStatic(Skill.MINING) >= 31 && getSkills().getStatic(Skill.MINING) < 41) {
 				setTask(new GrandExchangeTask(this,
 						new BankItem[] { new BankItem("Adamant pickaxe", 1271, 1, Pickaxe.ADAMANT.getPrice(), false) },
 						new BankItem[] {
@@ -402,9 +332,10 @@ public class Ge2 extends Script {
 								new BankItem("Uncut sapphire", 1623, 1000, 1, true),
 								new BankItem("Clay", 434, 1000, 1, true) },
 						login, (Script) this, getQuest()));
+				return;
+
 			} else if (totalAccountValue > Pickaxe.RUNE.getPrice() && getBank().isOpen()
-					&& getSkills().getStatic(Skill.MINING) >= 41
-					&& ((!getInventory().contains("Rune pickaxe") && !getBank().contains("Rune pickaxe")))) {
+					&& getSkills().getStatic(Skill.MINING) >= 41) {
 
 				setTask(new GrandExchangeTask(this,
 						new BankItem[] { new BankItem("Rune pickaxe", 1275, 1, Pickaxe.RUNE.getPrice(), false) },
@@ -417,8 +348,130 @@ public class Ge2 extends Script {
 								new BankItem("Uncut ruby", 1619, 1000, 1, true),
 								new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
 						login, (Script) this, getQuest()));
+				return;
+
 			}
+
 		}
+
+		// Opening bank
+		openBank();
+
+		// The tasks of getting new pickaxes, looking for the skill and then the pickaxe
+		// corresponding with this skill level, when the player is in lumrbidge, then
+		// also execute this task to get a new mining pickaxe
+		// This is made so when a player reaches a level, or doesn't have a base
+		// pickaxe, then it goes to the g.e. and buys one according to its mining level
+		if (totalAccountValue > Pickaxe.BRONZE.getPrice() && getBank().isOpen()
+				&& getSkills().getStatic(Skill.MINING) <= 3
+				&& ((!getInventory().contains("Bronze pickaxe") && !getBank().contains("Bronze pickaxe")))) {
+
+			setTask(new GrandExchangeTask(this,
+					new BankItem[] { new BankItem("Bronze pickaxe", 1265, 1, Pickaxe.BRONZE.getPrice(), false) },
+					new BankItem[] {
+							iron ? new BankItem("Iron ore", 440, 1000, 1, true)
+									: new BankItem("null", -1, -1, -1, false),
+							new BankItem("Uncut diamond", 1617, 1000, 1, true),
+							new BankItem("Uncut emerald", 1621, 1000, 1, true),
+							new BankItem("Uncut ruby", 1619, 1000, 1, true),
+							new BankItem("Uncut sapphire", 1623, 1000, 1, true),
+							new BankItem("Clay", 434, 1000, 1, true) },
+					login, (Script) this, getQuest()));
+			return;
+
+		} else if (totalAccountValue > Pickaxe.IRON.getPrice() && getBank().isOpen()
+				&& getSkills().getStatic(Skill.MINING) > 3 && getSkills().getStatic(Skill.MINING) < 6
+				&& ((!getInventory().contains("Iron pickaxe") && !getBank().contains("Iron pickaxe")))) {
+
+			setTask(new GrandExchangeTask(this,
+					new BankItem[] { new BankItem("Iron pickaxe", 1267, 1, Pickaxe.IRON.getPrice(), false) },
+					new BankItem[] {
+							iron ? new BankItem("Iron ore", 440, 1000, 1, true)
+									: new BankItem("null", -1, -1, -1, false),
+							new BankItem("Clay", 434, 1000, 1, true),
+							new BankItem("Uncut diamond", 1617, 1000, 1, true),
+							new BankItem("Uncut emerald", 1621, 1000, 1, true),
+							new BankItem("Uncut ruby", 1619, 1000, 1, true),
+							new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
+					login, (Script) this, getQuest()));
+			return;
+
+		} else if (totalAccountValue > Pickaxe.STEEL.getPrice() && getBank().isOpen()
+				&& getSkills().getStatic(Skill.MINING) >= 6 && getSkills().getStatic(Skill.MINING) < 21
+				&& ((!getInventory().contains("Steel pickaxe") && !getBank().contains("Steel pickaxe")))) {
+
+			setTask(new GrandExchangeTask(this,
+					new BankItem[] { new BankItem("Steel pickaxe", 1269, 1, Pickaxe.STEEL.getPrice(), false) },
+					new BankItem[] {
+							iron ? new BankItem("Iron ore", 440, 1000, 1, true)
+									: new BankItem("null", -1, -1, -1, false),
+							new BankItem("Clay", 434, 1000, 1, true),
+							new BankItem("Uncut diamond", 1617, 1000, 1, true),
+							new BankItem("Uncut emerald", 1621, 1000, 1, true),
+							new BankItem("Uncut ruby", 1619, 1000, 1, true),
+							new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
+					login, (Script) this, getQuest()));
+			return;
+
+		} else if (totalAccountValue > Pickaxe.MITHRIL.getPrice() && getBank().isOpen()
+				&& getSkills().getStatic(Skill.MINING) >= 21 && getSkills().getStatic(Skill.MINING) < 31
+				&& ((!getInventory().contains("Mithril pickaxe") && !getBank().contains("Mithril pickaxe")))) {
+
+			setTask(new GrandExchangeTask(this,
+					new BankItem[] { new BankItem("Mithril pickaxe", 1273, 1, Pickaxe.MITHRIL.getPrice(), false) },
+					new BankItem[] {
+							iron ? new BankItem("Iron ore", 440, 1000, 1, true)
+									: new BankItem("null", -1, -1, -1, false),
+							new BankItem("Uncut diamond", 1617, 1000, 1, true),
+							new BankItem("Uncut emerald", 1621, 1000, 1, true),
+							new BankItem("Uncut ruby", 1619, 1000, 1, true),
+							new BankItem("Uncut sapphire", 1623, 1000, 1, true),
+							new BankItem("Clay", 434, 1000, 1, true) },
+					login, (Script) this, getQuest()));
+			return;
+
+		} else if (totalAccountValue > Pickaxe.ADAMANT.getPrice() && getBank().isOpen()
+				&& getSkills().getStatic(Skill.MINING) >= 31 && getSkills().getStatic(Skill.MINING) < 41
+				&& ((!getInventory().contains("Adamant pickaxe") && !getBank().contains("Adamant pickaxe")))) {
+
+			setTask(new GrandExchangeTask(this,
+					new BankItem[] { new BankItem("Adamant pickaxe", 1271, 1, Pickaxe.ADAMANT.getPrice(), false) },
+					new BankItem[] {
+							iron ? new BankItem("Iron ore", 440, 1000, 1, true)
+									: new BankItem("null", -1, -1, -1, false),
+							new BankItem("Uncut diamond", 1617, 1000, 1, true),
+							new BankItem("Uncut emerald", 1621, 1000, 1, true),
+							new BankItem("Uncut ruby", 1619, 1000, 1, true),
+							new BankItem("Uncut sapphire", 1623, 1000, 1, true),
+							new BankItem("Clay", 434, 1000, 1, true) },
+					login, (Script) this, getQuest()));
+			return;
+
+		} else if (totalAccountValue > Pickaxe.RUNE.getPrice() && getBank().isOpen()
+				&& getSkills().getStatic(Skill.MINING) >= 41
+				&& ((!getInventory().contains("Rune pickaxe") && !getBank().contains("Rune pickaxe")))) {
+
+			setTask(new GrandExchangeTask(this,
+					new BankItem[] { new BankItem("Rune pickaxe", 1275, 1, Pickaxe.RUNE.getPrice(), false) },
+					new BankItem[] {
+							iron ? new BankItem("Iron ore", 440, 1000, 1, true)
+									: new BankItem("null", -1, -1, -1, false),
+							new BankItem("Clay", 434, 1000, 1, true),
+							new BankItem("Uncut diamond", 1617, 1000, 1, true),
+							new BankItem("Uncut emerald", 1621, 1000, 1, true),
+							new BankItem("Uncut ruby", 1619, 1000, 1, true),
+							new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
+					login, (Script) this, getQuest()));
+			return;
+		}
+
+		int ironOreAmount = (int) (getAmountOfItemInBankAndInventory("Iron ore"));
+		int clayAmount1 = (int) (getAmountOfItemInBankAndInventory("Clay"));
+		setTask(new GrandExchangeTask(this, new BankItem[] {}, new BankItem[] {
+				iron ? new BankItem("Iron ore", 440, ironOreAmount, 1, true) : new BankItem("null", -1, -1, -1, false),
+				new BankItem("Uncut diamond", 1617, 1000, 1, true), new BankItem("Uncut emerald", 1621, 1000, 1, true),
+				new BankItem("Uncut ruby", 1619, 1000, 1, true), new BankItem("Uncut sapphire", 1623, 1000, 1, true),
+				new BankItem("Clay", 434, clayAmount1, 1, true) }, login, (Script) this, getQuest()));
 	}
 
 	public void setTask() throws InterruptedException {

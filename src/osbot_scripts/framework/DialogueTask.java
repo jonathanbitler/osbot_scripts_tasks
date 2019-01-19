@@ -325,7 +325,8 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 	private RS2Widget getContinueWidget() {
 		return this.getApi().getWidgets().singleFilter(this.getApi().getWidgets().getAll(),
 				widget -> widget.isVisible() && (widget.getMessage().contains("Click here to continue")
-						|| widget.getMessage().contains("Click to continue")));
+						|| widget.getMessage().contains("Click to continue")
+						|| widget.getMessage().contains("Please wait...")));
 	}
 
 	@Override

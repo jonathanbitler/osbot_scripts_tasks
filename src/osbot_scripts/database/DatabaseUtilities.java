@@ -33,40 +33,49 @@ public class DatabaseUtilities {
 
 	public static boolean updateAccountStatusInDatabase(MethodProvider api, String status, String email,
 			LoginEvent login) {
-		try {
 
-			String query = null;
-			if (isServerMuleTradingAccount(api, login, email)) {
-				query = "UPDATE " + SERVER_MULING_DATABASE + ".account SET status = ? WHERE email=?";
-				if (status.equalsIgnoreCase("TASK_TIMEOUT")) {
-					query = "UPDATE " + SERVER_MULING_DATABASE
-							+ ".account SET status = ?, amount_timeout = amount_timeout + 1 WHERE email=?";
+		boolean finish = false;
+
+		while (!finish) {
+
+			try {
+				String query = null;
+				if (isServerMuleTradingAccount(api, login, email)) {
+					query = "UPDATE " + SERVER_MULING_DATABASE + ".account SET status = ? WHERE email=?";
+					if (status.equalsIgnoreCase("TASK_TIMEOUT")) {
+						query = "UPDATE " + SERVER_MULING_DATABASE
+								+ ".account SET status = ?, amount_timeout = amount_timeout + 1 WHERE email=?";
+					}
+				} else {
+					query = "UPDATE account SET status = ? WHERE email=?";
+					if (status.equalsIgnoreCase("TASK_TIMEOUT")) {
+						query = "UPDATE account SET status = ?, amount_timeout = amount_timeout + 1 WHERE email=?";
+					}
 				}
-			} else {
-				query = "UPDATE account SET status = ? WHERE email=?";
-				if (status.equalsIgnoreCase("TASK_TIMEOUT")) {
-					query = "UPDATE account SET status = ?, amount_timeout = amount_timeout + 1 WHERE email=?";
+				Connection conn = DatabaseConnection.getDatabase().getConnection(api, login);
+				PreparedStatement preparedStmt = conn.prepareStatement(query);
+				preparedStmt.setString(1, status);
+				preparedStmt.setString(2, email);
+
+				// execute the java preparedstatement
+				preparedStmt.executeUpdate();
+				preparedStmt.close();
+				conn.close();
+
+				System.out.println("Updated account in database with new status!");
+				return true;
+			} catch (Exception e) {
+				api.log(exceptionToString(e));
+				// BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E08");
+				try {
+					Thread.sleep(1500);
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
 				}
 			}
-			Connection conn = DatabaseConnection.getDatabase().getConnection(api, login);
-			PreparedStatement preparedStmt = conn.prepareStatement(query);
-			preparedStmt.setString(1, status);
-			preparedStmt.setString(2, email);
-
-			// execute the java preparedstatement
-			preparedStmt.executeUpdate();
-			preparedStmt.close();
-			conn.close();
-
-			System.out.println("Updated account in database with new status!");
-
-			return true;
-
-		} catch (Exception e) {
-			api.log(exceptionToString(e));
-			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E08");
-			return false;
 		}
+		return false;
 	}
 
 	public static boolean updateAccountValue(String database, MethodProvider api, String email, int value,
@@ -345,40 +354,36 @@ public class DatabaseUtilities {
 	}
 
 	public static boolean isServerMuleTradingAccount(MethodProvider api, LoginEvent login, String email) {
-		boolean finish = false;
 
 		String sql = "SELECT email FROM server_muling.account";
 		String emailName = null;
 
-		while (!finish) {
-			try {
-				Connection conn = DatabaseConnection.getDatabase().getConnection(api, login);
-				ResultSet results = conn.createStatement().executeQuery(sql);
+		try {
+			Connection conn = DatabaseConnection.getDatabase().getConnection(api, login);
+			ResultSet results = conn.createStatement().executeQuery(sql);
 
-				while (results.next()) {
-					try {
-						emailName = results.getString("email");
+			while (results.next()) {
+				try {
+					emailName = results.getString("email");
 
-						if (emailName.equalsIgnoreCase(email)) {
-							return true;
-						}
-					} catch (SQLException e) {
-						// TODO Auto-generated catch block
-						api.log(exceptionToString(e));
+					if (emailName.equalsIgnoreCase(email)) {
+						return true;
 					}
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					api.log(exceptionToString(e));
 				}
-				finish = true;
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				api.log(exceptionToString(e));
-//				BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E02");
 			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			api.log(exceptionToString(e));
+			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E02");
 		}
 		return false;
 	}
 
 	public static int getMuleTradingFreeAccounts(MethodProvider api, LoginEvent login) {
-		String sql = "SELECT COUNT(*) as count FROM account WHERE account_stage=\"MULE_TRADING\" AND status=\"AVAILABLE\" ORDER BY account_value DESC";
+		String sql = "SELECT COUNT(*) AS COUNT FROM account INNER JOIN proxies ON proxies.ip_addres=proxy_ip WHERE account_stage=\"MULE_TRADING\" AND STATUS=\"AVAILABLE\" ORDER BY account_value DESC";
 		int freeAmount = -1;
 
 		try {

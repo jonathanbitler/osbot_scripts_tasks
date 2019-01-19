@@ -82,7 +82,6 @@ public class MiningType extends ScriptAbstract {
 				if (inMiningZone) {
 					finishWalkingBack = true;
 				}
-
 			}
 		}
 

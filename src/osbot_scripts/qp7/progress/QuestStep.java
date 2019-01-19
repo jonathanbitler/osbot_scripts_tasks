@@ -14,10 +14,7 @@ import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 
-import osbot_scripts.anti_ban.GaussianRandom;
 import osbot_scripts.anti_ban.MovementManager;
-import osbot_scripts.anti_ban.RandomCameraEvent;
-import osbot_scripts.anti_ban.RandomMouseEvent;
 import osbot_scripts.bot.utils.BotCommands;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
@@ -35,7 +32,7 @@ public abstract class QuestStep extends MethodProvider {
 	/**
 	 * Handler for random events (anti-ban)
 	 */
-	private final MovementManager movementManager = new MovementManager();
+	// private final MovementManager movementManager = new MovementManager();
 
 	/**
 	 * Handling tasks per quest
@@ -208,15 +205,16 @@ public abstract class QuestStep extends MethodProvider {
 	public void setKillTask(boolean killTask) {
 		this.killTask = killTask;
 	}
-
-	public void initializeMovementManager() {
-		int frequency = 100000, deviation = 80000;
-		movementManager.register(new RandomCameraEvent(frequency, deviation));
-		movementManager.register(new RandomMouseEvent(frequency, deviation));
-		// log("Registered two gaussian-random input movement events.");
-		// log("Movement event frequency: " + frequency + "ms, deviation: " + deviation
-		// + "ms");
-	}
+	//
+	// public void initializeMovementManager() {
+	// int frequency = 100000, deviation = 80000;
+	// movementManager.register(new RandomCameraEvent(frequency, deviation));
+	// movementManager.register(new RandomMouseEvent(frequency, deviation));
+	// // log("Registered two gaussian-random input movement events.");
+	// // log("Movement event frequency: " + frequency + "ms, deviation: " +
+	// deviation
+	// // + "ms");
+	// }
 
 	/**
 	 * Resetting the stagesbotha
@@ -394,7 +392,8 @@ public abstract class QuestStep extends MethodProvider {
 	private RS2Widget getContinueWidget() {
 		return getWidgets().singleFilter(getWidgets().getAll(),
 				widget -> widget.isVisible() && (widget.getMessage().contains("Click here to continue")
-						|| widget.getMessage().contains("Click to continue")));
+						|| widget.getMessage().contains("Click to continue")
+						|| widget.getMessage().contains("Please wait...")));
 	}
 
 	/**
@@ -601,14 +600,14 @@ public abstract class QuestStep extends MethodProvider {
 	public void setScriptAbstract(ScriptAbstract scriptAbstract) {
 		this.scriptAbstract = scriptAbstract;
 		initializeAbstract();
-		initializeMovementManager();
+		// initializeMovementManager();
 	}
 
 	/**
 	 * @return the movementManager
 	 */
-	public MovementManager getMovementManager() {
-		return movementManager;
-	}
+	// public MovementManager getMovementManager() {
+	// return movementManager;
+	// }
 
 }

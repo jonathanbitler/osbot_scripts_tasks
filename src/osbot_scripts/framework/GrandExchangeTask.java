@@ -117,6 +117,9 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 		getApi().log("Aborting all offers if exists");
 		abortOffers();
 
+		getApi().log("Collecting");
+		collectAllOffersIfDidntCollect();
+
 		getApi().log("Sell all tasked items");
 		boolean soldAll = false;
 		while (!soldAll) {
@@ -471,9 +474,11 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 		boolean open = false;
 
 		while (!open) {
-			Sleep.sleepUntil(() -> ge.openGe(), 5000);
+			ge.openGe();
 
 			open = getApi().getGrandExchange().isOpen();
+
+			Sleep.sleepUntil(() -> getApi().getGrandExchange().isOpen(), 10000);
 		}
 
 		return open;

@@ -71,7 +71,7 @@ public class DoricsQuest extends Script {
 			}
 		}
 
-		return random(500, 600);
+		return random(80, 150);
 	}
 
 	@Override

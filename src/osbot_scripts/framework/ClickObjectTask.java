@@ -235,7 +235,7 @@ public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface
 
 		RS2Object object = getApi().getObjects()
 				.closest(obj -> (getArea().contains(obj) && obj.getId() == getObjectId() || (getRock() != null
-						&& getRock().hasOre(obj, getApi()) && getApi().myPlayer().getArea(1).contains(obj))));
+						&& getRock().hasOre(obj, getApi()) && getApi().myPlayer().getArea(2).contains(obj))));
 
 		if (object != null) {
 
@@ -272,9 +272,10 @@ public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface
 				getApi().log("has ore: " + getRock().hasOre(object, getApi()));
 
 				Sleep.sleepUntil(
-						() -> (getApi().getInventory()
-								.getAmount(waitOnItems.getName()) == (waitOnItems.getAmountBeforeAction()
-										+ waitOnItems.getAmount()))
+						() -> (!getApi().myPlayer().isAnimating()
+								|| getApi().getInventory()
+										.getAmount(waitOnItems.getName()) == (waitOnItems.getAmountBeforeAction()
+												+ waitOnItems.getAmount()))
 								|| (getApi().getDialogues().isPendingContinuation())
 								|| (!getRock().hasOre(
 										getApi().getObjects().closest(o -> o.getX() == object.getX()

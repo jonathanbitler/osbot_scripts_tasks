@@ -76,7 +76,6 @@ public abstract class TutorialSection extends MethodProvider {
 			rs2Object.interact();
 			Sleep.sleepUntil(() -> myPlayer().getArea(2).contains(rs2Object.getPosition()), 5000, 2000);
 		}
-		
 
 		if (rs2Object != null && (!rs2Object.isVisible() || !rs2Object.getArea(1).contains(myPlayer()))) {
 			getWalking().walk(walkTo);
@@ -90,14 +89,14 @@ public abstract class TutorialSection extends MethodProvider {
 	public void talkAndContinueWithInstructor() {
 		enableRunning();
 
-		if (!pendingContinue()) {
+		if (pendingContinue()) {
+			selectContinue();
+		} else if (!pendingContinue()) {
 			talkToConstructor();
 			// Select to continue if can continue
-		} else if (pendingContinue()) {
-			selectContinue();
 		}
 	}
-	
+
 	public boolean deselectItem() {
 		if (inventory.isItemSelected()) {
 			int slot = inventory.getSlot(inventory.getSelectedItemName());
@@ -144,7 +143,8 @@ public abstract class TutorialSection extends MethodProvider {
 	private RS2Widget getContinueWidget() {
 		return getWidgets().singleFilter(getWidgets().getAll(),
 				widget -> widget.isVisible() && (widget.getMessage().contains("Click here to continue")
-						|| widget.getMessage().contains("Click to continue")));
+						|| widget.getMessage().contains("Click to continue")
+						|| widget.getMessage().contains("Please wait...")));
 	}
 
 	/**
