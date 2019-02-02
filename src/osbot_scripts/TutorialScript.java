@@ -114,79 +114,82 @@ public class TutorialScript extends Script {
 	 */
 	@Override
 	public int onLoop() throws InterruptedException {
+		try {
+			if (!getClient().isLoggedIn()) {
+				return 1000;
+			}
 
-		if (!getClient().isLoggedIn()) {
-			return 1000;
-		}
+			if (mainState == null) {
+				mainState = CheckInWhatArea.getState(this);
+			}
 
-		if (mainState == null) {
-			mainState = CheckInWhatArea.getState(this);
-		}
+			// If the person is not logged in anymore, but the client is still open, then
+			// exit the client
+			if ((!getClient().isLoggedIn()) && (System.currentTimeMillis() - getLogin().getStartTime() > 200_000)) {
+				log("Person wasn't logged in anymore, logging out!");
+				Thread.sleep(5000);
+				BotCommands.waitBeforeKill((MethodProvider) this,
+						"WASN'T LOGGED IN ANYMORE, LOGGING OUT TUTORIAL ISLAND");
+			}
 
-		// If the person is not logged in anymore, but the client is still open, then
-		// exit the client
-		if ((!getClient().isLoggedIn()) && (System.currentTimeMillis() - getLogin().getStartTime() > 200_000)) {
-			log("Person wasn't logged in anymore, logging out!");
-			Thread.sleep(5000);
-			BotCommands.waitBeforeKill((MethodProvider) this, "WASN'T LOGGED IN ANYMORE, LOGGING OUT TUTORIAL ISLAND");
-		}
-
-		if (getClient().isLoggedIn() && getConfigs().get(281) >= 3 && getConfigs().get(281) < 650) {
-			events.fixedMode();
-			events.fixedMode2();
-			events.executeAllEvents();
-			if (!EnableFixedModeEvent.isFixedModeEnabled(this)) {
-				if (execute(new EnableFixedModeEvent()).hasFinished()) {
-					System.out.println("Set client to fixed mode, finished");
-					BotCommands.waitBeforeKill((MethodProvider) this, "SET CLIENT TO FIXED MODE TUTORIAL ISLAND");
+			if (getClient().isLoggedIn() && getConfigs().get(281) >= 3 && getConfigs().get(281) < 650) {
+				events.fixedMode();
+				events.fixedMode2();
+				events.executeAllEvents();
+				if (!EnableFixedModeEvent.isFixedModeEnabled(this)) {
+					if (execute(new EnableFixedModeEvent()).hasFinished()) {
+						System.out.println("Set client to fixed mode, finished");
+						BotCommands.waitBeforeKill((MethodProvider) this, "SET CLIENT TO FIXED MODE TUTORIAL ISLAND");
+					}
 				}
 			}
+
+			if (!getClient().isLoggedIn() && getConfigs().get(281) > 0) {
+				BotCommands.killProcess((MethodProvider) this, (Script) this, "", login);
+			}
+
+			if (!Coordinates.isOnTutorialIsland(this)) {
+				log("Succesfully completed!");
+
+				DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this, login).name(), 0,
+						login.getUsername(), login);
+				BotCommands.killProcess((MethodProvider) this, (Script) this,
+						"BECAUSE PLAYER IS NOT ON TUTORIAL ISLAND, SETTING TO COOKS ASSISTANT", login);
+			}
+
+			log(mainState);
+
+			if (mainState == MainState.CREATE_CHARACTER_DESIGN) {
+				characterCreationSection.onLoop();
+			} else if (mainState == MainState.TALK_TO_GIELINOR_GUIDE_ONE) {
+				guilinorGuideSection.onLoop();
+			} else if (mainState == MainState.SURVIVAL_EXPERT) {
+				survivalExpertSection.onLoop();
+			} else if (mainState == MainState.COOKING_GUIDE_SECTION) {
+				cookingGuideSection.onLoop();
+			} else if (mainState == MainState.QUEST_SECTION) {
+				questGuideSection.onLoop();
+			} else if (mainState == MainState.MINING_SECTION) {
+				miningGuideSection.onLoop();
+			} else if (mainState == MainState.COMBAT_SECTION) {
+				combatGuideSection.onLoop();
+			} else if (mainState == MainState.BANKING_AREA_SECTION) {
+				bankingAreaSection.onLoop();
+			} else if (mainState == MainState.CHURCH_GUIDE_SECTION) {
+				churchGuideSection.onLoop();
+			} else if (mainState == MainState.WIZARD_GUIDE_SECTION) {
+				wizardGuideSection.onLoop();
+			} else if (mainState == MainState.IN_LUMBRIDGE) {
+				// while (getClient().isLoggedIn()) {
+				// getLogoutTab().logOut();
+				// stop();
+				// Thread.sleep(5000);
+				log("Trying to logout...");
+				// }
+			}
+		} catch (Exception e) {
+			log(DatabaseUtilities.exceptionToString(e, this, login));
 		}
-
-		if (!getClient().isLoggedIn() && getConfigs().get(281) > 0) {
-			BotCommands.killProcess((MethodProvider) this, (Script) this, "", login);
-		}
-
-		if (!Coordinates.isOnTutorialIsland(this)) {
-			log("Succesfully completed!");
-
-			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this, login).name(), 0,
-					login.getUsername(), login);
-			BotCommands.killProcess((MethodProvider) this, (Script) this,
-					"BECAUSE PLAYER IS NOT ON TUTORIAL ISLAND, SETTING TO COOKS ASSISTANT", login);
-		}
-
-		log(mainState);
-
-		if (mainState == MainState.CREATE_CHARACTER_DESIGN) {
-			characterCreationSection.onLoop();
-		} else if (mainState == MainState.TALK_TO_GIELINOR_GUIDE_ONE) {
-			guilinorGuideSection.onLoop();
-		} else if (mainState == MainState.SURVIVAL_EXPERT) {
-			survivalExpertSection.onLoop();
-		} else if (mainState == MainState.COOKING_GUIDE_SECTION) {
-			cookingGuideSection.onLoop();
-		} else if (mainState == MainState.QUEST_SECTION) {
-			questGuideSection.onLoop();
-		} else if (mainState == MainState.MINING_SECTION) {
-			miningGuideSection.onLoop();
-		} else if (mainState == MainState.COMBAT_SECTION) {
-			combatGuideSection.onLoop();
-		} else if (mainState == MainState.BANKING_AREA_SECTION) {
-			bankingAreaSection.onLoop();
-		} else if (mainState == MainState.CHURCH_GUIDE_SECTION) {
-			churchGuideSection.onLoop();
-		} else if (mainState == MainState.WIZARD_GUIDE_SECTION) {
-			wizardGuideSection.onLoop();
-		} else if (mainState == MainState.IN_LUMBRIDGE) {
-			// while (getClient().isLoggedIn()) {
-			// getLogoutTab().logOut();
-			// stop();
-			// Thread.sleep(5000);
-			log("Trying to logout...");
-			// }
-		}
-
 		return random(400, 800);
 	}
 

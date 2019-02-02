@@ -13,6 +13,8 @@ import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.MethodProvider;
 
+import osbot_scripts.database.DatabaseUtilities;
+import osbot_scripts.events.LoginEvent;
 import osbot_scripts.framework.parts.BankItem;
 import osbot_scripts.qp7.progress.QuestStep;
 import osbot_scripts.task.Task;
@@ -125,6 +127,23 @@ public class BankTask extends TaskSkeleton implements Task {
 			// Depositing all items to the bank, can't deposit other items, because already
 			// doing all
 			if (isDepositAll()) {
+				boolean log = getStep() != null && getStep().getTaskHandler() != null
+						&& getStep().getTaskHandler().getCurrentTask() != null;
+
+				if (log) {
+					int ironOre = (int) getApi().getInventory().getAmount("Iron ore");
+					int clayAmount = (int) getApi().getInventory().getAmount("Clay");
+
+					if (ironOre == 27) {
+						DatabaseUtilities.insertLoggingMessage(getApi(), getStep().getEvent(), "DEPOSIT_BANK_ITEM",
+								Integer.toString(ironOre), "IRON_ORE");
+					}
+					if (clayAmount == 27) {
+						DatabaseUtilities.insertLoggingMessage(getApi(), getStep().getEvent(), "DEPOSIT_BANK_ITEM",
+								Integer.toString(clayAmount), "CLAY");
+					}
+				}
+
 				boolean isEmpty = false;
 
 				while (!isEmpty) {

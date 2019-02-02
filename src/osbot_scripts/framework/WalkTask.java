@@ -262,6 +262,7 @@ public class WalkTask extends TaskSkeleton implements Task {
 				}
 			}
 		} else {
+			getApi().log("trying to walk...");
 			if (!getApi().getWalking().walkPath(getPathToWalk())) {
 				if (getFinishArea() != null) {
 					getApi().getWalking().webWalk(getFinishArea());

@@ -143,7 +143,7 @@ public class PickupItemTask extends TaskSkeleton implements Task, AreaInterface 
 	@Override
 	public boolean finished() {
 		if (getWaitForItemString() != null && getWaitForItemString().length() > 0) {
-			return isPickedUp() && getApi().getInventory().contains(getWaitForItemString());
+			return getApi().getInventory().contains(getWaitForItemString());
 		}
 		return isPickedUp();
 	}

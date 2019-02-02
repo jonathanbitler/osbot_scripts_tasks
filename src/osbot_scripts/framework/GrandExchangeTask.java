@@ -100,11 +100,12 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 		walkToGrandExchangeIfNotThere();
 
 		// Start bank tasks
-		if (DatabaseUtilities.getScriptConfigValue(getApi(), getLogin()).equalsIgnoreCase("OAK_LOGS")) {
-			openBankDepositItemsAndTakeItems(false);
-		} else {
-			openBankDepositItemsAndTakeItems(true);
-		}
+		// if (DatabaseUtilities.getScriptConfigValue(getApi(),
+		// getLogin()).equalsIgnoreCase("OAK_LOGS")) {
+		// openBankDepositItemsAndTakeItems(false);
+		// } else {
+		openBankDepositItemsAndTakeItems(true);
+		// }
 
 		getApi().log("Closing bank");
 		closeBank();
@@ -197,22 +198,24 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 			ge.openGe();
 
 			// Collecting the item
-			RS2Widget coll = getApi().getWidgets().get(465, 6, 0);
+			RS2Widget coll = getApi().getWidgets().get(465, 6, 1);
 			Sleep.sleepUntil(() -> coll != null, 10000);
 
 			if (coll != null) {
-				coll.interact("Collect to inventory");
+				coll.interact("Collect");
+				coll.interact();
 			}
 
 			// Closes the grand exchange
 			getApi().getGrandExchange().close();
 		} else {
 			// Collecting the item
-			RS2Widget coll = getApi().getWidgets().get(465, 6, 0);
+			RS2Widget coll = getApi().getWidgets().get(465, 6, 1);
 			Sleep.sleepUntil(() -> coll != null, 10000);
 
 			if (coll != null) {
-				coll.interact("Collect to inventory");
+				coll.interact("Collect");
+				coll.interact();
 			}
 		}
 	}
@@ -263,10 +266,12 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 					double increase = 1.13;
 					int higheredSellPriceBy10Percent = (int) ((buy.getPrice() * buy.getAmount()) * (increase));
 
-					if (buyTries > 0) {
+					if (buyTries > 0 && buy.getAmount() > 0) {
 						buy.setPrice(higheredSellPriceBy10Percent / buy.getAmount());
 						getApi().log("Didn't finish while selling (price not correct?), setting to price to: "
 								+ buy.getPrice() + " of " + buy.getName());
+					} else if (buy.getAmount() <= 0) {
+						buy.setCompletedTask(true);
 					}
 
 					abortOffers();
@@ -362,10 +367,12 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 
 					int loweredSellPriceBy10Percent = (int) (((sell.getPrice() * sell.getAmount()) * 0.9));
 
-					if (sellTries > 0) {
+					if (sellTries > 0 && sell.getAmount() > 0) {
 						sell.setPrice(loweredSellPriceBy10Percent / sell.getAmount());
 						getApi().log("Didn't finish while selling (price not correct?), setting to price to: "
 								+ sell.getPrice() + " of " + sell.getName());
+					} else if (sell.getAmount() <= 0) {
+						sell.setCompletedTask(true);
 					}
 
 					abortOffers();
@@ -481,6 +488,12 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 			Sleep.sleepUntil(() -> getApi().getGrandExchange().isOpen(), 10000);
 		}
 
+		getApi().log("Aborting all offers if exists");
+		abortOffers();
+
+		getApi().log("Collecting");
+		collectAllOffersIfDidntCollect();
+
 		return open;
 	}
 
@@ -517,6 +530,8 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 	private GEPrice price = new GEPrice();
 
 	private int takeItemsToBuyAndSell(boolean editPriceWhenTooMuchDifference) {
+		int totalValue = 0;
+		
 		for (BankItem sell : itemsToSell) {
 			if (sell.isCompletedTask() || (getApi().getBank().getAmount(sell.getItemId()) <= 0
 					&& getApi().getInventory().getAmount(sell.getItemId()) <= 0) || sell.getItemId() < 0) {
@@ -532,18 +547,22 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-			int setPriceThroughTask = sell.getPrice();
 
-			double difference = ((gePrice - setPriceThroughTask) / setPriceThroughTask) * 100;
-			// When the buying price is difference too big, set to normal TODO add back
-			if ((difference > 50 || difference <= 0) && (editPriceWhenTooMuchDifference)) {
-				getApi().log(
-						"There's too much difference between the set price and the selling price, set to selling price from g.e.");
+			if (gePrice > 0 && sell.getPrice() > 0) {
+				int setPriceThroughTask = sell.getPrice();
 
-				// So there's more chacne at selling instantly
-				int newPrice = (int) (gePrice * 0.9);
-				sell.setPrice(newPrice);
-				getApi().log("Set item name: " + sell.getName() + " to selling price: " + newPrice);
+				double difference = ((gePrice - setPriceThroughTask) / setPriceThroughTask) * 100;
+				// When the buying price is difference too big, set to normal TODO add back
+				if ((difference > 50 || difference <= 0) && (editPriceWhenTooMuchDifference)
+						&& !sell.getName().endsWith("Pickaxe") && !sell.getName().endsWith("pickaxe")) {
+					getApi().log(
+							"There's too much difference between the set price and the selling price, set to selling price from g.e.");
+
+					// So there's more chacne at selling instantly
+					int newPrice = (int) (gePrice * 0.9);
+					sell.setPrice(newPrice);
+					getApi().log("Set item name: " + sell.getName() + " to selling price: " + newPrice);
+				}
 			}
 
 			// If player doesn't have enough, then lower it to the amount the player has
@@ -554,7 +573,7 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 				getApi().log("Set to: " + itemsOfThisInBank + " of item: " + sell.getName()
 						+ " because didnt have this amount");
 			}
-
+			
 			// When the item contains both in the sell and buy list, substract sell from buy
 			// inSellAndBuyTask();
 
@@ -577,6 +596,9 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 
 				withdrawnSuccess = getApi().getInventory().getAmount(sell.getName()) >= sell.getAmount();
 			}
+			
+			//Adding total value to be sure that it can buy the item
+			totalValue += (gePrice * sell.getAmount()) * 0.9;
 
 			getApi().log("Withdrawn item: " + (sell.getName()) + " items successfully!");
 		}
@@ -688,7 +710,7 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 			// So has enough coins now?
 			enoughCoinsInInventory = gotInInventory;
 		}
-		return (int) getApi().getBank().getAmount("Coins");
+		return (int) getApi().getBank().getAmount("Coins") + totalValue;
 	}
 
 	/**

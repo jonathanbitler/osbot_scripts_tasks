@@ -145,18 +145,18 @@ public class RimmingTonIronConfig extends QuestStep {
 		}
 
 		// Supporting world hopping when world is too full
-		int threshholdToHop = 10_000;
-		int profit = ((currentAmount - beginAmount) + soldAmount) * 140;
-		long profitPerHour = (long) (profit * (3600000.0 / (System.currentTimeMillis() - beginTime)));
-		if ((profitPerHour > 0) && (profitPerHour < threshholdToHop)
-				&& ((System.currentTimeMillis() - beginTime) > 1_800_000)
-				|| ((System.currentTimeMillis() - beginTime) > 3_600_000)) {
-			if (WorldHop.hop(this)) {
-				beginTime = System.currentTimeMillis();
-				beginAmount = currentAmount;
-				soldAmount = 0;
-			}
-		}
+//		int threshholdToHop = 10_000;
+//		int profit = ((currentAmount - beginAmount) + soldAmount) * 140;
+//		long profitPerHour = (long) (profit * (3600000.0 / (System.currentTimeMillis() - beginTime)));
+//		if ((profitPerHour > 0) && (profitPerHour < threshholdToHop)
+//				&& ((System.currentTimeMillis() - beginTime) > 1_800_000)
+//				|| ((System.currentTimeMillis() - beginTime) > 3_600_000)) {
+//			if (WorldHop.hop(this)) {
+//				beginTime = System.currentTimeMillis();
+//				beginAmount = currentAmount;
+//				soldAmount = 0;
+//			}
+//		}
 
 		if (RIMMINGTON_MINING_AREA.contains(myPlayer()) && !getInventory().contains("Bronze pickaxe")
 				&& !getInventory().contains("Iron pickaxe") && !getInventory().contains("Steel pickaxe")

@@ -2,7 +2,6 @@ package osbot_scripts.bottypes;
 
 import org.osbot.rs07.script.MethodProvider;
 
-import osbot_scripts.config.Config;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
 
@@ -35,6 +34,8 @@ public class PlayerTask {
 			return new WoodcuttingType();
 		} else if (type.equalsIgnoreCase("IRON_MINING")) {
 			return new IronMiningType();
+		} else if (type.equalsIgnoreCase("RIMMINGTON_MINING")) {
+			return new RimmingtonMining();
 		}
 		return new Default();
 	}

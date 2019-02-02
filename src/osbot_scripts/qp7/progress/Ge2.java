@@ -1,7 +1,6 @@
 package osbot_scripts.qp7.progress;
 
 import java.awt.Graphics2D;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -20,7 +19,6 @@ import osbot_scripts.config.Config;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.events.MandatoryEventsExecution;
-import osbot_scripts.framework.GEPrice;
 import osbot_scripts.framework.GrandExchangeTask;
 import osbot_scripts.framework.Pickaxe;
 import osbot_scripts.framework.parts.BankItem;
@@ -61,9 +59,11 @@ public class Ge2 extends Script {
 		// new Thread(demo).start();
 		// }
 
-		if (getTask() == null) {
-			log("Trying to get a task...");
-			sideLoop();
+		if (!Config.TRADE_OVER_CLAY) {
+			if (getTask() == null) {
+				log("Trying to get a task...");
+				sideLoop();
+			}
 		}
 
 		tries++;
@@ -187,52 +187,10 @@ public class Ge2 extends Script {
 		depositItems();
 		log("Depositing items");
 
-		// PlayerPrice price = new PlayerPrice();
-		// price.exchangeContext(getBot());
-		//
-		// int totalAccountValue = price.getTotalAccountValue();
+		PlayerPrice price = new PlayerPrice();
+		price.exchangeContext(getBot());
 
-		int ironAmount = -1;
-		int clayAmount = -1;
-		int totalAccountValue = -1;
-		int coinsAmount = -1, coinsInventoryAmount = -1, ironAmountInventory = -1, clayAmountInventory = -1;
-
-		openBank();
-
-		ironAmount = (int) getBank().getAmount("Iron ore");
-		ironAmountInventory = (int) getInventory().getAmount("Iron ore");
-
-		clayAmountInventory = (int) getInventory().getAmount("Clay");
-		clayAmount = (int) getBank().getAmount("Clay");
-
-		coinsAmount = (int) getBank().getAmount(995);
-		coinsInventoryAmount = (int) getInventory().getAmount(995);
-
-		totalAccountValue += coinsAmount;
-		totalAccountValue += coinsInventoryAmount;
-
-		/**
-		 * Prices for iron ore & clay ore
-		 */
-		int ironOrePrice = 0;
-		try {
-			ironOrePrice = (int) (new GEPrice().getBuyingPrice(440) * 0.9);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		int clayOrePrice = 0;
-		try {
-			clayOrePrice = (int) (new GEPrice().getBuyingPrice(434) * 0.9);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		totalAccountValue += (ironAmount * clayOrePrice);
-		totalAccountValue += (ironAmountInventory * clayOrePrice);
-		totalAccountValue += (clayAmount * ironOrePrice);
-		totalAccountValue += (clayAmountInventory * ironOrePrice);
+		int totalAccountValue = price.getTotalAccountValue();
 
 		log("[ESTIMATED] account value is: " + totalAccountValue);
 		if (login != null && login.getUsername() != null && totalAccountValue > 0) {
@@ -245,15 +203,14 @@ public class Ge2 extends Script {
 		// When having more than 200 clay, then go to the g.e. and sell it
 		if (getBank().isOpen() && (getAmountOfItemInBankAndInventory("Iron ore") > 200
 				|| getAmountOfItemInBankAndInventory("Clay") > 200)) {
-			int ironOreAmount = (int) (getAmountOfItemInBankAndInventory("Iron ore"));
-			int clayAmount1 = (int) (getAmountOfItemInBankAndInventory("Clay"));
+			// int ironOreAmount = (int) (getAmountOfItemInBankAndInventory("Iron ore"));
+			// int clayAmount = (int) (getAmountOfItemInBankAndInventory("Clay"));
 			setTask(new GrandExchangeTask(this, new BankItem[] {}, new BankItem[] {
-					iron ? new BankItem("Iron ore", 440, ironOreAmount, 1, true)
-							: new BankItem("null", -1, -1, -1, false),
+					iron ? new BankItem("Iron ore", 440, 1000, 1, true) : new BankItem("null", -1, -1, -1, false),
 					new BankItem("Uncut diamond", 1617, 1000, 1, true),
 					new BankItem("Uncut emerald", 1621, 1000, 1, true), new BankItem("Uncut ruby", 1619, 1000, 1, true),
-					new BankItem("Uncut sapphire", 1623, 1000, 1, true),
-					new BankItem("Clay", 434, clayAmount1, 1, true) }, login, (Script) this, getQuest()));
+					new BankItem("Uncut sapphire", 1623, 1000, 1, true), new BankItem("Clay", 434, 1000, 1, true) },
+					login, (Script) this, getQuest()));
 			return;
 
 		}
@@ -465,13 +422,13 @@ public class Ge2 extends Script {
 			return;
 		}
 
-		int ironOreAmount = (int) (getAmountOfItemInBankAndInventory("Iron ore"));
-		int clayAmount1 = (int) (getAmountOfItemInBankAndInventory("Clay"));
+		// int ironOreAmount = (int) (getAmountOfItemInBankAndInventory("Iron ore"));
+		// int clayAmount = (int) (getAmountOfItemInBankAndInventory("Clay"));
 		setTask(new GrandExchangeTask(this, new BankItem[] {}, new BankItem[] {
-				iron ? new BankItem("Iron ore", 440, ironOreAmount, 1, true) : new BankItem("null", -1, -1, -1, false),
+				iron ? new BankItem("Iron ore", 440, 1000, 1, true) : new BankItem("null", -1, -1, -1, false),
 				new BankItem("Uncut diamond", 1617, 1000, 1, true), new BankItem("Uncut emerald", 1621, 1000, 1, true),
 				new BankItem("Uncut ruby", 1619, 1000, 1, true), new BankItem("Uncut sapphire", 1623, 1000, 1, true),
-				new BankItem("Clay", 434, clayAmount1, 1, true) }, login, (Script) this, getQuest()));
+				new BankItem("Clay", 434, 1000, 1, true) }, login, (Script) this, getQuest()));
 	}
 
 	public void setTask() throws InterruptedException {
@@ -487,8 +444,10 @@ public class Ge2 extends Script {
 		// log("Waiting for bank to open..");
 		// Thread.sleep(1000);
 		// }
-		if (getTask() == null) {
-			sideLoop();
+		if (!Config.TRADE_OVER_CLAY) {
+			if (getTask() == null) {
+				sideLoop();
+			}
 		}
 		// login = LoginHandler.login(this, getParameters());
 		// DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN");

@@ -1,7 +1,9 @@
 package osbot_scripts.qp7.progress;
 
+import java.io.IOException;
 import java.util.HashMap;
 
+import org.osbot.rs07.api.Bank.BankMode;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.model.Item;
 import org.osbot.rs07.api.model.Player;
@@ -10,10 +12,12 @@ import org.osbot.rs07.utility.ConditionalSleep;
 
 import osbot_scripts.bot.utils.BotCommands;
 import osbot_scripts.bot.utils.RandomUtil;
+import osbot_scripts.config.Config;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.events.WidgetActionFilter;
 import osbot_scripts.framework.AccountStage;
+import osbot_scripts.framework.GEPrice;
 import osbot_scripts.sections.total.progress.MainState;
 import osbot_scripts.taskhandling.TaskHandler;
 import osbot_scripts.util.Sleep;
@@ -55,22 +59,42 @@ public class MuleTradingConfiguration extends QuestStep {
 
 	private String lastTradedPlayer = null;
 
+	private int getAccountValueAndUpdateInDatabase() {
+		int totalAccountValue = 0;
+		if (!Config.TRADE_OVER_CLAY) {
+			if (getBank().isOpen()) {
+				totalAccountValue = (int) getBank().getAmount(995);
+
+				log("[ESTIMATED MULE VALUE] account value is: " + totalAccountValue);
+				if (getEvent() != null && getEvent().getUsername() != null && totalAccountValue > 0) {
+					DatabaseUtilities.updateAccountValue(this, getEvent().getUsername(), totalAccountValue, getEvent());
+				}
+			}
+		} else {
+			if (getBank().isOpen()) {
+				int gePrice = 0;
+				try {
+					gePrice = new GEPrice().getBuyingPrice(434);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				totalAccountValue = (int) getBank().getAmount("Clay") * gePrice;
+
+				log("[ESTIMATED MULE VALUE] account value is: " + totalAccountValue);
+				if (getEvent() != null && getEvent().getUsername() != null && totalAccountValue > 0) {
+					DatabaseUtilities.updateAccountValue(this, getEvent().getUsername(), totalAccountValue, getEvent());
+				}
+			}
+		}
+		return totalAccountValue;
+	}
+
 	@Override
 	public void onLoop() throws InterruptedException {
 
 		if (getEvent().hasFinished() && !isLoggedIn()) {
 			BotCommands.killProcess(this, getScript(), "BECAUSE NOT LOGGED IN 01 MULE TRADING", getEvent());
-		}
-
-		String toTradeWith = DatabaseUtilities.getAccountToTradeWith(this, getEvent().getUsername(), getEvent());
-
-		if (toTradeWith != null) {
-			String otherPlayersStatus = DatabaseUtilities.getAccountStatusByIngameName(this, toTradeWith, getEvent());
-
-			if (otherPlayersStatus != null && otherPlayersStatus.equalsIgnoreCase("SUPER_MULE")) {
-				BotCommands.killProcess(this, getScript(), "BECAUSE ABOUT TO TRADE WITH SUPER MULE", getEvent());
-				getScript().stop();
-			}
 		}
 
 		log("Running the side loop..");
@@ -99,51 +123,43 @@ public class MuleTradingConfiguration extends QuestStep {
 				// Successfull trading
 				DatabaseUtilities.updateStageProgress(this, "UNKNOWN", 0, getEvent().getUsername(), getEvent());
 
-				if (getBank().isOpen()) {
-					int totalAccountValue = (int) getBank().getAmount(995);
-
-					log("[ESTIMATED MULE VALUE] account value is: " + totalAccountValue);
-					if (getEvent() != null && getEvent().getUsername() != null && totalAccountValue > 0) {
-						DatabaseUtilities.updateAccountValue(this, getEvent().getUsername(), totalAccountValue,
-								getEvent());
-					}
-				}
+				getAccountValueAndUpdateInDatabase();
 
 				int newPartnerFindTries = 0;
 				boolean newPartner = false;
 				String tradeWith = null;
+				int doubletrade = 0;
 
 				while (!newPartner) {
-					tradeWith = DatabaseUtilities.getAccountToTradeWith(this, getEvent().getUsername(), getEvent());
+
+					if (getTrade().getLastRequestingPlayer() != null
+							&& getTrade().getLastRequestingPlayer().getName() != null) {
+						tradeWith = getTrade().getLastRequestingPlayer().getName();
+					}
 
 					log("Found partner: " + tradeWith + " got current partner: " + getEvent().getTradeWith());
 					if (tradeWith != null && getEvent().getTradeWith() != null
-							&& !tradeWith.equalsIgnoreCase(getEvent().getTradeWith())) {
+							&& (!tradeWith.equalsIgnoreCase(getEvent().getTradeWith()) || doubletrade >= 5)) {
 						newPartner = true;
 					}
-					log("Currently looking for a new partner to trade with " + newPartnerFindTries);
-					log("Currently at : " + newPartnerFindTries + " / 150 before logging out due to timeout");
-					Thread.sleep(4500);
 
-					// If it's finding the partner for 10 times and its the same, then accept the
-					// trade and continue
-					if (newPartnerFindTries > 5 && tradeWith != null &&
-					// && getEvent().getTradeWith() != null &&
-							getEvent().getTradeWith().equalsIgnoreCase(tradeWith)
-							// && getTrade().getLastRequestingPlayer() != null
-							// && getTrade().getLastRequestingPlayer().getName() != null
-							&& getPlayers().closest(tradeWith) != null) {
-						newPartner = true;
+					if (tradeWith != null && getEvent().getTradeWith() != null
+							&& tradeWith.equalsIgnoreCase(getEvent().getTradeWith())) {
+						doubletrade++;
 					}
+
+					log("Currently looking for a new partner to trade with " + newPartnerFindTries);
+					log("Currently at : " + newPartnerFindTries + " / 250 before logging out due to timeout");
+					Thread.sleep(1500);
 
 					// This is so the account doesn't stay logged in for more than 4 minutes at a
 					// time and not finding a new partner to trade with
-					if (newPartnerFindTries > 150) {
+					if (newPartnerFindTries > 250) {
 						DatabaseUtilities.updateStageProgress(this, "UNKNOWN", 0, getEvent().getUsername(), getEvent());
 						BotCommands.killProcess(this, getScript(), "BECAUSE OF DONE WITH UNKNOWN TRADING", getEvent());
 						getScript().stop();
 					}
-					
+
 					if (getBank().isOpen()) {
 						getBank().close();
 					}
@@ -155,6 +171,7 @@ public class MuleTradingConfiguration extends QuestStep {
 				timeout = System.currentTimeMillis();
 				tradingDone = false;
 				newPartnerFindTries = 0;
+				doubletrade = 0;
 				log("Found a new partner to trade with!");
 				log("Set trading with to: " + tradeWith);
 				getEvent().setTradeWith(tradeWith);
@@ -190,54 +207,85 @@ public class MuleTradingConfiguration extends QuestStep {
 			walkToGrandExchange();
 
 			// Not having the coins right now, getting it from the bank
-			if (!getInventory().contains(995) && !getTrade().isCurrentlyTrading()) {
+			if (((!Config.TRADE_OVER_CLAY && !getInventory().contains(995))
+					|| Config.TRADE_OVER_CLAY && !getInventory().contains("Clay"))
+					&& !getTrade().isCurrentlyTrading()) {
 
 				// Open bank
 				if (!getBank().isOpen()) {
 					getBank().open();
 					Sleep.sleepUntil(() -> getBank().isOpen(), 5000);
 
-					int totalAccountValue = (int) getBank().getAmount(995);
-
-					log("[ESTIMATED MULE VALUE] account value is: " + totalAccountValue);
-					if (getEvent() != null && getEvent().getUsername() != null && totalAccountValue > 0) {
-						DatabaseUtilities.updateAccountValue(this, getEvent().getUsername(), totalAccountValue,
-								getEvent());
-					}
+					getAccountValueAndUpdateInDatabase();
 				}
 
 				getBank().depositAll();
 				Sleep.sleepUntil(() -> getInventory().isEmpty(), 5000);
 
 				// Getting the cash from the bank
-				getBank().withdraw(995, (int) getBank().getAmount(995));
+				if (!Config.TRADE_OVER_CLAY) {
+					getBank().withdraw(995, (int) getBank().getAmount(995));
+				} else {
+					getBank().enableMode(BankMode.WITHDRAW_NOTE);
+					Sleep.sleepUntil(() -> getBank().getWithdrawMode().equals(BankMode.WITHDRAW_NOTE), 2000);
+					getBank().withdraw("Clay", (int) getBank().getAmount("Clay"));
+				}
 				Sleep.sleepUntil(() -> !getInventory().isEmpty(), 5000);
 
 			} else {
 				// Putting items into the list to trade
-				if (itemMap.size() == 0 && (int) getInventory().getAmount(995) > 0) {
-					log("items to trade set to: coins " + (int) getInventory().getAmount(995));
-					itemMap.put("Coins", (int) getInventory().getAmount(995));
+
+				if (!Config.TRADE_OVER_CLAY) {
+					if (itemMap.size() == 0 && (int) getInventory().getAmount(995) > 0) {
+						log("items to trade set to: coins " + (int) getInventory().getAmount(995));
+						itemMap.put("Coins", (int) getInventory().getAmount(995));
+					}
+				} else {
+					if (itemMap.size() == 0 && (int) getInventory().getAmount("Clay") > 0) {
+						log("items to trade set to: coins " + (int) getInventory().getAmount("Clay"));
+						itemMap.put("Clay", (int) getInventory().getAmount("Clay"));
+					}
 				}
 			}
 
-			if (itemMap.size() > 0 && getInventory().contains(995)) {
-				trade(getEvent().getTradeWith(), itemMap, false);
-
+			if (!Config.TRADE_OVER_CLAY) {
+				if (itemMap.size() > 0 && getInventory().contains(995) && !getTrade().isFirstInterfaceOpen()
+						&& !getTrade().isSecondInterfaceOpen() && !getTrade().isCurrentlyTrading()) {
+					trade(getEvent().getTradeWith(), itemMap, false);
+				}
+			} else {
+				if (itemMap.size() > 0 && getInventory().contains("Clay") && !getTrade().isFirstInterfaceOpen()
+						&& !getTrade().isSecondInterfaceOpen() && !getTrade().isCurrentlyTrading()) {
+					trade(getEvent().getTradeWith(), itemMap, false);
+				}
 			}
 
 			// Open bank
-			if (!getInventory().contains(995) && !getTrade().isCurrentlyTrading() && !getTrade().isFirstInterfaceOpen()
-					&& !getTrade().isSecondInterfaceOpen()) {
+			if (((!Config.TRADE_OVER_CLAY && !getInventory().contains(995))
+					|| (Config.TRADE_OVER_CLAY && !getInventory().contains("Clay"))) && !getTrade().isCurrentlyTrading()
+					&& !getTrade().isFirstInterfaceOpen() && !getTrade().isSecondInterfaceOpen()) {
 
-				if (!getBank().isOpen()) {
+				boolean done = false;
+				while (!done) {
+					if (getBank().isOpen()) {
+						log("Bank was already open");
+						break;
+					}
 					getBank().open();
+
 					Sleep.sleepUntil(() -> getBank().isOpen(), 5000);
+
+					done = getBank().isOpen();
+
+					Thread.sleep(1500);
 				}
 
 				log("coins inv: " + getInventory().getAmount("Coins") + " coins bank: " + getBank().getAmount("Coins"));
 
-				if (getBank().isOpen() && getInventory().getAmount("Coins") <= 0 && getBank().getAmount("Coins") <= 0) {
+				if (getBank().isOpen() && ((!Config.TRADE_OVER_CLAY && getInventory().getAmount("Coins") <= 0
+						&& getBank().getAmount("Coins") <= 0)
+						|| (Config.TRADE_OVER_CLAY && getInventory().getAmount("Clay") <= 0
+								&& getBank().getAmount("Clay") <= 0))) {
 					tradingDone = true;
 					log("Trading is done!");
 				}
@@ -256,41 +304,41 @@ public class MuleTradingConfiguration extends QuestStep {
 
 			log("last traded player: " + getTrade().getLastRequestingPlayer());
 
-			if (getTrade().getLastRequestingPlayer() != null && getTrade().getLastRequestingPlayer().getName() != null
-					&& lastTradedPlayer == null) {
-				lastTradedPlayer = getTrade().getLastRequestingPlayer().getName();
-			}
+			if ((!Config.TRADE_OVER_CLAY && !getInventory().contains("Coins"))
+					|| (Config.TRADE_OVER_CLAY && !getInventory().contains("Clay"))) {
 
-			if (lastTradedPlayer != null && lastTradedPlayer.equalsIgnoreCase(getEvent().getTradeWith())
-					&& !getInventory().contains(995)) {
-				trade(getEvent().getTradeWith(), new HashMap<String, Integer>(), true);
+				// Player is trading you
+				if (getTrade().getLastRequestingPlayer() != null
+						&& getTrade().getLastRequestingPlayer().getName() != null) {
+					lastTradedPlayer = getTrade().getLastRequestingPlayer().getName();
+				}
 
-				log("Accepting trade request... doing actions...");
-			} else if (getPlayers().closest(getEvent().getTradeWith()) != null && getBank().isOpen()) {
-				log("Player is near and having bank open, closing...");
-				getBank().close();
-			} else if ((getTrade().getLastRequestingPlayer() != null
-					&& getTrade().getLastRequestingPlayer().getName() != null) && !getInventory().contains(995)) {
-				boolean inDatabase = DatabaseUtilities.accountContainsInDatabase(this,
-						getTrade().getLastRequestingPlayer().getName(), getEvent());
+				// When that player is not null
+				if (lastTradedPlayer != null) { // && lastTradedPlayer.equalsIgnoreCase(getEvent().getTradeWith())) {
+					boolean inDatabase = DatabaseUtilities.accountContainsInDatabase(this, lastTradedPlayer,
+							getEvent());
 
-				// Only trade when the person trading is actually from the database
-				if (inDatabase) {
-					String name = getTrade().getLastRequestingPlayer().getName();
+					// Is in database? then trade
+					if (inDatabase) {
+						trade(lastTradedPlayer, new HashMap<String, Integer>(), true);
+					}
 
-					trade(name, new HashMap<String, Integer>(), true);
-
-					log("Accepting trade request... contains in database.. doing actions...");
-
-					getEvent().setTradeWith(name);
-					lastTradedPlayer = name;
+					log("Accepting trade request... doing actions...");
+				} else if (getTrade().isCurrentlyTrading()) {
+					trade(lastTradedPlayer, new HashMap<String, Integer>(), true);
+					log("Trading....");
+				} else if (getPlayers().closest(getEvent().getTradeWith()) != null && getBank().isOpen()) {
+					log("Player is near and having bank open, closing...");
+					getBank().close();
 				}
 
 			} else {
 				log("Waiting for the other player to send a request...");
 			}
 
-			if (getInventory().contains(995) && !getTrade().isCurrentlyTrading()) {
+			if ((!Config.TRADE_OVER_CLAY && getInventory().contains(995)
+					|| (Config.TRADE_OVER_CLAY && getInventory().contains("Clay")))
+					&& !getTrade().isCurrentlyTrading()) {
 
 				// Open bank
 				if (!getBank().isOpen()) {
@@ -315,7 +363,8 @@ public class MuleTradingConfiguration extends QuestStep {
 			// When the mule doesn't have coins and trading isnt done and the other player
 			// is not near then check if it is already completed or not and hasn't completed
 			// in 5 minutes
-			else if (!getInventory().contains(995) && !tradingDone
+			else if ((Config.TRADE_OVER_CLAY && !getInventory().contains(995)
+					|| (Config.TRADE_OVER_CLAY && !getInventory().contains("Clay"))) && !tradingDone
 					&& getPlayers().closest(getEvent().getTradeWith()) == null
 					&& (System.currentTimeMillis() - timeout > 400_000)) {
 
@@ -325,8 +374,11 @@ public class MuleTradingConfiguration extends QuestStep {
 				}
 				if (getBank().isOpen()) {
 
-					int inv = (int) getInventory().getAmount(995);
-					int bank = (int) getBank().getAmount(995);
+					int inv = !Config.TRADE_OVER_CLAY ? (int) getInventory().getAmount(995)
+							: (int) getInventory().getAmount("Clay");
+
+					int bank = !Config.TRADE_OVER_CLAY ? (int) getBank().getAmount(995)
+							: (int) getInventory().getAmount("Clay");
 
 					if (inv <= 0 && bank > 0) {
 						if (getBank().depositAll()) {
@@ -344,11 +396,14 @@ public class MuleTradingConfiguration extends QuestStep {
 	}
 
 	public void trade(String name, HashMap<String, Integer> itemSet, boolean acceptLast) throws InterruptedException {
+		if (getEvent().getAccountStage().equalsIgnoreCase("MULE-TRADING")) {
+			Thread.sleep(4000);
+		}
 		String cleanName = name.replaceAll(" ", "\\u00a0");
 		Player player = getScript().getPlayers().closest(cleanName);
 
 		if (!getEvent().getAccountStage().equalsIgnoreCase("MULE-TRADING")) {
-			if (getTrade().getLastRequestingPlayer() != null) {
+			if (lastTradedPlayer != null) {
 				if (player != null && !isTrading() && player.interact("trade with")) {
 					log("1");
 					new ConditionalSleep(10000) {

@@ -28,25 +28,36 @@ public class WorldHop {
 		// Remove our player from the list
 		nearbyPlayers.remove(api.myPlayer());
 		for (Player player : nearbyPlayers) {
-			if (area.contains(player)) {
+			if (area.contains(player) && !player.getName().equalsIgnoreCase(api.myPlayer().getName())) {
 				playersInArea++;
 			}
 		}
 		return playersInArea >= playerLim;
 	}
 
-	public static boolean hop(MethodProvider api) {
-//		int playerDetectionRadius = 1; // A radius of 5 steps is 5 steps in every direction from our player
-//		int playerLim = 3; // amount of players we should have before hopping
-//
-//		List<Integer> worldsAvailable = new ArrayList<Integer>(
-//				Arrays.asList(474, 477, 470, 479, 472, 476, 473, 478, 475, 471, 469, 394, 453, 456, 452, 458, 460, 455,
-//						459, 451, 454, 457, 398, 397, 399, 383, 498, 497, 499, 504, 502, 503, 501, 500, 505, 506));
-//
-//		if (shouldWeHop(api, api.myPlayer().getArea(playerDetectionRadius), playerLim)) {
-//			int hopToWorld = worldsAvailable.get(RandomUtil.getRandomNumberInRange(0, worldsAvailable.size() - 1));
-//			return api.worlds.hop(hopToWorld);
-//		}
+	public static boolean hop(MethodProvider api, int personAmount, int radius) {
+		int playerDetectionRadius = 0; // A radius of 5 steps is 5 steps in every direction from our player
+		//
+		// List<Integer> worldsAvailable = new ArrayList<Integer>(
+		// Arrays.asList(474, 477, 470, 479, 472, 476, 473, 478, 475, 471, 469, 394,
+		// 453, 456, 452, 458, 460, 455,
+		// 459, 451, 454, 457, 398, 397, 399, 383, 498, 497, 499, 504, 502, 503, 501,
+		// 500, 505, 506));
+
+		if (shouldWeHop(api, api.myPlayer().getArea(radius), personAmount)) {
+			// int hopToWorld = worldsAvailable.get(RandomUtil.getRandomNumberInRange(0,
+			// worldsAvailable.size() - 1));
+			api.getWorlds().hopToF2PWorld();
+
+			try {
+				Thread.sleep(20_000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			api.log("Sleeping 20 seconds to ensure everything initialized");
+			return true;
+		}
 		return false;
 	}
 

@@ -5,14 +5,12 @@ import java.awt.Color;
 import org.osbot.rs07.api.Client.LoginState;
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.script.MethodProvider;
-import org.osbot.rs07.script.Script;
 
 import osbot_scripts.bot.utils.BotCommands;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.events.MandatoryEventsExecution;
-import osbot_scripts.login.LoginHandler;
-import osbot_scripts.util.Sleep;
+import osbot_scripts.hopping.WorldHop;
 
 public class ThreadDemo extends MethodProvider implements Runnable {
 

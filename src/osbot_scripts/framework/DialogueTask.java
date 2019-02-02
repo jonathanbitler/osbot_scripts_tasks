@@ -231,7 +231,8 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 		if (getWaitForItem() != null && getWaitForItem().length() > 0) {
 			return !pendingContinue() && !getApi().getDialogues().isPendingOption() && spokenTo && !isInQuestCutscene()
 					&& getApi().getInventory().contains(getWaitForItem())
-					&& getApi().getInventory().getAmount(getWaitForItem()) > 0;
+					&& getApi().getInventory().getAmount(getWaitForItem()) > 0
+					&& getApi().getInventory().getItem(getWaitForItem()) != null;
 		}
 		if (getQuestPointsFinished() > 0 && getConfigQuestId() > 0) {
 			return getQuestProgress() >= getQuestPointsFinished() && !pendingContinue()

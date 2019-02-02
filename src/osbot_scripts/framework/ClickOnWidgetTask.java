@@ -5,6 +5,11 @@ import org.osbot.rs07.api.model.RS2Object;
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.script.MethodProvider;
 
+import osbot_scripts.SheepShearer;
+import osbot_scripts.bot.utils.BotCommands;
+import osbot_scripts.database.DatabaseUtilities;
+import osbot_scripts.qp7.progress.QuestStep;
+import osbot_scripts.qp7.progress.SheepShearerConfiguration;
 import osbot_scripts.task.Task;
 import osbot_scripts.task.TaskSkeleton;
 import osbot_scripts.util.Sleep;
@@ -25,6 +30,8 @@ public class ClickOnWidgetTask extends TaskSkeleton implements Task {
 
 	private int objectId;
 
+	private QuestStep quest;
+
 	/**
 	 * 
 	 * @param scriptName
@@ -35,7 +42,8 @@ public class ClickOnWidgetTask extends TaskSkeleton implements Task {
 	 * @param objectId
 	 */
 	public ClickOnWidgetTask(String scriptName, int questProgress, int questConfig, MethodProvider prov,
-			String interactOption, String waitOnItem, int waitOnItemAmount, int objectId, int... widgetIds) {
+			String interactOption, String waitOnItem, int waitOnItemAmount, int objectId, QuestStep quest,
+			int... widgetIds) {
 		setScriptName(scriptName);
 		setProv(prov);
 		setInteractOption(interactOption);
@@ -44,16 +52,18 @@ public class ClickOnWidgetTask extends TaskSkeleton implements Task {
 		setWaitOnItemAmount(waitOnItemAmount);
 		setWidgetIds(widgetIds);
 		setObjectId(objectId);
+		this.quest = quest;
 	}
 
 	public ClickOnWidgetTask(String scriptName, int questProgress, int questConfig, MethodProvider prov,
-			String interactOption, int objectId, int... widgetIds) {
+			String interactOption, int objectId, QuestStep quest, int... widgetIds) {
 		setScriptName(scriptName);
 		setProv(prov);
 		setWidgetIds(widgetIds);
 		setInteractOption(interactOption);
 		setCurrentQuestProgress(questProgress);
 		setObjectId(objectId);
+		this.quest = quest;
 	}
 
 	@Override
@@ -149,6 +159,14 @@ public class ClickOnWidgetTask extends TaskSkeleton implements Task {
 		getApi().log("widget: " + getRS2WidgetInterface());
 
 		if (getWaitOnItem() != null && getWaitOnItem().length() > 0) {
+
+			if ((!getApi().getInventory().contains("Wool") && !getApi().getInventory().contains("Ball of wool"))
+					&& (quest instanceof SheepShearerConfiguration)) {
+				DatabaseUtilities.updateAccountStatusInDatabase(getApi(), "MANUAL_REVIEW",
+						quest.getEvent().getUsername(), quest.getEvent());
+				BotCommands.waitBeforeKill(getApi(), "BECAUSE OF ACCOUNT IS STUCK");
+			}
+
 			if (getApi().getInventory().getAmount(getWaitOnItem()) >= getWaitOnItemAmount()) {
 				return true;
 			}

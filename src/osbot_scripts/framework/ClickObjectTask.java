@@ -220,6 +220,8 @@ public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface
 
 	@Override
 	public void loop() throws IOException {
+		long startClick = System.currentTimeMillis();
+
 		if (!ranOnStart()) {
 			onStart();
 		}
@@ -272,10 +274,9 @@ public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface
 				getApi().log("has ore: " + getRock().hasOre(object, getApi()));
 
 				Sleep.sleepUntil(
-						() -> (!getApi().myPlayer().isAnimating()
-								|| getApi().getInventory()
-										.getAmount(waitOnItems.getName()) == (waitOnItems.getAmountBeforeAction()
-												+ waitOnItems.getAmount()))
+						() -> ((System.currentTimeMillis() - startClick > 2000 && !getApi().myPlayer().isAnimating())
+								|| getApi().getInventory().getAmount(waitOnItems
+										.getName()) == (waitOnItems.getAmountBeforeAction() + waitOnItems.getAmount()))
 								|| (getApi().getDialogues().isPendingContinuation())
 								|| (!getRock().hasOre(
 										getApi().getObjects().closest(o -> o.getX() == object.getX()

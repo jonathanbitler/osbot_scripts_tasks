@@ -73,12 +73,12 @@ public class SuperMuleTradingConfiguration extends QuestStep {
 	public void onLoop() throws InterruptedException {
 		if (getAccountStatus() == null) {
 			setAccountStatus(DatabaseUtilities.getAccountStatus(this, getEvent().getUsername(), getEvent()));
-			
+
 			if (getAccountStatus() == null) {
 				return;
 			}
 		}
-		
+
 		if (getEvent().hasFinished() && !isLoggedIn()) {
 			BotCommands.killProcess(this, getScript(), "BECAUSE NOT LOGGED IN 01 MULE TRADING", getEvent());
 		}
@@ -123,38 +123,38 @@ public class SuperMuleTradingConfiguration extends QuestStep {
 				int newPartnerFindTries = 0;
 				boolean newPartner = false;
 				String tradeWith = null;
+				int doubletrade = 0;
 
 				while (!newPartner) {
-					tradeWith = DatabaseUtilities.getAccountToTradeWith(this, getEvent().getUsername(), getEvent());
+
+					if (getTrade().getLastRequestingPlayer() != null
+							&& getTrade().getLastRequestingPlayer().getName() != null) {
+						tradeWith = getTrade().getLastRequestingPlayer().getName();
+					}
 
 					log("Found partner: " + tradeWith + " got current partner: " + getEvent().getTradeWith());
 					if (tradeWith != null && getEvent().getTradeWith() != null
-							&& !tradeWith.equalsIgnoreCase(getEvent().getTradeWith())) {
+							&& (!tradeWith.equalsIgnoreCase(getEvent().getTradeWith()) || doubletrade >= 5)) {
 						newPartner = true;
 					}
-					log("Currently looking for a new partner to trade with " + newPartnerFindTries);
-					log("Currently at : " + newPartnerFindTries + " / 50 before logging out due to timeout");
-					Thread.sleep(4500);
 
-					// If it's finding the partner for 10 times and its the same, then accept the
-					// trade and continue
-					if (newPartnerFindTries > 3 && tradeWith != null &&
-					// && getEvent().getTradeWith() != null &&
-							getEvent().getTradeWith().equalsIgnoreCase(tradeWith)
-							// && getTrade().getLastRequestingPlayer() != null
-							// && getTrade().getLastRequestingPlayer().getName() != null
-							&& getPlayers().closest(tradeWith) != null) {
-						newPartner = true;
+					if (tradeWith != null && getEvent().getTradeWith() != null
+							&& tradeWith.equalsIgnoreCase(getEvent().getTradeWith())) {
+						doubletrade++;
 					}
+
+					log("Currently looking for a new partner to trade with " + newPartnerFindTries);
+					log("Currently at : " + newPartnerFindTries + " / 250 before logging out due to timeout");
+					Thread.sleep(1500);
 
 					// This is so the account doesn't stay logged in for more than 4 minutes at a
 					// time and not finding a new partner to trade with
-					if (newPartnerFindTries > 5) {
+					if (newPartnerFindTries > 250) {
 						DatabaseUtilities.updateStageProgress(this, "UNKNOWN", 0, getEvent().getUsername(), getEvent());
 						BotCommands.killProcess(this, getScript(), "BECAUSE OF DONE WITH UNKNOWN TRADING", getEvent());
 						getScript().stop();
 					}
-					
+
 					if (getBank().isOpen()) {
 						getBank().close();
 					}
@@ -190,7 +190,7 @@ public class SuperMuleTradingConfiguration extends QuestStep {
 			if ((getTrade().isCurrentlyTrading() || getTrade().isFirstInterfaceOpen()
 					|| getTrade().isSecondInterfaceOpen()) && itemMap.size() > 0) {
 				trade(getEvent().getTradeWith(), itemMap, false);
-				
+
 				log("currently trading");
 				return;
 			}
@@ -217,8 +217,6 @@ public class SuperMuleTradingConfiguration extends QuestStep {
 					}
 				}
 
-				
-
 				getBank().depositAll();
 				Sleep.sleepUntil(() -> getInventory().isEmpty(), 5000);
 
@@ -234,18 +232,28 @@ public class SuperMuleTradingConfiguration extends QuestStep {
 				}
 			}
 
-			if (itemMap.size() > 0 && getInventory().contains(995)) {
+			if (itemMap.size() > 0 && getInventory().contains(995) && !getTrade().isFirstInterfaceOpen()
+					&& !getTrade().isSecondInterfaceOpen() && !getTrade().isCurrentlyTrading()) {
 				trade(getEvent().getTradeWith(), itemMap, false);
-				
 			}
 
 			// Open bank
 			if (!getInventory().contains(995) && !getTrade().isCurrentlyTrading() && !getTrade().isFirstInterfaceOpen()
 					&& !getTrade().isSecondInterfaceOpen()) {
 
-				if (!getBank().isOpen()) {
+				boolean done = false;
+				while (!done) {
+					if (getBank().isOpen()) {
+						log("Bank was already open");
+						break;
+					}
 					getBank().open();
+
 					Sleep.sleepUntil(() -> getBank().isOpen(), 5000);
+
+					done = getBank().isOpen();
+
+					Thread.sleep(1500);
 				}
 
 				log("coins inv: " + getInventory().getAmount("Coins") + " coins bank: " + getBank().getAmount("Coins"));
@@ -262,6 +270,18 @@ public class SuperMuleTradingConfiguration extends QuestStep {
 
 		{
 
+			String toTradeWith = DatabaseUtilities.getAccountToTradeWith(this, getEvent().getUsername(), getEvent());
+
+			if (toTradeWith != null) {
+				String otherPlayersStatus = DatabaseUtilities.getAccountStatusByIngameName("server_muling", this,
+						toTradeWith, getEvent());
+
+				if (otherPlayersStatus != null && otherPlayersStatus.equalsIgnoreCase("SERVER_MULE")) {
+					BotCommands.killProcess(this, getScript(), "BECAUSE ABOUT TO TRADE WITH SERVER MULE", getEvent());
+					getScript().stop();
+				}
+			}
+
 			log("time: " + (System.currentTimeMillis() - timeout));
 
 			// Not in g.e.? Walk to it
@@ -269,19 +289,33 @@ public class SuperMuleTradingConfiguration extends QuestStep {
 
 			log("last traded player: " + getTrade().getLastRequestingPlayer());
 
-			if (getTrade().getLastRequestingPlayer() != null && getTrade().getLastRequestingPlayer().getName() != null
-					&& lastTradedPlayer == null) {
-				lastTradedPlayer = getTrade().getLastRequestingPlayer().getName();
-			}
+			if (!getInventory().contains("Coins")) {
 
-			if (lastTradedPlayer != null && lastTradedPlayer.equalsIgnoreCase(getEvent().getTradeWith())
-					&& !getInventory().contains(995)) {
-				trade(getEvent().getTradeWith(), new HashMap<String, Integer>(), true);
-				
-				log("Accepting trade request... doing actions...");
-			} else if (getPlayers().closest(getEvent().getTradeWith()) != null && getBank().isOpen()) {
-				log("Player is near and having bank open, closing...");
-				getBank().close();
+				// Player is trading you
+				if (getTrade().getLastRequestingPlayer() != null
+						&& getTrade().getLastRequestingPlayer().getName() != null) {
+					lastTradedPlayer = getTrade().getLastRequestingPlayer().getName();
+				}
+
+				// When that player is not null
+				if (lastTradedPlayer != null) { // && lastTradedPlayer.equalsIgnoreCase(getEvent().getTradeWith())) {
+					boolean inDatabase = DatabaseUtilities.accountContainsInDatabase(this, lastTradedPlayer,
+							getEvent());
+
+					// Is in database? then trade
+					if (inDatabase) {
+						trade(lastTradedPlayer, new HashMap<String, Integer>(), true);
+					}
+
+					log("Accepting trade request... doing actions...");
+				} else if (getTrade().isCurrentlyTrading()) {
+					trade(lastTradedPlayer, new HashMap<String, Integer>(), true);
+					log("Trading....");
+				} else if (getPlayers().closest(getEvent().getTradeWith()) != null && getBank().isOpen()) {
+					log("Player is near and having bank open, closing...");
+					getBank().close();
+				}
+
 			} else {
 				log("Waiting for the other player to send a request...");
 			}
@@ -340,9 +374,13 @@ public class SuperMuleTradingConfiguration extends QuestStep {
 	}
 
 	public void trade(String name, HashMap<String, Integer> itemSet, boolean acceptLast) throws InterruptedException {
+		if (getEvent().getAccountStage().equalsIgnoreCase("MULE")) {
+			Thread.sleep(4000);
+		}
+		
 		String cleanName = name.replaceAll(" ", "\\u00a0");
 		Player player = getScript().getPlayers().closest(cleanName);
-		
+
 		if (!getAccountStatus().equalsIgnoreCase("MULE")) {
 			if (getTrade().getLastRequestingPlayer() != null) {
 				if (player != null && !isTrading() && player.interact("trade with")) {
@@ -366,15 +404,15 @@ public class SuperMuleTradingConfiguration extends QuestStep {
 				}.sleep();
 			}
 		}
-//		if (player != null && !isTrading() && player.interact("trade with")) {
-//			log("1");
-//			new ConditionalSleep(10000) {
-//				@Override
-//				public boolean condition() {
-//					return isTrading();
-//				}
-//			}.sleep();
-//		}
+		// if (player != null && !isTrading() && player.interact("trade with")) {
+		// log("1");
+		// new ConditionalSleep(10000) {
+		// @Override
+		// public boolean condition() {
+		// return isTrading();
+		// }
+		// }.sleep();
+		// }
 
 		if (isTrading() && getTrade().isFirstInterfaceOpen()) {
 			log("2");

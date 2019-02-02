@@ -28,48 +28,50 @@ public class SheepShearer extends Script {
 
 	@Override
 	public int onLoop() throws InterruptedException {
-
-		if (getDialogues().isPendingContinuation()) {
-			getDialogues().clickContinue();
-		}
-
-		if (Coordinates.isOnTutorialIsland(this)) {
-			DatabaseUtilities.updateStageProgress(this, "TUT_ISLAND", 0, login.getUsername(), login);
-			BotCommands.killProcess((MethodProvider) this, (Script) this, "SHOULD BE ON TUT ISLAND SHEEP", login);
-		}
-
-		if (getSheepShearer().isLoggedIn()) {
-			MandatoryEventsExecution ev = new MandatoryEventsExecution(this, login);
-			ev.fixedMode();
-			ev.fixedMode2();
-			ev.executeAllEvents();
-		}
-
-		// TODO Auto-generated method stub
-		RS2Widget closeQuestCompleted = getWidgets().get(277, 15);
-		log(getSheepShearer().getQuestProgress());
-
-		if (getSheepShearer().getQuestProgress() == 21 || closeQuestCompleted != null) {
-			log("Successfully completed quest sheep shearer");
-			if (closeQuestCompleted != null) {
-				closeQuestCompleted.interact();
+		try {
+			if (getDialogues().isPendingContinuation()) {
+				getDialogues().clickContinue();
 			}
-			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this, login).name(), 0,
-					login.getUsername(), login);
-			DatabaseUtilities.updateAccountBreakTill(this, getSheepShearer().getEvent().getUsername(), 60, login);
-			BotCommands.killProcess((MethodProvider) this, (Script) this, "ALREADY COMPLETED QUEST SHEEP", login);
-			return random(500, 600);
-		}
 
-		if (login.hasFinished()) {
-			try {
-				getSheepShearer().getTaskHandler().taskLoop();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			if (Coordinates.isOnTutorialIsland(this)) {
+				DatabaseUtilities.updateStageProgress(this, "TUT_ISLAND", 0, login.getUsername(), login);
+				BotCommands.killProcess((MethodProvider) this, (Script) this, "SHOULD BE ON TUT ISLAND SHEEP", login);
 			}
-		}
 
+			if (getSheepShearer().isLoggedIn()) {
+				MandatoryEventsExecution ev = new MandatoryEventsExecution(this, login);
+				ev.fixedMode();
+				ev.fixedMode2();
+				ev.executeAllEvents();
+			}
+
+			// TODO Auto-generated method stub
+			RS2Widget closeQuestCompleted = getWidgets().get(277, 15);
+			log(getSheepShearer().getQuestProgress());
+
+			if (getSheepShearer().getQuestProgress() == 21 || closeQuestCompleted != null) {
+				log("Successfully completed quest sheep shearer");
+				if (closeQuestCompleted != null) {
+					closeQuestCompleted.interact();
+				}
+				DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this, login).name(), 0,
+						login.getUsername(), login);
+				DatabaseUtilities.updateAccountBreakTill(this, getSheepShearer().getEvent().getUsername(), 60, login);
+				BotCommands.killProcess((MethodProvider) this, (Script) this, "ALREADY COMPLETED QUEST SHEEP", login);
+				return random(500, 600);
+			}
+
+			if (login.hasFinished()) {
+				try {
+					getSheepShearer().getTaskHandler().taskLoop();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		} catch (Exception e) {
+			log(DatabaseUtilities.exceptionToString(e, this, login));
+		}
 		return random(500, 600);
 	}
 
@@ -83,7 +85,8 @@ public class SheepShearer extends Script {
 	public void onStart() throws InterruptedException {
 		login = LoginHandler.login(this, getParameters());
 		login.setScript("QUEST_SHEEP_SHEARER");
-//		DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN", login);
+		// DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN",
+		// login);
 		sheepShearer = new SheepShearerConfiguration(login, (Script) this);
 
 		if (login != null && login.getUsername() != null) {

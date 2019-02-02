@@ -65,7 +65,7 @@ public class DatabaseUtilities {
 				System.out.println("Updated account in database with new status!");
 				return true;
 			} catch (Exception e) {
-				api.log(exceptionToString(e));
+				api.log(exceptionToString(e, api, login));
 				// BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E08");
 				try {
 					Thread.sleep(1500);
@@ -97,7 +97,7 @@ public class DatabaseUtilities {
 			return true;
 
 		} catch (Exception e) {
-			api.log(exceptionToString(e));
+			api.log(exceptionToString(e, api, login));
 			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E07");
 			return false;
 		}
@@ -121,7 +121,7 @@ public class DatabaseUtilities {
 			return true;
 
 		} catch (Exception e) {
-			api.log(exceptionToString(e));
+			api.log(exceptionToString(e, api, login));
 			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E07");
 			return false;
 		}
@@ -150,9 +150,62 @@ public class DatabaseUtilities {
 			return true;
 
 		} catch (Exception e) {
-			api.log(exceptionToString(e));
+			api.log(exceptionToString(e, api, login));
 			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E06");
 			return false;
+		}
+	}
+
+	public static void insertLoggingMessage(MethodProvider api, LoginEvent login, String type, String message,
+			String itemName) {
+		// the mysql insert statement
+		String query = "INSERT INTO logging.`log` (type, message, server, item) values (?,?,?,?)";
+
+		// create the mysql insert preparedstatement
+		PreparedStatement preparedStmt;
+		try {
+			Connection conn = DatabaseConnection.getDatabase().getConnection(api, login);
+			preparedStmt = conn.prepareStatement(query);
+
+			preparedStmt.setString(1, type);
+			preparedStmt.setString(2, message);
+			preparedStmt.setString(3, login.getDbName());
+			preparedStmt.setString(4, itemName);
+
+			// execute the preparedstatement
+			preparedStmt.execute();
+			preparedStmt.close();
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			// api.log(exceptionToString(e));
+			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E06");
+		}
+	}
+
+	// INSERT INTO log (`type`, `message`) values ("GOLD_TRANSFER", "a")
+	public static void insertLoggingMessage(MethodProvider api, LoginEvent login, String type, String message) {
+		// the mysql insert statement
+		String query = "INSERT INTO logging.`log` (type, message, server) values (?,?,?)";
+
+		// create the mysql insert preparedstatement
+		PreparedStatement preparedStmt;
+		try {
+			Connection conn = DatabaseConnection.getDatabase().getConnection(api, login);
+			preparedStmt = conn.prepareStatement(query);
+
+			preparedStmt.setString(1, type);
+			preparedStmt.setString(2, message);
+			preparedStmt.setString(3, login.getDbName());
+
+			// execute the preparedstatement
+			preparedStmt.execute();
+			preparedStmt.close();
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			// api.log(exceptionToString(e));
+			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E06");
 		}
 	}
 
@@ -176,7 +229,7 @@ public class DatabaseUtilities {
 			return true;
 
 		} catch (Exception e) {
-			api.log(exceptionToString(e));
+			api.log(exceptionToString(e, api, login));
 			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E05");
 			return false;
 		}
@@ -201,7 +254,7 @@ public class DatabaseUtilities {
 			return true;
 
 		} catch (Exception e) {
-			api.log(exceptionToString(e));
+			api.log(exceptionToString(e, api, login));
 			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E05");
 			return false;
 		}
@@ -228,7 +281,7 @@ public class DatabaseUtilities {
 			return true;
 
 		} catch (Exception e) {
-			api.log(exceptionToString(e));
+			api.log(exceptionToString(e, api, login));
 			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E04");
 			return false;
 		}
@@ -260,7 +313,7 @@ public class DatabaseUtilities {
 			return true;
 
 		} catch (Exception e) {
-			api.log(exceptionToString(e));
+			api.log(exceptionToString(e, api, login));
 			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E04");
 			return false;
 		}
@@ -293,7 +346,7 @@ public class DatabaseUtilities {
 			return true;
 
 		} catch (Exception e) {
-			api.log(exceptionToString(e));
+			api.log(exceptionToString(e, api, login));
 			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E03");
 			return false;
 		}
@@ -302,8 +355,13 @@ public class DatabaseUtilities {
 	/**
 	 * Updates the account status (banned, locked etc) in the database
 	 * 
+	 * @param api
+	 *            TODO
+	 * @param login
+	 *            TODO
 	 * @param newPassword
 	 * @param accountId
+	 * 
 	 * @return
 	 */
 	// public static boolean updateAccountStatusInDatabase(MethodProvider prov,
@@ -344,12 +402,17 @@ public class DatabaseUtilities {
 	// }
 	// }
 
-	public static String exceptionToString(Exception e) {
+	public static String exceptionToString(Exception e, MethodProvider api, LoginEvent login) {
 		if (e == null) {
 			return null;
 		}
 		StringWriter sw = new StringWriter();
 		e.printStackTrace(new PrintWriter(sw));
+
+		if (!Config.NO_LOGIN) {
+			insertLoggingMessage(api, login, "ERROR", sw.toString());
+		}
+
 		return sw.toString();
 	}
 
@@ -371,12 +434,12 @@ public class DatabaseUtilities {
 					}
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
-					api.log(exceptionToString(e));
+					api.log(exceptionToString(e, api, login));
 				}
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			api.log(exceptionToString(e));
+			api.log(exceptionToString(e, api, login));
 			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E02");
 		}
 		return false;
@@ -398,15 +461,45 @@ public class DatabaseUtilities {
 					return freeAmount;
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
-					api.log(exceptionToString(e));
+					api.log(exceptionToString(e, api, login));
 				}
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			api.log(exceptionToString(e));
+			api.log(exceptionToString(e, api, login));
 			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E02");
 		}
 		return -1;
+	}
+
+	public static String getAccountStatusByIngameName(String server, MethodProvider api, String ingameName,
+			LoginEvent login) {
+		// String sql = "SELECT trade_with_other FROM account WHERE email='" + email +
+		// "'";
+		String sql2 = "SELECT status FROM " + server + ".account WHERE name = '" + ingameName + "'";
+		String status = "";
+
+		try {
+			Connection conn = DatabaseConnection.getDatabase().getConnection(api, login);
+			ResultSet results = conn.createStatement().executeQuery(sql2);
+
+			while (results.next()) {
+				try {
+					status = results.getString("status");
+
+					// api.log("trading partner found: " + partner);
+					return status;
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					api.log(exceptionToString(e, api, login));
+				}
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			api.log(exceptionToString(e, api, login));
+			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E011");
+		}
+		return null;
 	}
 
 	public static String getAccountStatusByIngameName(MethodProvider api, String ingameName, LoginEvent login) {
@@ -427,12 +520,12 @@ public class DatabaseUtilities {
 					return status;
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
-					api.log(exceptionToString(e));
+					api.log(exceptionToString(e, api, login));
 				}
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			api.log(exceptionToString(e));
+			api.log(exceptionToString(e, api, login));
 			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E011");
 		}
 		return null;
@@ -457,12 +550,12 @@ public class DatabaseUtilities {
 					return inDatabase;
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
-					api.log(exceptionToString(e));
+					api.log(exceptionToString(e, api, login));
 				}
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			api.log(exceptionToString(e));
+			api.log(exceptionToString(e, api, login));
 			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E012");
 		}
 		return false;
@@ -486,12 +579,12 @@ public class DatabaseUtilities {
 					return status;
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
-					api.log(exceptionToString(e));
+					api.log(exceptionToString(e, api, login));
 				}
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			api.log(exceptionToString(e));
+			api.log(exceptionToString(e, api, login));
 			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E011");
 		}
 		return null;
@@ -515,12 +608,12 @@ public class DatabaseUtilities {
 					return status;
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
-					api.log(exceptionToString(e));
+					api.log(exceptionToString(e, api, login));
 				}
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			api.log(exceptionToString(e));
+			api.log(exceptionToString(e, api, login));
 			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E011");
 		}
 		return null;
@@ -545,12 +638,12 @@ public class DatabaseUtilities {
 					return partner;
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
-					api.log(exceptionToString(e));
+					api.log(exceptionToString(e, api, login));
 				}
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			api.log(exceptionToString(e));
+			api.log(exceptionToString(e, api, login));
 			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E011");
 		}
 		return null;
@@ -572,12 +665,12 @@ public class DatabaseUtilities {
 					return progress;
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
-					api.log(exceptionToString(e));
+					api.log(exceptionToString(e, api, login));
 				}
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			api.log(exceptionToString(e));
+			api.log(exceptionToString(e, api, login));
 			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E01");
 		}
 		return null;
@@ -599,12 +692,12 @@ public class DatabaseUtilities {
 					return progress;
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
-					api.log(exceptionToString(e));
+					api.log(exceptionToString(e, api, login));
 				}
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			api.log(exceptionToString(e));
+			api.log(exceptionToString(e, api, login));
 			BotCommands.waitBeforeKill(api, "BECAUSE AN ERROR E01");
 		}
 		return null;

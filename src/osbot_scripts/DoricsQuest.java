@@ -28,49 +28,53 @@ public class DoricsQuest extends Script {
 
 	@Override
 	public int onLoop() throws InterruptedException {
-
-		if (getDialogues().isPendingContinuation()) {
-			getDialogues().clickContinue();
-		}
-
-		if (getGoblinsDiplomacy().isLoggedIn()) {
-			MandatoryEventsExecution ev = new MandatoryEventsExecution(this, login);
-			ev.fixedMode();
-			ev.fixedMode2();
-			ev.executeAllEvents();
-		}
-
-		if (Coordinates.isOnTutorialIsland(this)) {
-			DatabaseUtilities.updateStageProgress(this, "TUT_ISLAND", 0, login.getUsername(), login);
-			BotCommands.killProcess((MethodProvider) this, (Script) this, "SHOULD BE ON TUT ISLAND DORICS", login);
-		}
-
-		RS2Widget closeQuestCompleted = getWidgets().get(277, 15);
-		log(getGoblinsDiplomacy().getQuestProgress());
-
-		if (getGoblinsDiplomacy().getQuestProgress() == 100 || closeQuestCompleted != null) {
-			log("Successfully completed goblins diplomacy");
-			if (closeQuestCompleted != null) {
-				closeQuestCompleted.interact();
+		try {
+			if (getDialogues().isPendingContinuation()) {
+				getDialogues().clickContinue();
 			}
 
-			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this, login).name(), 0,
-					login.getUsername(), login);
-			DatabaseUtilities.updateAccountBreakTill(this, getGoblinsDiplomacy().getEvent().getUsername(), 60, login);
-			BotCommands.killProcess((MethodProvider) this, (Script) this, "ALREADY COMPLETED THE QUEST DORICS", login);
-			return random(500, 600);
-		}
-
-		if (login.hasFinished()) {
-			getGoblinsDiplomacy().onLoop();
-			try {
-				getGoblinsDiplomacy().getTaskHandler().taskLoop();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			if (getGoblinsDiplomacy().isLoggedIn()) {
+				MandatoryEventsExecution ev = new MandatoryEventsExecution(this, login);
+				ev.fixedMode();
+				ev.fixedMode2();
+				ev.executeAllEvents();
 			}
-		}
 
+			if (Coordinates.isOnTutorialIsland(this)) {
+				DatabaseUtilities.updateStageProgress(this, "TUT_ISLAND", 0, login.getUsername(), login);
+				BotCommands.killProcess((MethodProvider) this, (Script) this, "SHOULD BE ON TUT ISLAND DORICS", login);
+			}
+
+			RS2Widget closeQuestCompleted = getWidgets().get(277, 15);
+			log(getGoblinsDiplomacy().getQuestProgress());
+
+			if (getGoblinsDiplomacy().getQuestProgress() == 100 || closeQuestCompleted != null) {
+				log("Successfully completed goblins diplomacy");
+				if (closeQuestCompleted != null) {
+					closeQuestCompleted.interact();
+				}
+
+				DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this, login).name(), 0,
+						login.getUsername(), login);
+				DatabaseUtilities.updateAccountBreakTill(this, getGoblinsDiplomacy().getEvent().getUsername(), 60,
+						login);
+				BotCommands.killProcess((MethodProvider) this, (Script) this, "ALREADY COMPLETED THE QUEST DORICS",
+						login);
+				return random(500, 600);
+			}
+
+			if (login.hasFinished()) {
+				getGoblinsDiplomacy().onLoop();
+				try {
+					getGoblinsDiplomacy().getTaskHandler().taskLoop();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		} catch (Exception e) {
+			log(DatabaseUtilities.exceptionToString(e, this, login));
+		}
 		return random(80, 150);
 	}
 
@@ -79,7 +83,8 @@ public class DoricsQuest extends Script {
 		login = LoginHandler.login(this, getParameters());
 		if (login != null) {
 			login.setScript("QUEST_DORICS_QUEST");
-//			DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN", login);
+			// DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN",
+			// login);
 		}
 		goblinsDiplomacy = new DoricsQuestConfig(3893, 31, login, (Script) this);
 		goblinsDiplomacy.setScriptAbstract(new MiningType());

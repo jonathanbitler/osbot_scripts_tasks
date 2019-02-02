@@ -138,29 +138,29 @@ public class CharacterCreationSection extends TutorialSection {
 		// letting all the widgets show up
 		sleep(2000);
 
-		if (getClient().isLoggedIn()) {
+		waitOnLoggedIn();
 
-			if (new Random().nextInt(2) == 1) {
-				getWidgets().getWidgetContainingText("Female").interact();
+		if (new Random().nextInt(2) == 1) {
+			getWidgets().getWidgetContainingText("Female").interact();
+		}
+
+		final RS2Widget[] childWidgets = getWidgets()
+				.getWidgets(creationScreenWidget.get(getWidgets()).get().getRootId());
+		Collections.shuffle(Arrays.asList(childWidgets));
+
+		for (final RS2Widget childWidget : childWidgets) {
+			if (childWidget.getToolTip() == null) {
+				continue;
 			}
-
-			final RS2Widget[] childWidgets = getWidgets()
-					.getWidgets(creationScreenWidget.get(getWidgets()).get().getRootId());
-			Collections.shuffle(Arrays.asList(childWidgets));
-
-			for (final RS2Widget childWidget : childWidgets) {
-				if (childWidget.getToolTip() == null) {
-					continue;
-				}
-				if (childWidget.getToolTip().contains("Change") || childWidget.getToolTip().contains("Recolour")) {
-					clickRandomTimes(childWidget);
-				}
-			}
-
-			if (getWidgets() != null && getWidgets().getWidgetContainingText("Accept").interact()) {
-				Sleep.sleepUntil(() -> !isCreationScreenVisible(), 3000, 600);
+			if (childWidget.getToolTip().contains("Change") || childWidget.getToolTip().contains("Recolour")) {
+				clickRandomTimes(childWidget);
 			}
 		}
+
+		if (getWidgets() != null && getWidgets().getWidgetContainingText("Accept").interact()) {
+			Sleep.sleepUntil(() -> !isCreationScreenVisible(), 3000, 600);
+		}
+
 	}
 
 	private boolean isCreationScreenVisible() {

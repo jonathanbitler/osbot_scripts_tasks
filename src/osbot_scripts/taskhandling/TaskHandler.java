@@ -205,7 +205,7 @@ public class TaskHandler {
 
 					// If the person is not logged in anymore, but the client is still open, then
 					// exit the client
-					if ((!getProvider().getClient().isLoggedIn())
+					if ((getEvent() != null && !getProvider().getClient().isLoggedIn())
 							&& (System.currentTimeMillis() - getEvent().getStartTime() > 200_000)) {
 						getProvider().log("Person wasn't logged in anymore, logging out!");
 						Thread.sleep(5000);
@@ -249,8 +249,8 @@ public class TaskHandler {
 					/**
 					 * Movement manager
 					 */
-//					getQuest().getMovementManager().roll(getProvider());
-					
+					// getQuest().getMovementManager().roll(getProvider());
+
 					/**
 					 * Timeout handling for quests specific
 					 */
@@ -274,8 +274,17 @@ public class TaskHandler {
 					if (getQuest().isQuest()) {
 						Thread.sleep(1000, 1500);
 					} else {
-						Thread.sleep(40, 80);
+						Thread.sleep(20, 40);
 					}
+
+					if (quest instanceof MiningLevelTo15Configuration) {
+						if (((MiningLevelTo15Configuration) quest).getGrandExchangeTask() != null
+								&& ((MiningLevelTo15Configuration) quest).getGrandExchangeTask().getTask() != null) {
+							quest.log("Breaking out of task!");
+							break;
+						}
+					}
+
 				}
 
 				// Task is finished, go to the next one

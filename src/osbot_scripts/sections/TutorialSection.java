@@ -25,6 +25,21 @@ public abstract class TutorialSection extends MethodProvider {
 	 */
 	public LoginEvent login;
 
+	public void waitOnLoggedIn() {
+		boolean loggedIn = false;
+
+		while (!loggedIn) {
+			loggedIn = getClient().isLoggedIn();
+			log("Waiting on logged in");
+			try {
+				Thread.sleep(1500);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	/**
 	 * 
 	 * @param instructorName

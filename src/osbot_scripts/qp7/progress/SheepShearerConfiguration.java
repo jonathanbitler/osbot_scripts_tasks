@@ -111,8 +111,9 @@ public class SheepShearerConfiguration extends QuestStep {
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new ClickObjectTask("click spinning wheel",
 				1, QUEST_CONFIG, getBot().getMethods(), PATH_TO_LUMBRIDGE_CASTLE_AREA_FLOOR_ONE_SPINNING_AREA, 14889));
 
-		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new ClickOnWidgetTask("click on interface",
-				1, QUEST_CONFIG, getBot().getMethods(), "Spin", "Ball of Wool", 20, 14889, new int[] { 270, 14, 38 }));
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+				new ClickOnWidgetTask("click on interface", 1, QUEST_CONFIG, getBot().getMethods(), "Spin",
+						"Ball of Wool", 20, 14889, this, new int[] { 270, 14, 38 }));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("walk to quest giver", 1, QUEST_CONFIG, getBot().getMethods(),

@@ -9,6 +9,8 @@ import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 
+import osbot_scripts.bot.utils.BotCommands;
+import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.framework.AccountStage;
 import osbot_scripts.framework.ClickObjectTask;
@@ -274,11 +276,17 @@ public class RomeoAndJuliet extends QuestStep {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
+
 	@Override
 	public void timeOutHandling(TaskHandler tasks) {
-		// TODO Auto-generated method stub
-		
+		boolean dialogueTaskTimeout = tasks.getCurrentTask().getClass().getSimpleName()
+				.equalsIgnoreCase("DialogueTask");
+
+		if (dialogueTaskTimeout && tasks.getTaskAttempts() > 150) {
+			DatabaseUtilities.updateAccountStatusInDatabase(tasks.getProvider(), "MANUAL_REVIEW",
+					getEvent().getUsername(), tasks.getEvent());
+			BotCommands.waitBeforeKill(tasks.getProvider(), "BECAUSE OF ACCOUNT IS STUCK");
+		}
 	}
 
 }

@@ -206,7 +206,7 @@ public class CookingsAssistant extends QuestStep {
 				&& isClickTask && tasks.getTaskAttempts() > 20) {
 			DatabaseUtilities.updateAccountStatusInDatabase(tasks.getProvider(), "MANUAL_REVIEW", getEvent().getUsername(),
 					tasks.getEvent());
-			BotCommands.waitBeforeKill(tasks.getProvider(), "BECAUSE OF ACCOUNT IS BANNED");
+			BotCommands.waitBeforeKill(tasks.getProvider(), "BECAUSE OF ACCOUNT IS STUCK");
 		}
 	}
 

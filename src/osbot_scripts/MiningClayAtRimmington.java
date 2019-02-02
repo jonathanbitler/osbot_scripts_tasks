@@ -15,13 +15,14 @@ import osbot_scripts.events.LoginEvent;
 import osbot_scripts.events.MandatoryEventsExecution;
 import osbot_scripts.login.LoginHandler;
 import osbot_scripts.qp7.progress.MiningLevelTo15Configuration;
+import osbot_scripts.qp7.progress.MiningRimmingtonClay;
 import osbot_scripts.qp7.progress.TradeBeforeBanWaves;
 import osbot_scripts.scripttypes.types.MiningType;
 
-@ScriptManifest(author = "pim97", info = "MINING_LEVEL_TO_15", logo = "", name = "MINING_LEVEL_TO_15", version = 1.0)
-public class MiningLevelTo15 extends Script {
+@ScriptManifest(author = "pim97", info = "MINING_RIMMINGTON_CLAY", logo = "", name = "MINING_RIMMINGTON_CLAY", version = 1.0)
+public class MiningClayAtRimmington extends Script {
 
-	private MiningLevelTo15Configuration goldfarmMining;
+	private MiningRimmingtonClay goldfarmMining;
 
 	private LoginEvent login;
 
@@ -124,11 +125,11 @@ public class MiningLevelTo15 extends Script {
 		try {
 			if (!Config.NO_LOGIN) {
 				login = LoginHandler.login(this, getParameters());
-				login.setScript("MINING_LEVEL_TO_15");
+				login.setScript("MINING_RIMMINGTON_CLAY");
 				// DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN",
 				// login);
 			}
-			goldfarmMining = new MiningLevelTo15Configuration(login, (Script) this);
+			goldfarmMining = new MiningRimmingtonClay(login, (Script) this);
 			goldfarmMining.setScriptAbstract(new MiningType());
 			getGoldfarmMining().setQuest(false);
 
@@ -138,7 +139,7 @@ public class MiningLevelTo15 extends Script {
 					// Integer.parseInt(DatabaseUtilities.getQuestProgress(this,
 					// login.getUsername())));
 
-					DatabaseUtilities.updateStageProgress(this, "MINING_LEVEL_TO_15", 0,
+					DatabaseUtilities.updateStageProgress(this, "MINING_RIMMINGTON_CLAY", 0,
 							getGoldfarmMining().getEvent().getUsername(), login);
 				}
 			}
@@ -156,7 +157,7 @@ public class MiningLevelTo15 extends Script {
 	/**
 	 * @return the goldfarmMining
 	 */
-	public MiningLevelTo15Configuration getGoldfarmMining() {
+	public MiningRimmingtonClay getGoldfarmMining() {
 		return goldfarmMining;
 	}
 
@@ -164,7 +165,7 @@ public class MiningLevelTo15 extends Script {
 	 * @param goldfarmMining
 	 *            the goldfarmMining to set
 	 */
-	public void setGoldfarmMining(MiningLevelTo15Configuration goldfarmMining) {
+	public void setGoldfarmMining(MiningRimmingtonClay goldfarmMining) {
 		this.goldfarmMining = goldfarmMining;
 	}
 

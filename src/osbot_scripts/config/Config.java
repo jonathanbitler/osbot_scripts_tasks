@@ -3,6 +3,8 @@ package osbot_scripts.config;
 import org.osbot.rs07.script.MethodProvider;
 
 public class Config {
+	
+	public static final boolean TRADE_OVER_CLAY = true;
 
 	public static final boolean NO_BREAK = true;
 

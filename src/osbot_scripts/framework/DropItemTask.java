@@ -92,11 +92,20 @@ public class DropItemTask extends TaskSkeleton implements Task {
 					if (getApi().getInventory().drop(item)) {
 						getApi().log("Dropped item");
 					}
+					deselectItem();
 				}
 
 			}
 		}
 
+	}
+
+	public boolean deselectItem() {
+		if (getApi().inventory.isItemSelected()) {
+			int slot = getApi().inventory.getSlot(getApi().inventory.getSelectedItemName());
+			return getApi().getQuests().mouse.click(getApi().inventory.getMouseDestination(slot), false);
+		}
+		return false;
 	}
 
 	/**

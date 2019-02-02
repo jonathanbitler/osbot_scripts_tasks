@@ -26,48 +26,51 @@ public class CookingAssistantQuest extends Script {
 
 	@Override
 	public int onLoop() throws InterruptedException {
-
-		if (getDialogues().isPendingContinuation()) {
-			getDialogues().clickContinue();
-		}
-
-		if (getCooksAssistant().isLoggedIn()) {
-			MandatoryEventsExecution ev = new MandatoryEventsExecution(getCooksAssistant(), login);
-			ev.fixedMode();
-			ev.fixedMode2();
-			ev.executeAllEvents();
-		}
-
-		if (Coordinates.isOnTutorialIsland(this)) {
-			DatabaseUtilities.updateStageProgress(this, "TUT_ISLAND", 0, login.getUsername(), login);
-			BotCommands.killProcess((MethodProvider) this, (Script) this, "SHOULD BE ON TUT ISLAND COOKS", login);
-		}
-
-		// TODO Auto-generated method stub
-		RS2Widget closeQuestCompleted = getWidgets().get(277, 15);
-		log(getCooksAssistant().getQuestProgress());
-		if (getCooksAssistant().getQuestProgress() == 2 || closeQuestCompleted != null) {
-			log("Successfully completed quest cooks assistant");
-			if (closeQuestCompleted != null) {
-				closeQuestCompleted.interact();
+		try {
+			if (getDialogues().isPendingContinuation()) {
+				getDialogues().clickContinue();
 			}
 
-			DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this, login).name(), 0,
-					login.getUsername(), login);
-			DatabaseUtilities.updateAccountBreakTill(this, getCooksAssistant().getEvent().getUsername(), 60, login);
-			BotCommands.killProcess((MethodProvider) this, (Script) this, "ALREADY COMPLETED THE QUEST COOKS", login);
-			return random(500, 600);
-		}
-
-		if (login.hasFinished()) {
-			try {
-				getCooksAssistant().getTaskHandler().taskLoop();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			if (getCooksAssistant().isLoggedIn()) {
+				MandatoryEventsExecution ev = new MandatoryEventsExecution(getCooksAssistant(), login);
+				ev.fixedMode();
+				ev.fixedMode2();
+				ev.executeAllEvents();
 			}
-		}
 
+			if (Coordinates.isOnTutorialIsland(this)) {
+				DatabaseUtilities.updateStageProgress(this, "TUT_ISLAND", 0, login.getUsername(), login);
+				BotCommands.killProcess((MethodProvider) this, (Script) this, "SHOULD BE ON TUT ISLAND COOKS", login);
+			}
+
+			// TODO Auto-generated method stub
+			RS2Widget closeQuestCompleted = getWidgets().get(277, 15);
+			log(getCooksAssistant().getQuestProgress());
+			if (getCooksAssistant().getQuestProgress() == 2 || closeQuestCompleted != null) {
+				log("Successfully completed quest cooks assistant");
+				if (closeQuestCompleted != null) {
+					closeQuestCompleted.interact();
+				}
+
+				DatabaseUtilities.updateStageProgress(this, RandomUtil.gextNextAccountStage(this, login).name(), 0,
+						login.getUsername(), login);
+				DatabaseUtilities.updateAccountBreakTill(this, getCooksAssistant().getEvent().getUsername(), 60, login);
+				BotCommands.killProcess((MethodProvider) this, (Script) this, "ALREADY COMPLETED THE QUEST COOKS",
+						login);
+				return random(500, 600);
+			}
+
+			if (login.hasFinished()) {
+				try {
+					getCooksAssistant().getTaskHandler().taskLoop();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		} catch (Exception e) {
+			log(DatabaseUtilities.exceptionToString(e, this, login));
+		}
 		return random(500, 600);
 	}
 
@@ -76,7 +79,8 @@ public class CookingAssistantQuest extends Script {
 		login = LoginHandler.login(this, getParameters());
 		login.setScript("QUEST_COOK_ASSISTANT");
 		cooksAssistant = new CookingsAssistant(4626, 29, login, (Script) this);
-//		DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN", login);
+		// DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN",
+		// login);
 
 		if (login != null && login.getUsername() != null) {
 			getCooksAssistant().setQuestStageStep(
