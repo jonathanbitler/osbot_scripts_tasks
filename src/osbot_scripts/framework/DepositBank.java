@@ -120,6 +120,8 @@ public class DepositBank extends TaskSkeleton implements Task {
 		// Not in gebied rond bank, loop er naar
 		if (!getArea().contains(getApi().myPlayer())) {
 			getApi().getWalking().webWalk(getArea());
+			DatabaseUtilities.insertLoggingMessage(getApi(), step.getEvent(), "WEB_WALKING",
+					"DEPOSIT BANK TASK: " + (getArea().getPositions()));
 
 			Sleep.sleepUntil(() -> getArea().contains(getApi().myPlayer()), 2500);
 		} else {
@@ -137,11 +139,11 @@ public class DepositBank extends TaskSkeleton implements Task {
 
 					// Log
 					logDeposit();
-					
+
 					if (getApi().getDepositBox().deposit(deposit.getItemId(), deposit.getAmount())) {
 						getApi().getDepositBox().close();
 						if (getStep() instanceof MiningRimmingtonClay) {
-							((MiningRimmingtonClay)getStep()).runs++;
+							((MiningRimmingtonClay) getStep()).runs++;
 						}
 						deposit.setCompletedTask(true);
 					}
@@ -150,7 +152,7 @@ public class DepositBank extends TaskSkeleton implements Task {
 				}
 			}
 		}
-		
+
 		Thread.sleep(750);
 	}
 

@@ -87,14 +87,35 @@ public class BankTask extends TaskSkeleton implements Task {
 		return false;
 	}
 
+	private void tryToWalkToFinishArea() {
+		int tries = 0;
+
+		if (getArea().getRandomPosition().getArea(15).contains(getApi().myPlayer())) {
+			while (!getArea().contains(getApi().myPlayer()) || tries > 10) {
+				getApi().log("trying to walk to bank without webwalking...");
+				getApi().getWalking().walk(getArea());
+				getApi().log("trying to walk to bank without webwalking...");
+				tries++;
+			}
+		}
+
+		if (!getArea().contains(getApi().myPlayer())) {
+			DatabaseUtilities.insertLoggingMessage(getApi(), step.getEvent(), "WEB_WALKING",
+					"BANK TASK USED WEBWALKING TO: " + (getArea().getPositions()));
+
+			getApi().getWalking().webWalk(getArea());
+		}
+
+	}
+
 	@Override
 	public void loop() throws InterruptedException, IOException {
 		if (!ranOnStart()) {
 			onStart();
 		}
 
-		if (!getArea().contains(getApi().myPlayer())) {
-			getApi().getWalking().webWalk(getArea());
+		if (getArea() != null) {
+			tryToWalkToFinishArea();
 		}
 
 		if (new Area(new int[][] { { 3144, 3508 }, { 3144, 3471 }, { 3183, 3470 }, { 3182, 3509 } })

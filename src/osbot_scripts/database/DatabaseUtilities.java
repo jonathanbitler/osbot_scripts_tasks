@@ -60,7 +60,7 @@ public class DatabaseUtilities {
 				// execute the java preparedstatement
 				preparedStmt.executeUpdate();
 				preparedStmt.close();
-				conn.close();
+				// conn.close();
 
 				System.out.println("Updated account in database with new status!");
 				return true;
@@ -90,7 +90,7 @@ public class DatabaseUtilities {
 			// execute the java preparedstatement
 			preparedStmt.executeUpdate();
 			preparedStmt.close();
-			conn.close();
+			// conn.close();
 
 			System.out.println("Updated account in database with new price value!");
 
@@ -114,7 +114,7 @@ public class DatabaseUtilities {
 			// execute the java preparedstatement
 			preparedStmt.executeUpdate();
 			preparedStmt.close();
-			conn.close();
+			// conn.close();
 
 			System.out.println("Updated account in database with new price value!");
 
@@ -143,7 +143,7 @@ public class DatabaseUtilities {
 			// execute the java preparedstatement
 			preparedStmt.executeUpdate();
 			preparedStmt.close();
-			conn.close();
+			// conn.close();
 
 			System.out.println("Updated account in database with new value!");
 
@@ -159,7 +159,7 @@ public class DatabaseUtilities {
 	public static void insertLoggingMessage(MethodProvider api, LoginEvent login, String type, String message,
 			String itemName) {
 		// the mysql insert statement
-		String query = "INSERT INTO logging.`log` (type, message, server, item) values (?,?,?,?)";
+		String query = "INSERT INTO logging.`log` (type, message, server, item, player) values (?,?,?,?,?)";
 
 		// create the mysql insert preparedstatement
 		PreparedStatement preparedStmt;
@@ -171,6 +171,12 @@ public class DatabaseUtilities {
 			preparedStmt.setString(2, message);
 			preparedStmt.setString(3, login.getDbName());
 			preparedStmt.setString(4, itemName);
+
+			if (login != null && login.getActualUsername() != null) {
+				preparedStmt.setString(5, login.getActualUsername());
+			} else {
+				preparedStmt.setString(5, "null");
+			}
 
 			// execute the preparedstatement
 			preparedStmt.execute();
@@ -185,8 +191,12 @@ public class DatabaseUtilities {
 
 	// INSERT INTO log (`type`, `message`) values ("GOLD_TRANSFER", "a")
 	public static void insertLoggingMessage(MethodProvider api, LoginEvent login, String type, String message) {
+		if (login == null || login.getDbName() == null) {
+			return;
+		}
+
 		// the mysql insert statement
-		String query = "INSERT INTO logging.`log` (type, message, server) values (?,?,?)";
+		String query = "INSERT INTO logging.`log` (type, message, server, player) values (?,?,?,?)";
 
 		// create the mysql insert preparedstatement
 		PreparedStatement preparedStmt;
@@ -196,7 +206,16 @@ public class DatabaseUtilities {
 
 			preparedStmt.setString(1, type);
 			preparedStmt.setString(2, message);
-			preparedStmt.setString(3, login.getDbName());
+			if (login != null && login.getDbName() != null) {
+				preparedStmt.setString(3, login.getDbName());
+			} else {
+				preparedStmt.setString(3, "null");
+			}
+			if (login != null && login.getActualUsername() != null) {
+				preparedStmt.setString(4, login.getActualUsername());
+			} else {
+				preparedStmt.setString(4, "null");
+			}
 
 			// execute the preparedstatement
 			preparedStmt.execute();
@@ -222,7 +241,7 @@ public class DatabaseUtilities {
 			// execute the java preparedstatement
 			preparedStmt.executeUpdate();
 			preparedStmt.close();
-			conn.close();
+			// conn.close();
 
 			System.out.println("Updated account in database with new value!");
 
@@ -247,7 +266,7 @@ public class DatabaseUtilities {
 			// execute the java preparedstatement
 			preparedStmt.executeUpdate();
 			preparedStmt.close();
-			conn.close();
+			// conn.close();
 
 			System.out.println("Updated account in database with new value!");
 
@@ -274,7 +293,7 @@ public class DatabaseUtilities {
 			// execute the java preparedstatement
 			preparedStmt.executeUpdate();
 			preparedStmt.close();
-			conn.close();
+			// conn.close();
 
 			System.out.println("Updated account in database with new value!");
 
@@ -306,7 +325,7 @@ public class DatabaseUtilities {
 			// execute the java preparedstatement
 			preparedStmt.executeUpdate();
 			preparedStmt.close();
-			conn.close();
+			// conn.close();
 
 			System.out.println("Updated account in database with new value!");
 
@@ -339,7 +358,7 @@ public class DatabaseUtilities {
 				// execute the java preparedstatement
 				preparedStmt.executeUpdate();
 				preparedStmt.close();
-				conn.close();
+				// conn.close();
 
 				System.out.println("Updated account in database with new value!");
 			}

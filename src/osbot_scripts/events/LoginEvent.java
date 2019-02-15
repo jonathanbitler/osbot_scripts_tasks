@@ -77,12 +77,12 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 
 			getApi().log("SUCCESSFULLY LOGGED IN! SET FINISHED TO: " + hasFinished());
 
-//			if (DatabaseUtilities.isServerMuleTradingAccount(getApi(), this, getUsername())) {
-//				new Thread(() -> DatabaseUtilities.updateLoginStatus("server_muling", api, username, "LOGGED_IN", this))
-//						.start();
-//			} else {
+			if (DatabaseUtilities.isServerMuleTradingAccount(getApi(), this, getUsername())) {
+				new Thread(() -> DatabaseUtilities.updateLoginStatus("server_muling", api, username, "LOGGED_IN", this))
+						.start();
+			} else {
 				new Thread(() -> DatabaseUtilities.updateLoginStatus(api, username, "LOGGED_IN", this)).start();
-			//			}
+			}
 
 		} else if (getClient().isLoggedIn() && getLobbyButton() != null) {
 			clickHereToPlayButton();

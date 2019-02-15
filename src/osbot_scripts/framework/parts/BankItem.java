@@ -21,6 +21,8 @@ public class BankItem {
 	private boolean withdrawNoted;
 
 	private boolean inBankToBeSkipped;
+	
+	private int unnotedId;
 
 	/**
 	 * @param withdrawNoted
@@ -31,6 +33,17 @@ public class BankItem {
 		setName(name);
 		setAmount(amount);
 		setWithdrawNoted(withdrawNoted);
+	}
+	
+	public BankItem(String name, int itemId) {
+		setName(name);
+		setItemId(itemId);
+	}
+	
+	public BankItem(String name, int itemId, int unnotedId) {
+		setName(name);
+		setItemId(itemId);
+		setUnnotedId(unnotedId);
 	}
 
 	public BankItem(String name, int itemId, int amount, int sellPrice, boolean withdrawNoted) {
@@ -173,6 +186,20 @@ public class BankItem {
 	 */
 	public void setInBankToBeSkipped(boolean inBankToBeSkipped) {
 		this.inBankToBeSkipped = inBankToBeSkipped;
+	}
+
+	/**
+	 * @return the unnotedId
+	 */
+	public int getUnnotedId() {
+		return unnotedId;
+	}
+
+	/**
+	 * @param unnotedId the unnotedId to set
+	 */
+	public void setUnnotedId(int unnotedId) {
+		this.unnotedId = unnotedId;
 	}
 
 }

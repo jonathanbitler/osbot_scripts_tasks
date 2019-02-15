@@ -14,15 +14,14 @@ import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.events.MandatoryEventsExecution;
 import osbot_scripts.login.LoginHandler;
-import osbot_scripts.qp7.progress.MiningLevelTo15Configuration;
-import osbot_scripts.qp7.progress.MiningRimmingtonClay;
+import osbot_scripts.qp7.progress.ObstacleTest3;
 import osbot_scripts.qp7.progress.TradeBeforeBanWaves;
 import osbot_scripts.scripttypes.types.MiningType;
 
-@ScriptManifest(author = "pim97", info = "MINING_RIMMINGTON_CLAY", logo = "", name = "MINING_RIMMINGTON_CLAY", version = 1.0)
-public class MiningClayAtRimmington extends Script {
+@ScriptManifest(author = "pim97", info = "OBSTACLE_TEST_2", logo = "", name = "OBSTACLE_TEST_2", version = 1.0)
+public class ObstacleTest2 extends Script {
 
-	private MiningRimmingtonClay goldfarmMining;
+	private ObstacleTest3 test;
 
 	private LoginEvent login;
 
@@ -31,7 +30,7 @@ public class MiningClayAtRimmington extends Script {
 	@Override
 	public int onLoop() throws InterruptedException {
 		try {
-			if (!goldfarmMining.isLoggedIn()) {
+			if (!test.isLoggedIn()) {
 				return random(1000, 2000);
 			}
 
@@ -51,58 +50,15 @@ public class MiningClayAtRimmington extends Script {
 						login);
 			}
 
-			// log("G.E. task: "
-			// + (getGoldfarmMining().getGrandExchangeTask() != null ?
-			// getGoldfarmMining().getGrandExchangeTask()
-			// : "NULL"));
 
-			if (((getGoldfarmMining().getGrandExchangeTask() == null)
-					|| (getGoldfarmMining().getGrandExchangeTask() != null
-							&& getGoldfarmMining().getGrandExchangeTask().getTask() == null))
-					&& (TradeBeforeBanWaves.MULE_TRADING_BEFORE_BANWAVE)) {
-				if (login != null) {
-					DatabaseUtilities.updateStageProgress(this, "MULE_TRADING", 0, login.getUsername(), login);
-					BotCommands.killProcess(this, (Script) this, "BECAUSE WANTING TO GO TO MULE TRADING", login);
-				}
-			}
-
-			if (Config.TEST) {
-				if (login.hasFinished()) {
-					if (getGoldfarmMining().getGrandExchangeTask() == null) {
-						try {
-							getGoldfarmMining().getTaskHandler().taskLoop();
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					} else {
-						try {
-							getGoldfarmMining().onLoop();
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					}
-				}
-			} else {
-				if (getGoldfarmMining().getGrandExchangeTask() == null) {
-					try {
-						getGoldfarmMining().getTaskHandler().taskLoop();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				} else {
-					try {
-						getGoldfarmMining().onLoop();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-			return 30;
+			getGoldfarmMining().onLoop();
+			
+			return random(1000, 2000);
 
 		} catch (Exception e) {
 			log(DatabaseUtilities.exceptionToString(e, this, login));
 		}
-		return 30;
+		return random(1000, 2000);
 	}
 
 	// Breaking for set amount of minutes because has done a few laps
@@ -129,8 +85,8 @@ public class MiningClayAtRimmington extends Script {
 				// DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN",
 				// login);
 			}
-			goldfarmMining = new MiningRimmingtonClay(login, (Script) this);
-			goldfarmMining.setScriptAbstract(new MiningType());
+			test = new ObstacleTest3(login, (Script) this);
+			test.setScriptAbstract(new MiningType());
 			getGoldfarmMining().setQuest(false);
 
 			if (!Config.NO_LOGIN) {
@@ -150,8 +106,8 @@ public class MiningClayAtRimmington extends Script {
 					// Integer.parseInt(DatabaseUtilities.getQuestProgress(this,
 					// login.getUsername())));
 
-					DatabaseUtilities.updateStageProgress(this, "MINING_RIMMINGTON_CLAY", 0,
-							getGoldfarmMining().getEvent().getUsername(), login);
+//					DatabaseUtilities.updateStageProgress(this, "MINING_RIMMINGTON_CLAY", 0,
+//							getGoldfarmMining().getEvent().getUsername(), login);
 				}
 			}
 
@@ -168,16 +124,16 @@ public class MiningClayAtRimmington extends Script {
 	/**
 	 * @return the goldfarmMining
 	 */
-	public MiningRimmingtonClay getGoldfarmMining() {
-		return goldfarmMining;
+	public ObstacleTest3 getGoldfarmMining() {
+		return test;
 	}
 
 	/**
 	 * @param goldfarmMining
 	 *            the goldfarmMining to set
 	 */
-	public void setGoldfarmMining(MiningRimmingtonClay goldfarmMining) {
-		this.goldfarmMining = goldfarmMining;
+	public void setGoldfarmMining(ObstacleTest3 goldfarmMining) {
+		this.test = goldfarmMining;
 	}
 
 }

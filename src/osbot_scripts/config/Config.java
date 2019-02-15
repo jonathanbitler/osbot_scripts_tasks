@@ -10,7 +10,7 @@ public class Config {
 
 	public static final boolean TEST = false;
 
-	public static final boolean NO_LOGIN = false;
+	public static final boolean NO_LOGIN = true;
 
 	public static boolean doesntHaveAnyPickaxe(MethodProvider api) {
 		return api.getBank().getAmount("Bronze pickaxe") <= 0 && api.getBank().getAmount("Iron pickaxe") <= 0

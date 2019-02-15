@@ -113,7 +113,7 @@ public class IronMinerConfiguration extends QuestStep {
 					new WalkTask("walk to varrock west bank from g.e.", -1, -1, getBot().getMethods(),
 							FROM_GE_TO_BANK_PATH, GRAND_EXCHANGE_AREA,
 							new Area(new int[][] { { 3180, 3441 }, { 3186, 3441 }, { 3186, 3433 }, { 3180, 3433 } }),
-							getScript(), getEvent(), false, true));
+							getScript(), getEvent(), false, true, this));
 		} else {
 			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 					new WalkTask("walk to varrock west bank from mining", -1, -1, getBot().getMethods(),
@@ -121,7 +121,7 @@ public class IronMinerConfiguration extends QuestStep {
 							new Area(new int[][] { { 3174, 3379 }, { 3186, 3379 }, { 3185, 3366 }, { 3176, 3362 },
 									{ 3169, 3364 }, { 3171, 3372 } }),
 							new Area(new int[][] { { 3180, 3441 }, { 3186, 3441 }, { 3186, 3433 }, { 3180, 3433 } }),
-							getScript(), getEvent(), false, true));
+							getScript(), getEvent(), false, true, this));
 		}
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new BankTask("withdraw pickaxe", 0,
@@ -134,15 +134,15 @@ public class IronMinerConfiguration extends QuestStep {
 			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 					new WalkTask("walk to mining area (normal)", -1, -1, getBot().getMethods(),
 							FROM_GE_TO_MINING_POSITION, GRAND_EXCHANGE_AREA, MINING_AREA, getScript(), getEvent(),
-							false, true));
+							false, true, this));
 		} else {
 			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 					new WalkTask("walk to mining area", -1, -1, getBot().getMethods(), BANK_PATH_TO_MINING_AREA,
-							BANK_VARROCK_EAST_AREA, MINING_AREA, getScript(), getEvent(), false, true));
+							BANK_VARROCK_EAST_AREA, MINING_AREA, getScript(), getEvent(), false, true, this));
 		}
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new WalkTask("walk to mining spot", -1, -1,
-				getBot().getMethods(), MINING_POSITION, MINING_AREA, getScript(), getEvent(), false, true));
+				getBot().getMethods(), MINING_POSITION, MINING_AREA, getScript(), getEvent(), false, true, this));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new ClickObjectTask("click mining", -1, -1, getBot().getMethods(),
@@ -157,7 +157,7 @@ public class IronMinerConfiguration extends QuestStep {
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("walk to varrock west bank 2", -1, -1, getBot().getMethods(), MINING_AREA_TO_BANK,
-						MINING_AREA, BANK_VARROCK_EAST_AREA, getScript(), getEvent(), false, true));
+						MINING_AREA, BANK_VARROCK_EAST_AREA, getScript(), getEvent(), false, true, this));
 
 	}
 
@@ -197,18 +197,19 @@ public class IronMinerConfiguration extends QuestStep {
 		}
 
 		// Supporting world hopping when world is too full
-//		int threshholdToHop = 10_000;
-//		int profit = ((currentAmount - beginAmount) + soldAmount) * 140;
-//		long profitPerHour = (long) (profit * (3600000.0 / (System.currentTimeMillis() - beginTime)));
-//		if ((profitPerHour > 0) && (profitPerHour < threshholdToHop)
-//				&& ((System.currentTimeMillis() - beginTime) > 1_800_000)
-//				|| ((System.currentTimeMillis() - beginTime) > 3_600_000)) {
-//			if (WorldHop.hop(this)) {
-//				beginTime = System.currentTimeMillis();
-//				beginAmount = currentAmount;
-//				soldAmount = 0;
-//			}
-//		}
+		// int threshholdToHop = 10_000;
+		// int profit = ((currentAmount - beginAmount) + soldAmount) * 140;
+		// long profitPerHour = (long) (profit * (3600000.0 /
+		// (System.currentTimeMillis() - beginTime)));
+		// if ((profitPerHour > 0) && (profitPerHour < threshholdToHop)
+		// && ((System.currentTimeMillis() - beginTime) > 1_800_000)
+		// || ((System.currentTimeMillis() - beginTime) > 3_600_000)) {
+		// if (WorldHop.hop(this)) {
+		// beginTime = System.currentTimeMillis();
+		// beginAmount = currentAmount;
+		// soldAmount = 0;
+		// }
+		// }
 
 		// If the player is fighting or under combat, then reset the stage to prevent
 		// going dead
@@ -249,9 +250,9 @@ public class IronMinerConfiguration extends QuestStep {
 			resetStage(AccountStage.MINING_IRON_ORE.name());
 		}
 
-//		if (!MiningLevelTo15Configuration.MINING_ZONE.contains(myPlayer())) {
-//			resetStage(AccountStage.MINING_IRON_ORE.name());
-//		}
+		// if (!MiningLevelTo15Configuration.MINING_ZONE.contains(myPlayer())) {
+		// resetStage(AccountStage.MINING_IRON_ORE.name());
+		// }
 
 		// When having more than 200 clay, then go to the g.e. and sell it
 		if (getBank().isOpen() && getBank().getAmount("Iron ore") > 200) {
@@ -307,7 +308,7 @@ public class IronMinerConfiguration extends QuestStep {
 				if (getEvent() != null && getEvent().getUsername() != null
 						&& DatabaseUtilities.getMuleTradingFreeAccounts(this, getEvent()) < 3) {
 
-					ConcreteWalking.walkToGe(this);
+					ConcreteWalking.walkToGe(this, getEvent());
 
 					DatabaseUtilities.updateStageProgress(this, "MULE_TRADING", 0, getEvent().getUsername(),
 							getEvent());
@@ -534,11 +535,11 @@ public class IronMinerConfiguration extends QuestStep {
 	public void setPickaxe(String pickaxe) {
 		this.pickaxe = pickaxe;
 	}
-	
+
 	@Override
 	public void timeOutHandling(TaskHandler tasks) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }

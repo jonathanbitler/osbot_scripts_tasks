@@ -5,6 +5,6 @@
 	<classpathentry kind="lib" path="C:/Users/pim/Desktop/OS-War development/Server/deps/org.json.jar"/>
 	<classpathentry kind="lib" path="C:/Users/pim/Desktop/OS-War development/Server/deps/commons-lang3-3.3.2.jar"/>
 	<classpathentry kind="lib" path="C:/Users/pim/Desktop/OS-War development/Server/deps/commons-io-2.4.jar"/>
-	<classpathentry kind="lib" path="C:/Users/pim/Dropbox/osbot/osbot.jar"/>
-	<classpathentry kind="output" path="bin/Scripts2/dropbox"/>
+	<classpathentry kind="lib" path="C:/Users/pim/Dropbox/osbot/osbot.jar" sourcepath="C:/Users/pim/AppData/Local/Temp/.org.sf.feeling.decompiler1549350351944/source/xstream-1.4.6-sources-1549351019084.jar"/>
+	<classpathentry kind="output" path="bin/Scripts"/>
 </classpath>

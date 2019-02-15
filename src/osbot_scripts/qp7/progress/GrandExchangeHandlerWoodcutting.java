@@ -89,20 +89,7 @@ public class GrandExchangeHandlerWoodcutting extends Script {
 		}
 
 		// If the player is not in the grand exchange area, then walk to it
-		if (myPlayer() != null
-				&& !new Area(new int[][] { { 3144, 3508 }, { 3144, 3471 }, { 3183, 3470 }, { 3182, 3509 } })
-						.contains(myPlayer())) {
-
-			// Contains in banking area varrock
-			if (new Area(new int[][] { { 3180, 3438 }, { 3180, 3433 }, { 3186, 3433 }, { 3186, 3438 } })
-					.contains(myPlayer())) {
-				getWalking().walkPath(GE_PATH);
-			} else {
-				getWalking().webWalk(
-						new Area(new int[][] { { 3160, 3494 }, { 3168, 3494 }, { 3168, 3485 }, { 3160, 3485 } }));
-				log("The player has a grand exchange task but isn't there, walking to there");
-			}
-		}
+		WalkToGrandExchangeIfNotThere.walk(this, login);
 
 		log("task: " + getTask());
 		if (getTask() != null && !getTask().finished()) {
@@ -255,7 +242,7 @@ public class GrandExchangeHandlerWoodcutting extends Script {
 						new BankItem[] { new BankItem("Oak logs", 1521, oakAmount, 1, true),
 								new BankItem("Logs", 1511, logsAmount, 1, true) },
 						login, (Script) this, getQuest()));
-				
+
 			} else if (totalAccountValue > Axe.MITHRIL.getPrice() && getBank().isOpen()
 					&& getSkills().getStatic(Skill.WOODCUTTING) >= 21 && getSkills().getStatic(Skill.WOODCUTTING) < 31
 					&& ((!getInventory().contains("Mithril axe") && !getBank().contains("Mithril axe")))) {
@@ -265,7 +252,7 @@ public class GrandExchangeHandlerWoodcutting extends Script {
 						new BankItem[] { new BankItem("Oak logs", 1521, oakAmount, 1, true),
 								new BankItem("Logs", 1511, logsAmount, 1, true) },
 						login, (Script) this, getQuest()));
-				
+
 			} else if (totalAccountValue > Axe.ADAMANT.getPrice() && getBank().isOpen()
 					&& getSkills().getStatic(Skill.WOODCUTTING) >= 31 && getSkills().getStatic(Skill.WOODCUTTING) < 41
 					&& ((!getInventory().contains("Adamant axe") && !getBank().contains("Adamant axe")))) {
@@ -275,7 +262,7 @@ public class GrandExchangeHandlerWoodcutting extends Script {
 						new BankItem[] { new BankItem("Oak logs", 1521, oakAmount, 1, true),
 								new BankItem("Logs", 1511, logsAmount, 1, true) },
 						login, (Script) this, getQuest()));
-				
+
 			} else if (totalAccountValue > Axe.RUNE.getPrice() && getBank().isOpen()
 					&& getSkills().getStatic(Skill.WOODCUTTING) >= 41
 					&& ((!getInventory().contains("Rune axe") && !getBank().contains("axe")))) {
@@ -285,7 +272,7 @@ public class GrandExchangeHandlerWoodcutting extends Script {
 						new BankItem[] { new BankItem("Oak logs", 1521, oakAmount, 1, true),
 								new BankItem("Logs", 1511, logsAmount, 1, true) },
 						login, (Script) this, getQuest()));
-				
+
 			}
 		}
 	}

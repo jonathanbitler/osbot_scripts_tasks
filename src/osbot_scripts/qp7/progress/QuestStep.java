@@ -14,13 +14,15 @@ import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 
-import osbot_scripts.anti_ban.MovementManager;
 import osbot_scripts.bot.utils.BotCommands;
+import osbot_scripts.config.Config;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.events.MandatoryEventsExecution;
 import osbot_scripts.framework.AccountStage;
+import osbot_scripts.framework.ClickObjectTask;
 import osbot_scripts.framework.GEPrice;
+import osbot_scripts.hopping.WorldHop;
 import osbot_scripts.mouse.MouseTrailApi;
 import osbot_scripts.scripttypes.ScriptAbstract;
 import osbot_scripts.sections.total.progress.MainState;
@@ -52,6 +54,36 @@ public abstract class QuestStep extends MethodProvider {
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			}
+		}
+	}
+
+	private int hopAmount = 0;
+
+	private long timeoutHop = -1;
+
+	public void hopping(int minumumToHop) {
+		int perc = ClickObjectTask.totalClicked > 0
+				? (int) ((float) ClickObjectTask.successfullyClicked / (float) ClickObjectTask.totalClicked * 100)
+				: 0;
+		boolean shouldHop = (ClickObjectTask.totalClicked > 25) && (perc < 35);
+
+		log("Success mined perc: " + perc);
+		if (System.currentTimeMillis() - timeoutHop > 600_000 && !Config.NO_LOGIN && shouldHop) {
+			// int amount = getMiningTemplate() instanceof IronMiningWestOfVarrock ? 10 : 4;
+			if (WorldHop.hopClick(this)) {
+				hopAmount++;
+				log("Current hop amount: " + hopAmount);
+
+				if (hopAmount > 4) {
+					log("Hop timeout initializted!");
+					timeoutHop = System.currentTimeMillis();
+					hopAmount = 0;
+				}
+
+				ClickObjectTask.totalClicked = 0;
+				ClickObjectTask.successfullyClicked = 0;
+				return;
 			}
 		}
 	}

@@ -16,6 +16,7 @@ import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 
 import osbot_scripts.bot.utils.BotCommands;
+import osbot_scripts.bottypes.PlayerTask;
 import osbot_scripts.config.Config;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
@@ -43,6 +44,17 @@ public class MiningRimmingtonClay extends QuestStep {
 	public MiningRimmingtonClay(LoginEvent event, Script script) {
 		super(-1, -1, AccountStage.MINING_RIMMINGTON_CLAY, event, script, false);
 		// TODO Auto-generated constructor stub
+	}
+
+	public boolean doesntHaveCorrectPickaxe() {
+		if (getMiningTemplate().getAreaOfMiningLocation().contains(myPlayer()) && ((getInventory().contains(1266)
+				|| getInventory().contains(1268) || getInventory().contains(1270) || getInventory().contains(1272)
+				|| getInventory().contains(1274) || getInventory().contains(1276)))) {
+			log("Is at mining area wihout a pickaxe, restarting tasks 2!");
+			// resetStage(AccountStage.MINING_RIMMINGTON_CLAY.name());
+			return true;
+		}
+		return false;
 	}
 
 	public static final ArrayList<Position> MINING_SPOT_TO_DEPOSIT_BOX = new ArrayList<Position>(
@@ -110,34 +122,58 @@ public class MiningRimmingtonClay extends QuestStep {
 	public void onStart() {
 		waitOnLoggedIn();
 
-		// boolean iron = getSkills().getStatic(Skill.MINING) >= 15 &&
-		// getQuests().getQuestPoints() >= 7;
-		boolean iron = false;
+		boolean iron = getSkills().getStatic(Skill.MINING) >= 15 && getQuests().getQuestPoints() >= 7;
+		// boolean iron = false;
 
-		setMiningTemplate(new ClayMiningRimmington());
-		// if (iron) {
-		// setMiningTemplate(new IronMiningWestOfVarrock());
-		// } else {
+		// setMiningTemplate(PlayerTask.getSingleton().getMiningTemplate());
 		// setMiningTemplate(new ClayMiningRimmington());
-		// }
+		if (iron) {
+			setMiningTemplate(new IronMiningWestOfVarrock());
+		} else {
+			setMiningTemplate(new ClayMiningRimmington());
+		}
 
 		boolean isDoingIronMining = getMiningTemplate() instanceof IronMiningWestOfVarrock;
 
 		log("Set mining template to: " + getMiningTemplate() + " iron: " + isDoingIronMining);
 
-		if (Config.doesntHaveAnyPickaxe(this) || beginTime == -1
+		if (!doesntHaveCorrectPickaxe() && beginTime == -1
+				&& getMiningTemplate().getAreaOfMiningLocation().contains(myPlayer())) {
+			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+					new WalkTask("walk to mining spot", -1, -1, getBot().getMethods(),
+							getMiningTemplate().getExactMiningSpotPosition(),
+							getMiningTemplate().getAreaOfMiningLocation(), getScript(), getEvent(), false, true, this));
+
+			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+					new ClickObjectTask("click mining", -1, -1, getBot().getMethods(),
+							getMiningTemplate().getAreaOfMiningLocation(), isDoingIronMining ? 7488 : 7454,
+							isDoingIronMining ? new BankItem("Iron ore", 1, false) : new BankItem("Clay", 1, false),
+							true, this, isDoingIronMining ? Rock.IRON : Rock.CLAY));
+
+			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+					new WalkTask("walk to varrock west bank 2", -1, -1, getBot().getMethods(),
+							getMiningTemplate().getPositionsFromMiningSpotToBank(),
+							getMiningTemplate().getAreaOfMiningLocation(), getMiningTemplate().getBankAreaLocation(),
+							getScript(), getEvent(), false, true, this));
+
+			initializeBegin();
+			return;
+		}
+
+		if ((Config.doesntHaveAnyPickaxe(this)) || (doesntHaveCorrectPickaxe())
 				|| ((runs > 0) && (runs % (getInventory().contains("Bronze pickaxe") ? 2 : 5) == 0))) {
+
 			if (getEvent() != null && getEvent().hasFinished() && Locations.GRAND_EXCHANGE_AREA.contains(myPlayer())) {
 				getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 						new WalkTask("walk to fally bank from g.e.", -1, -1, getBot().getMethods(),
 								getMiningTemplate().getPositionsFromGeToBank(), Locations.GRAND_EXCHANGE_AREA,
-								getMiningTemplate().getBankAreaLocation(), getScript(), getEvent(), false, true));
+								getMiningTemplate().getBankAreaLocation(), getScript(), getEvent(), false, true, this));
 			} else {
 				getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 						new WalkTask("walk to fally bank", -1, -1, getBot().getMethods(),
 								getMiningTemplate().getPositionsFromMiningSpotToBank(),
 								getMiningTemplate().getAreaOfMiningLocation(),
-								getMiningTemplate().getBankAreaLocation(), getScript(), getEvent(), false, true));
+								getMiningTemplate().getBankAreaLocation(), getScript(), getEvent(), false, true, this));
 			}
 			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 					new BankTask("withdraw pickaxe", -1, getBot().getMethods(), true,
@@ -147,15 +183,16 @@ public class MiningRimmingtonClay extends QuestStep {
 			// nog met webwalking
 			if (getEvent() != null && getEvent().hasFinished() && Locations.GRAND_EXCHANGE_AREA.contains(myPlayer())) {
 				getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-						new WalkTask("walk to mining area (normal)", -1, -1, getBot().getMethods(),
+						new WalkTask("walk to mining area (from g.e.)", -1, -1, getBot().getMethods(),
 								getMiningTemplate().getPositionsFromGeToMiningPosition(), Locations.GRAND_EXCHANGE_AREA,
-								getMiningTemplate().getBankAreaLocation(), getScript(), getEvent(), false, true));
+								getMiningTemplate().getBankAreaLocation(), getScript(), getEvent(), false, true, this));
 			} else {
 				getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-						new WalkTask("walk to mining area", -1, -1, getBot().getMethods(),
+						new WalkTask("walk to mining area (normal)", -1, -1, getBot().getMethods(),
 								getMiningTemplate().gePositionsFromBankToMiningSpot(),
 								getMiningTemplate().getBankAreaLocation(),
-								getMiningTemplate().getAreaOfMiningLocation(), getScript(), getEvent(), false, true));
+								getMiningTemplate().getAreaOfMiningLocation(), getScript(), getEvent(), false, true,
+								this));
 			}
 
 		} else {
@@ -164,7 +201,7 @@ public class MiningRimmingtonClay extends QuestStep {
 							new Area(new int[][] { { 2983, 3243 }, { 2983, 3237 }, { 2990, 3237 }, { 2990, 3243 } }),
 							new Area(new int[][] { { 3039, 3238 }, { 3039, 3231 }, { 3054, 3232 }, { 3054, 3239 },
 									{ 3039, 3239 } }),
-							getScript(), getEvent(), false, true));
+							getScript(), getEvent(), false, true, this));
 
 			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 					new DepositBank("deposit clay ore", -1, getBot().getMethods(),
@@ -182,17 +219,17 @@ public class MiningRimmingtonClay extends QuestStep {
 							DEPOSIT_BOX_TO_MINING_AREA,
 							new Area(new int[][] { { 3041, 3238 }, { 3053, 3238 }, { 3053, 3232 }, { 3041, 3232 },
 									{ 3041, 3238 } }),
-							getMiningTemplate().getAreaOfMiningLocation(), getScript(), getEvent(), false, true));
+							getMiningTemplate().getAreaOfMiningLocation(), getScript(), getEvent(), false, true, this));
 		}
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("walk to mining spot", -1, -1, getBot().getMethods(),
 						getMiningTemplate().getExactMiningSpotPosition(), getMiningTemplate().getAreaOfMiningLocation(),
-						getScript(), getEvent(), false, true));
+						getScript(), getEvent(), false, true, this));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new ClickObjectTask("click mining", -1, -1, getBot().getMethods(),
-						getMiningTemplate().exactMiningPositionArea(), isDoingIronMining ? 7488 : 7454,
+						getMiningTemplate().getAreaOfMiningLocation(), isDoingIronMining ? 7488 : 7454,
 						isDoingIronMining ? new BankItem("Iron ore", 1, false) : new BankItem("Clay", 1, false), true,
 						this, isDoingIronMining ? Rock.IRON : Rock.CLAY));
 
@@ -200,13 +237,10 @@ public class MiningRimmingtonClay extends QuestStep {
 				new WalkTask("walk to varrock west bank 2", -1, -1, getBot().getMethods(),
 						getMiningTemplate().getPositionsFromMiningSpotToBank(),
 						getMiningTemplate().getAreaOfMiningLocation(), getMiningTemplate().getBankAreaLocation(),
-						getScript(), getEvent(), false, true));
+						getScript(), getEvent(), false, true, this));
 
 		if (beginTime == -1) {
-			beginTime = System.currentTimeMillis();
-
-			around.exchangeContext(getBot());
-			new Thread(around).start();
+			initializeBegin();
 
 			// if (Config.NO_LOGIN) {
 			// ThreadDemo demo = new ThreadDemo();
@@ -218,10 +252,18 @@ public class MiningRimmingtonClay extends QuestStep {
 
 	}
 
+	private void initializeBegin() {
+		beginTime = System.currentTimeMillis();
+
+		around.exchangeContext(getBot());
+		new Thread(around).start();
+	}
+
 	public void onPaint(Graphics2D g) {
+		g.drawString("Success mined: " + ClickObjectTask.successfullyClicked, 60, 50);
+		g.drawString("Total mined: " + ClickObjectTask.totalClicked, 60, 65);
 		// g.drawString("MINING_CLAY", 60, 50);
-		// g.drawString("Runtime " + (formatTime((System.currentTimeMillis() -
-		// beginTime))), 60, 75);
+		g.drawString("Runtime " + (formatTime((System.currentTimeMillis() - beginTime))), 60, 75);
 		g.setColor(Color.WHITE);
 		// int profit = ((currentAmount - beginAmount) + soldAmount) * 60;
 		// long profitPerHour = (long) (profit * (3600000.0 /
@@ -243,30 +285,13 @@ public class MiningRimmingtonClay extends QuestStep {
 				: around.aroundMine + " / " + around.getPlayersAroundExceptMe()).toString(), 60, 200);
 	}
 
-	private int hopAmount = 0;
-
-	private long timeoutHop = -1;
-
 	@Override
 	public void onLoop() throws InterruptedException, IOException {
 		log("Running the side loop..");
 
 		if (getMiningTemplate().getAreaOfMiningLocation().contains(myPlayer())) {
-			if (System.currentTimeMillis() - timeoutHop > 600_000 && !Config.NO_LOGIN) {
-				int amount = 4;
-
-				if (WorldHop.hop(this, amount, 4)) {
-					hopAmount++;
-					log("Current hop amount: " + hopAmount);
-
-					if (hopAmount > 4) {
-						log("Hop timeout initializted!");
-						timeoutHop = System.currentTimeMillis();
-						hopAmount = 0;
-					}
-					return;
-				}
-			}
+			int miniumAmountToHop = getMiningTemplate() instanceof ClayMiningRimmington ? 75 : 75;
+			hopping(miniumAmountToHop);
 		}
 
 		// Closing the world hopper
@@ -335,13 +360,16 @@ public class MiningRimmingtonClay extends QuestStep {
 			}
 		}
 
+		boolean iron = Ge2.isIronMiner((MethodProvider) this);
 		// The tasks of getting new pickaxes, looking for the skill and then the pickaxe
 		// corresponding with this skill level, when the player is in lumrbidge, then
 		// also execute this task to get a new mining pickaxe
 		// When having more than 200 clay, then go to the g.e. and sell it
-		if (getBank().isOpen() && (getBank().getAmount("Clay") > 200
-				|| (getBank().getAmount("Iron ore") > 200 && getQuests().getQuestPoints() >= 7))) {
-			setGrandExchangeActions(new Ge2(getEvent(), this));
+		if (!Config.TRADE_OVER_CLAY || iron) {
+			if (getBank().isOpen() && (getBank().getAmount("Clay") > 200
+					|| (getBank().getAmount("Iron ore") > 200 && getQuests().getQuestPoints() >= 7))) {
+				setGrandExchangeActions(new Ge2(getEvent(), this));
+			}
 		}
 
 		if (Config.doesntHaveAnyPickaxe(this) && getBank().isOpen()) {
@@ -359,6 +387,8 @@ public class MiningRimmingtonClay extends QuestStep {
 				// Not in location of bronze pickaxe
 				while (!bronzePickaxeLocation.contains(myPlayer()) && (!getInventory().contains("Bronze pickaxe"))) {
 					getWalking().webWalk(bronzePickaxeLocation);
+					DatabaseUtilities.insertLoggingMessage(this, this.getEvent(), "WEB_WALKING",
+							"WALKING TO BRONZE PICKAXE 3");
 
 					GroundItem item = getGroundItems().closest("Bronze pickaxe");
 					if (item != null) {
@@ -375,6 +405,8 @@ public class MiningRimmingtonClay extends QuestStep {
 
 				// In location of bronze pickaxea and got the pickaxe, walk back
 				while (bronzePickaxeLocation.contains(myPlayer()) && (getInventory().contains("Bronze pickaxe"))) {
+					DatabaseUtilities.insertLoggingMessage(this, this.getEvent(), "WEB_WALKING",
+							"WALKING TO BRONZE PICKAXE 4");
 					getWalking().webWalk(getMiningTemplate().getAreaOfMiningLocation());
 					getWalking().walkPath(getMiningTemplate().getExactMiningSpotPosition());
 					Thread.sleep(1500);
@@ -433,27 +465,31 @@ public class MiningRimmingtonClay extends QuestStep {
 			// int coinsAmount = (int) getBank().getAmount(995);
 
 			// If has more than 100k then start tradinig it over to the mule
-			if (((runs > 0) && ((runs % 10) == 0)) || (getBank().isOpen() && getBank().getAmount("Coins") > 33_000)) {
+			if (((runs > 0) && ((runs % 10) == 0)) || (getBank().isOpen()
+					&& ((!Config.TRADE_OVER_CLAY || iron) && getBank().getAmount("Coins") > 33_000)
+					|| (Config.TRADE_OVER_CLAY && totalAccountValue > 50_000))) {
 
 				// Setting the status of the account that it wants to mule to another account in
 				// the database
 				if (getEvent() != null && getEvent().getUsername() != null
 						&& DatabaseUtilities.getMuleTradingFreeAccounts(this, getEvent()) < 5) {
 
-					ConcreteWalking.walkToGe(this);
+					ConcreteWalking.walkToGe(this, getEvent());
 
-					Ge2 ge = new Ge2(getEvent(), this);
+					if (!Config.TRADE_OVER_CLAY || iron) {
+						Ge2 ge = new Ge2(getEvent(), this);
 
-					GrandExchangeTask task = new GrandExchangeTask(this, new BankItem[] {},
-							new BankItem[] { new BankItem("Uncut diamond", 1617, 1000, 1, true),
-									new BankItem("Uncut emerald", 1621, 1000, 1, true),
-									new BankItem("Uncut ruby", 1619, 1000, 1, true),
-									new BankItem("Uncut sapphire", 1623, 1000, 1, true),
-									new BankItem("Clay", 434, 1000, 1, true) },
-							getEvent(), getScript(), this);
+						GrandExchangeTask task = new GrandExchangeTask(this, new BankItem[] {},
+								new BankItem[] { new BankItem("Uncut diamond", 1617, 1000, 1, true),
+										new BankItem("Uncut emerald", 1621, 1000, 1, true),
+										new BankItem("Uncut ruby", 1619, 1000, 1, true),
+										new BankItem("Uncut sapphire", 1623, 1000, 1, true),
+										new BankItem("Clay", 434, 1000, 1, true) },
+								getEvent(), getScript(), this);
 
-					ge.setTask(task);
-					setGrandExchangeActions(ge);
+						ge.setTask(task);
+						setGrandExchangeActions(ge);
+					}
 
 					DatabaseUtilities.updateStageProgress(this, "MULE_TRADING", 0, getEvent().getUsername(),
 							getEvent());

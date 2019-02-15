@@ -10,6 +10,7 @@ import org.osbot.rs07.api.model.RS2Object;
 import org.osbot.rs07.api.ui.Tab;
 import org.osbot.rs07.script.MethodProvider;
 
+import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.framework.parts.BankItem;
 import osbot_scripts.qp7.progress.QuestStep;
 import osbot_scripts.qp7.progress.entities.Rock;
@@ -218,6 +219,10 @@ public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface
 		return false;
 	}
 
+	public static int successfullyClicked;
+
+	public static int totalClicked;
+
 	@Override
 	public void loop() throws IOException {
 		long startClick = System.currentTimeMillis();
@@ -229,6 +234,9 @@ public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface
 			// Waiting before player is in an area
 			if (!getArea().contains(getApi().myPlayer())) {
 				getApi().getWalking().webWalk(getArea());
+				DatabaseUtilities.insertLoggingMessage(getApi(), quest.getEvent(), "WEB_WALKING",
+						"CLICK OBJECT 1 USED WEBWALKING FROM: " + getApi().myPlayer().getPosition() + " TO: "
+								+ (getArea().getPositions()));
 			}
 			// Sleep.sleepUntil(() -> getArea().contains(getApi().myPlayer()), 10000);
 		}
@@ -283,6 +291,12 @@ public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface
 												&& o.getY() == object.getY() && o.getId() == object.getId()),
 										getApi())),
 						20000);
+
+				if (getApi().getInventory().getAmount(
+						waitOnItems.getName()) == (waitOnItems.getAmountBeforeAction() + waitOnItems.getAmount())) {
+					successfullyClicked++;
+				}
+				totalClicked++;
 			}
 
 			if (getWaitOnObjectIdToChange() > 0 && waitOnItems == null) {
@@ -335,6 +349,8 @@ public class ClickObjectTask extends TaskSkeleton implements Task, AreaInterface
 		// }
 		if (object != null && getFinalDestinationArea() != null
 				&& !getFinalDestinationArea().contains(getApi().myPlayer())) {
+			DatabaseUtilities.insertLoggingMessage(getApi(), quest.getEvent(), "WEB_WALKING",
+					"CLICK OBJECT 2 USED WEBWALKING TO: " + (getArea().getPositions()));
 
 			// Not in area? walking to the area of the object, extra backup
 			Sleep.sleepUntil(() -> getFinalDestinationArea().contains(getApi().myPlayer()), 3000);

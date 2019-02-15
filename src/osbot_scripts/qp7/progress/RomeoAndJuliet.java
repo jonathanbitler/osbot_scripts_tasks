@@ -116,7 +116,7 @@ public class RomeoAndJuliet extends QuestStep {
 		// if (getQuestProgress() == 0) {
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("walk to varrock square", 0, QUEST_CONFIG, getBot().getMethods(),
-						PATH_TO_VARROCK_SQUARE_ONE, VARROCK_SQUARE_AREA, getScript(), getEvent(), true, false));
+						PATH_TO_VARROCK_SQUARE_ONE, VARROCK_SQUARE_AREA, getScript(), getEvent(), true, false, this));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new DialogueTask("talk with romeo", 0, QUEST_CONFIG, getBot().getMethods(), VARROCK_SQUARE_AREA, 5037,
@@ -128,7 +128,7 @@ public class RomeoAndJuliet extends QuestStep {
 		// if (getQuestProgress() <= 10) {
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("walk to juliet", 10, QUEST_CONFIG, getBot().getMethods(), PATH_TO_JULIET_FLOOR_1,
-						AT_JULIET, getScript(), getEvent(), true, false));
+						AT_JULIET, getScript(), getEvent(), true, false, this));
 
 		// new WalkTask("walk to juliet", 10, QUEST_CONFIG, getBot().getMethods(),
 		// PATH_TO_JULIET,
@@ -169,7 +169,7 @@ public class RomeoAndJuliet extends QuestStep {
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("walk to varrock square", 20, QUEST_CONFIG, getBot().getMethods(),
-						WALK_TO_ROMEO_FROM_JULIET, VARROCK_SQUARE_AREA, getScript(), getEvent(), true, false));
+						WALK_TO_ROMEO_FROM_JULIET, VARROCK_SQUARE_AREA, getScript(), getEvent(), true, false, this));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new DialogueTask("talk with romeo", 20,
 				QUEST_CONFIG, getBot().getMethods(), VARROCK_SQUARE_AREA, 5037, 30, new String[] { "Ok, thanks." }));
@@ -178,7 +178,7 @@ public class RomeoAndJuliet extends QuestStep {
 		// if (getQuestProgress() <= 30) {
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("walk to father lawrence", 30, QUEST_CONFIG, getBot().getMethods(),
-						PATH_TO_FATHER_LAWRENCE, FATHER_LAWRENCE_AREA, getScript(), getEvent(), false, true));
+						PATH_TO_FATHER_LAWRENCE, FATHER_LAWRENCE_AREA, getScript(), getEvent(), false, true, this));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new DialogueTask("talk with father lawrence", 30, QUEST_CONFIG, getBot().getMethods(),
@@ -188,14 +188,14 @@ public class RomeoAndJuliet extends QuestStep {
 		// if (getQuestProgress() <= 40) {
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("walk to berries", 40, QUEST_CONFIG, getBot().getMethods(), PATH_TO_BERRIES, BERRIES_AREA,
-						getScript(), getEvent(), false, true));
+						getScript(), getEvent(), false, true, this));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new ClickObjectTask("take cadava", 40,
 				QUEST_CONFIG, getBot().getMethods(), BERRIES_AREA, 23625, "Pick-from", "Cadava berries"));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("walk to apothecary", 40, QUEST_CONFIG, getBot().getMethods(), PATH_TO_APOTHECARY,
-						APOTHECARY_AREA, getScript(), getEvent(), false, true));
+						APOTHECARY_AREA, getScript(), getEvent(), false, true, this));
 
 		// public DialogueTask(String scriptName, int questProgress, int questConfig,
 		// MethodProvider prov, Area area,
@@ -211,7 +211,7 @@ public class RomeoAndJuliet extends QuestStep {
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("walk to juliet", 50, QUEST_CONFIG, getBot().getMethods(), PATH_TO_JULIET_FLOOR_1,
-						AT_JULIET, getScript(), getEvent(), true, false));
+						AT_JULIET, getScript(), getEvent(), true, false, this));
 
 		// getTaskHandler().getTasks().put(16,
 		// new WalkTask("walk to juliet", 50, QUEST_CONFIG, getBot().getMethods(),
@@ -253,7 +253,7 @@ public class RomeoAndJuliet extends QuestStep {
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("walk to varrock square", 60, QUEST_CONFIG, getBot().getMethods(),
-						WALK_TO_ROMEO_FROM_JULIET, VARROCK_SQUARE_AREA, getScript(), getEvent(), true, false));
+						WALK_TO_ROMEO_FROM_JULIET, VARROCK_SQUARE_AREA, getScript(), getEvent(), true, false, this));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new DialogueTask("talk with romeo", 60,
 				QUEST_CONFIG, getBot().getMethods(), VARROCK_SQUARE_AREA, 5037, 100, new String[] { "Ok, thanks." }));

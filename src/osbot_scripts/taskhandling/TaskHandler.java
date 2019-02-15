@@ -4,27 +4,21 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-import org.osbot.rs07.api.Chatbox;
 import org.osbot.rs07.api.map.Area;
-import org.osbot.rs07.api.model.GroundItem;
-import org.osbot.rs07.api.ui.Spells;
+import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 
 import osbot_scripts.bot.utils.BotCommands;
 import osbot_scripts.bot.utils.Coordinates;
 import osbot_scripts.bot.utils.RandomUtil;
-import osbot_scripts.config.Config;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.events.MandatoryEventsExecution;
-import osbot_scripts.framework.AccountStage;
-import osbot_scripts.qp7.progress.DoricsQuestConfig;
-import osbot_scripts.qp7.progress.IronMinerConfiguration;
+import osbot_scripts.framework.WalkTask;
 import osbot_scripts.qp7.progress.MiningLevelTo15Configuration;
 import osbot_scripts.qp7.progress.QuestStep;
 import osbot_scripts.task.Task;
-import osbot_scripts.util.Sleep;
 
 public class TaskHandler {
 
@@ -78,6 +72,50 @@ public class TaskHandler {
 				&& getCurrentTask().getClass().getSimpleName().equalsIgnoreCase("GrandExchangeTask");
 	}
 
+	// public int getTaskNumberOnCurrentLocation() {
+	// HashMap<Integer, Task> copyTasks = new HashMap<Integer, Task>(getTasks());
+	// for (Entry<Integer, Task> entry : copyTasks.entrySet()) {
+	//
+	// int questStepRequired = entry.getKey();
+	// Task task = entry.getValue();
+	//
+	// if (task instanceof WalkTask) {
+	// WalkTask walkTask = (WalkTask) task;
+	//
+	// for (Position loc : walkTask.getPathToWalk()) {
+	// if (loc.getArea(10).contains(getQuest().myPlayer())) {
+	// return questStepRequired;
+	// }
+	// }
+	//
+	// }
+	//
+	// }
+	// return -1;
+	// }
+
+	public Entry<Integer, Task> getTaskOnCurrentLocation() {
+		HashMap<Integer, Task> copyTasks = new HashMap<Integer, Task>(getTasks());
+		for (Entry<Integer, Task> entry : copyTasks.entrySet()) {
+
+			// int questStepRequired = entry.getKey();
+			Task task = entry.getValue();
+
+			if (task instanceof WalkTask) {
+				WalkTask walkTask = (WalkTask) task;
+
+				for (Position loc : walkTask.getPathToWalk()) {
+					if (loc.getArea(10).contains(getQuest().myPlayer())) {
+						return entry;
+					}
+				}
+
+			}
+
+		}
+		return null;
+	}
+
 	public void taskLoop() throws InterruptedException, IOException {
 
 		if (!getQuest().isLoggedIn() && getQuest().getEvent() != null && getQuest() != null
@@ -122,6 +160,20 @@ public class TaskHandler {
 		} else if (!getQuest().isQuest() && lastTask != 0 && currentTask - lastTask > 800_000) {
 			getProvider().log("Took too much time, proably stuck!");
 			BotCommands.waitBeforeKill(getProvider(), "BECAUSE TASKS TOOK TOO MUCH TIME BETWEEN");
+		}
+
+		boolean isQuest = getQuest().isQuest();
+		boolean atStartUp = getCurrentTask() == null;
+		boolean mayExecute = getQuest().getQuestStageStep() != 0;
+		
+		if (!isQuest && atStartUp && mayExecute) {
+			Entry<Integer, Task> task = getTaskOnCurrentLocation();
+			if (task != null) {
+				Task possibleTask = task.getValue();
+				getQuest().setQuestStageStep(task.getKey());
+				setCurrentTask(possibleTask);
+				getQuest().log("Found a task for a non quest with its walking location: " + possibleTask.scriptName());
+			}
 		}
 
 		// Has the task corresponding with the character been found or not?
@@ -274,7 +326,7 @@ public class TaskHandler {
 					if (getQuest().isQuest()) {
 						Thread.sleep(1000, 1500);
 					} else {
-						Thread.sleep(20, 40);
+						Thread.sleep(20);
 					}
 
 					if (quest instanceof MiningLevelTo15Configuration) {

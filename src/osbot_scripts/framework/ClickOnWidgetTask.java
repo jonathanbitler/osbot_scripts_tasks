@@ -116,6 +116,7 @@ public class ClickOnWidgetTask extends TaskSkeleton implements Task {
 		}
 		if (getApi().getCombat().isFighting() || getApi().myPlayer().isUnderAttack()) {
 			getApi().log("Being attacked while doing some sheep actions, walking around!");
+			DatabaseUtilities.insertLoggingMessage(getApi(), quest.getEvent(), "WEB_WALKING", "CLICK ON WIDGET TASK");
 			getApi().getWalking()
 					.webWalk(new Area(new int[][] { { 3218, 3220 }, { 3222, 3221 }, { 3222, 3215 }, { 3218, 3215 } }));
 			getApi().getWalking()

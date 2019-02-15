@@ -5,9 +5,10 @@ import java.util.Optional;
 
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.model.GroundItem;
-import org.osbot.rs07.api.model.RS2Object;
 import org.osbot.rs07.script.MethodProvider;
 
+import osbot_scripts.database.DatabaseUtilities;
+import osbot_scripts.qp7.progress.QuestStep;
 import osbot_scripts.task.AreaInterface;
 import osbot_scripts.task.Task;
 import osbot_scripts.task.TaskSkeleton;
@@ -25,6 +26,8 @@ public class PickupItemTask extends TaskSkeleton implements Task, AreaInterface 
 
 	private boolean pickedUp;
 
+	private QuestStep step;
+
 	/**
 	 * 
 	 * @param scriptName
@@ -35,12 +38,13 @@ public class PickupItemTask extends TaskSkeleton implements Task, AreaInterface 
 	 * @param objectId
 	 */
 	public PickupItemTask(String scriptName, int questProgress, int questConfig, MethodProvider prov, Area area,
-			String waitForItemString) {
+			String waitForItemString, QuestStep step) {
 		setScriptName(scriptName);
 		setProv(prov);
 		setArea(area);
 		setCurrentQuestProgress(questProgress);
 		setWaitForItemString(waitForItemString);
+		this.step = step;
 	}
 
 	/**
@@ -53,13 +57,14 @@ public class PickupItemTask extends TaskSkeleton implements Task, AreaInterface 
 	 * @param objectId
 	 */
 	public PickupItemTask(String scriptName, int questProgress, int questConfig, MethodProvider prov, Area area,
-			String interactOption, String waitForItemString) {
+			String interactOption, String waitForItemString, QuestStep step) {
 		setScriptName(scriptName);
 		setProv(prov);
 		setArea(area);
 		setCurrentQuestProgress(questProgress);
 		setInteractOption(interactOption);
 		setWaitForItemString(waitForItemString);
+		this.step = step;
 	}
 
 	@Override
@@ -116,6 +121,8 @@ public class PickupItemTask extends TaskSkeleton implements Task, AreaInterface 
 		// obj.getName().equalsIgnoreCase(getWaitForItemString())).findFirst();
 		if (object != null) {
 			if (getArea() != null && !getArea().contains(getApi().myPlayer())) {
+				DatabaseUtilities.insertLoggingMessage(getApi(), step.getEvent(), "WEB_WALKING",
+						"PICKUP TASK:" + (getArea().getPositions()));
 				getApi().getWalking().webWalk(getArea());
 			}
 

@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.osbot.rs07.api.Bank.BankMode;
-import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.script.MethodProvider;
@@ -13,11 +12,11 @@ import org.osbot.rs07.script.Script;
 import org.osbot.rs07.utility.ConditionalSleep;
 
 import osbot_scripts.bot.utils.BotCommands;
-import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.events.LoginEvent;
 import osbot_scripts.framework.parts.BankItem;
 import osbot_scripts.qp7.progress.DoricsQuestConfig;
 import osbot_scripts.qp7.progress.QuestStep;
+import osbot_scripts.qp7.progress.WalkToGrandExchangeIfNotThere;
 import osbot_scripts.task.Task;
 import osbot_scripts.task.TaskSkeleton;
 import osbot_scripts.util.Sleep;
@@ -156,20 +155,7 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 
 	private void walkToGrandExchangeIfNotThere() {
 		// If the player is not in the grand exchange area, then walk to it
-		if (getApi().myPlayer() != null
-				&& !new Area(new int[][] { { 3144, 3508 }, { 3144, 3471 }, { 3183, 3470 }, { 3182, 3509 } })
-						.contains(getApi().myPlayer())) {
-
-			// Contains in banking area varrock
-			if (new Area(new int[][] { { 3180, 3438 }, { 3180, 3433 }, { 3186, 3433 }, { 3186, 3438 } })
-					.contains(getApi().myPlayer())) {
-				getApi().getWalking().walkPath(GE_PATH);
-			} else {
-				getApi().getWalking().webWalk(
-						new Area(new int[][] { { 3160, 3494 }, { 3168, 3494 }, { 3168, 3485 }, { 3160, 3485 } }));
-				getApi().log("The player has a grand exchange task but isn't there, walking to there");
-			}
-		}
+		WalkToGrandExchangeIfNotThere.walk(getApi(), login);
 	}
 
 	/**
@@ -531,7 +517,7 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 
 	private int takeItemsToBuyAndSell(boolean editPriceWhenTooMuchDifference) {
 		int totalValue = 0;
-		
+
 		for (BankItem sell : itemsToSell) {
 			if (sell.isCompletedTask() || (getApi().getBank().getAmount(sell.getItemId()) <= 0
 					&& getApi().getInventory().getAmount(sell.getItemId()) <= 0) || sell.getItemId() < 0) {
@@ -573,7 +559,7 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 				getApi().log("Set to: " + itemsOfThisInBank + " of item: " + sell.getName()
 						+ " because didnt have this amount");
 			}
-			
+
 			// When the item contains both in the sell and buy list, substract sell from buy
 			// inSellAndBuyTask();
 
@@ -596,8 +582,8 @@ public class GrandExchangeTask extends TaskSkeleton implements Task {
 
 				withdrawnSuccess = getApi().getInventory().getAmount(sell.getName()) >= sell.getAmount();
 			}
-			
-			//Adding total value to be sure that it can buy the item
+
+			// Adding total value to be sure that it can buy the item
 			totalValue += (gePrice * sell.getAmount()) * 0.9;
 
 			getApi().log("Withdrawn item: " + (sell.getName()) + " items successfully!");

@@ -79,7 +79,7 @@ public class SheepShearerConfiguration extends QuestStep {
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("walk to quest guide", 0, QUEST_CONFIG, getBot().getMethods(), PATH_TO_QUEST_START,
-						PATH_TO_QUEST_START_AREA, getScript(), getEvent(), true, false));
+						PATH_TO_QUEST_START_AREA, getScript(), getEvent(), true, false, this));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new DialogueTask("talk with fred", 0, QUEST_CONFIG, getBot().getMethods(), PATH_TO_QUEST_START_AREA,
@@ -87,11 +87,11 @@ public class SheepShearerConfiguration extends QuestStep {
 								"I'm something of an expert actually!" }));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new PickupItemTask("pickup shears", 1,
-				QUEST_CONFIG, getBot().getMethods(), PATH_TO_QUEST_START_AREA, "Take", "Shears"));
+				QUEST_CONFIG, getBot().getMethods(), PATH_TO_QUEST_START_AREA, "Take", "Shears", this));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("walk to sheeps", 1, QUEST_CONFIG, getBot().getMethods(), PATH_TO_SHEEPS,
-						PATH_TO_SHEEPS_AREA, getScript(), getEvent(), true, false));
+						PATH_TO_SHEEPS_AREA, getScript(), getEvent(), true, false, this));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new DropItemTask("drop items", 1, QUEST_CONFIG, getBot().getMethods(), "Drop",
@@ -101,12 +101,11 @@ public class SheepShearerConfiguration extends QuestStep {
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new ClickOnNpcTask("getting whool", 1, QUEST_CONFIG, getBot().getMethods(), "Shear",
-						new int[] { 2801, 2795, 2800, 2794, 2796, 2802 }, "Wool", 20, PATH_TO_SHEEPS_AREA));
+						new int[] { 2801, 2795, 2800, 2794, 2796, 2802 }, "Wool", 20, PATH_TO_SHEEPS_AREA, this));
 
-		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-				new WalkTask("walk to spinning wheel", 1, QUEST_CONFIG, getBot().getMethods(),
-						PATH_TO_LUMRBDIGE_CASTLE_FLOOR_ONE_SPINNING,
-						PATH_TO_LUMBRIDGE_CASTLE_AREA_FLOOR_ONE_SPINNING_AREA, getScript(), getEvent(), true, false));
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new WalkTask("walk to spinning wheel", 1,
+				QUEST_CONFIG, getBot().getMethods(), PATH_TO_LUMRBDIGE_CASTLE_FLOOR_ONE_SPINNING,
+				PATH_TO_LUMBRIDGE_CASTLE_AREA_FLOOR_ONE_SPINNING_AREA, getScript(), getEvent(), true, false, this));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new ClickObjectTask("click spinning wheel",
 				1, QUEST_CONFIG, getBot().getMethods(), PATH_TO_LUMBRIDGE_CASTLE_AREA_FLOOR_ONE_SPINNING_AREA, 14889));
@@ -124,7 +123,7 @@ public class SheepShearerConfiguration extends QuestStep {
 								new Position(3213, 3273, 0), new Position(3213, 3279, 0), new Position(3203, 3280, 0),
 								new Position(3193, 3281, 0), new Position(3188, 3282, 0), new Position(3189, 3272, 0),
 								new Position(3189, 3272, 0))),
-						PATH_TO_QUEST_START_AREA, getScript(), getEvent(), true, false));
+						PATH_TO_QUEST_START_AREA, getScript(), getEvent(), true, false, this));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new DialogueTask("talk with fred quest end",
 				1, QUEST_CONFIG, getBot().getMethods(), PATH_TO_QUEST_START_AREA, 732, 21, new String[] { "" }));

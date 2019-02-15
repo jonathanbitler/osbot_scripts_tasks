@@ -43,7 +43,7 @@ public class ClayMiningWestOfVarrock implements MiningLocationTemplate {
 				new Position(3182, 3377, 0), new Position(3182, 3376, 0), new Position(3182, 3375, 0),
 				new Position(3183, 3374, 0), new Position(3183, 3373, 0), new Position(3183, 3372, 0),
 				new Position(3182, 3372, 0), new Position(3181, 3371, 0), new Position(3180, 3371, 0),
-				new Position(3180, 3370, 0), new Position(3180, 3369, 0)));
+				new Position(3180, 3370, 0), new Position(3180, 3369, 0), new Position(3179, 3369, 0)));
 		// pos[1] = new ArrayList<Position>(
 		// Arrays.asList(new Position(3182, 3436, 0), new Position(3184, 3429, 0), new
 		// Position(3174, 3429, 0),
@@ -105,8 +105,7 @@ public class ClayMiningWestOfVarrock implements MiningLocationTemplate {
 
 	@Override
 	public Area getAreaOfMiningLocation() {
-		return new Area(new int[][] { { 3179, 3379 }, { 3170, 3366 }, { 3175, 3363 }, { 3180, 3365 }, { 3184, 3373 },
-				{ 3186, 3380 }, { 3182, 3381 } });
+		return new Area(new int[][] { { 3179, 3375 }, { 3176, 3370 }, { 3182, 3368 }, { 3185, 3373 } });
 	}
 
 	@Override
@@ -141,7 +140,8 @@ public class ClayMiningWestOfVarrock implements MiningLocationTemplate {
 				new Position(3174, 3425, 0), new Position(3175, 3425, 0), new Position(3176, 3426, 0),
 				new Position(3177, 3427, 0), new Position(3178, 3428, 0), new Position(3179, 3429, 0),
 				new Position(3180, 3430, 0), new Position(3181, 3431, 0), new Position(3182, 3432, 0),
-				new Position(3182, 3433, 0), new Position(3182, 3434, 0), new Position(3182, 3435, 0)));
+				new Position(3182, 3433, 0), new Position(3182, 3434, 0), new Position(3182, 3435, 0),
+				new Position(3182, 3436, 0), new Position(3183, 3436, 0)));
 		// pos[1] = new ArrayList<Position>(Arrays.asList(new Position(3183, 3370, 0),
 		// new Position(3180, 3380, 0),
 		// new Position(3178, 3387, 0), new Position(3176, 3395, 0), new Position(3169,

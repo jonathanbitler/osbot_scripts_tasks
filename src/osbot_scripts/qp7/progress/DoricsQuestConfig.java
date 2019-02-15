@@ -161,7 +161,7 @@ public class DoricsQuestConfig extends QuestStep {
 				new WalkTask("walk to varrock west bank", 0, QUEST_CONFIG, getBot().getMethods(),
 						BANK_POSITION_VARROCK_EAST,
 						new Area(new int[][] { { 3180, 3441 }, { 3186, 3441 }, { 3186, 3433 }, { 3180, 3433 } }),
-						getScript(), getEvent(), true, false));
+						getScript(), getEvent(), true, false, this));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new BankTask("withdraw pickaxe", 0,
 				getBot().getMethods(), true, new BankItem[] { new BankItem("pickaxe", 1, false) },
@@ -171,11 +171,11 @@ public class DoricsQuestConfig extends QuestStep {
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("walk to mining area", 0, QUEST_CONFIG, getBot().getMethods(), BANK_PATH_TO_MINING_AREA,
-						BANK_VARROCK_EAST_AREA, MINING_AREA, getScript(), getEvent(), false, true));
+						BANK_VARROCK_EAST_AREA, MINING_AREA, getScript(), getEvent(), false, true, this));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("walk to mining spot", 0, QUEST_CONFIG, getBot().getMethods(), MINING_POSITION,
-						MINING_AREA, getScript(), getEvent(), false, true));
+						MINING_AREA, getScript(), getEvent(), false, true, this));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new ClickObjectTask("click mining", 0, QUEST_CONFIG, getBot().getMethods(),
@@ -186,7 +186,7 @@ public class DoricsQuestConfig extends QuestStep {
 				new WalkTask("walk to varrock west bank", 0, QUEST_CONFIG, getBot().getMethods(),
 						BANK_POSITION_VARROCK_EAST,
 						new Area(new int[][] { { 3180, 3441 }, { 3186, 3441 }, { 3186, 3433 }, { 3180, 3433 } }),
-						getScript(), getEvent(), true, false));
+						getScript(), getEvent(), true, false, this));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new BankTask("withdraw pickaxe", 0,
 				getBot().getMethods(), true, new BankItem[] { new BankItem("pickaxe", 1, false) },
@@ -214,7 +214,7 @@ public class DoricsQuestConfig extends QuestStep {
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("walk to dorics quest with items", 0, QUEST_CONFIG, getBot().getMethods(),
-						DORIC_QUEST_START, DORIC_QUEST_START_AREA, getScript(), getEvent(), true, false));
+						DORIC_QUEST_START, DORIC_QUEST_START_AREA, getScript(), getEvent(), true, false, this));
 
 		// TODO wrong npc id and dialogue & dialogue step after talk
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),

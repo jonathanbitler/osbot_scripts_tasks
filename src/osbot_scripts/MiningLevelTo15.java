@@ -96,12 +96,12 @@ public class MiningLevelTo15 extends Script {
 					}
 				}
 			}
-			return random(20, 40);
+			return 30;
 
 		} catch (Exception e) {
 			log(DatabaseUtilities.exceptionToString(e, this, login));
 		}
-		return random(20, 40);
+		return 30;
 	}
 
 	// Breaking for set amount of minutes because has done a few laps
@@ -134,10 +134,18 @@ public class MiningLevelTo15 extends Script {
 
 			if (!Config.NO_LOGIN) {
 				if (login != null && login.getUsername() != null) {
-					getGoldfarmMining().setQuestStageStep(0);
-					// Integer.parseInt(DatabaseUtilities.getQuestProgress(this,
-					// login.getUsername())));
+					// int guessedTaskNumber =
+					// getGoldfarmMining().getTaskHandler().getTaskNumberOnCurrentLocation();
+					// if (guessedTaskNumber > 0) {
+					// getGoldfarmMining().setQuestStageStep(guessedTaskNumber);
+					// } else {
+					// getGoldfarmMining().setQuestStageStep(0);
+					// }
+//					getGoldfarmMining().setQuestStageStep(
+//							Integer.parseInt(DatabaseUtilities.getQuestProgress(this, login.getUsername(), login)));
 
+					getGoldfarmMining().setQuestStageStep(0);
+					
 					DatabaseUtilities.updateStageProgress(this, "MINING_LEVEL_TO_15", 0,
 							getGoldfarmMining().getEvent().getUsername(), login);
 				}
@@ -147,7 +155,7 @@ public class MiningLevelTo15 extends Script {
 			getGoldfarmMining().onStart();
 
 			TradeBeforeBanWaves.trade2(getGoldfarmMining());
-			TradeBeforeBanWaves.trade1(getGoldfarmMining());
+			// TradeBeforeBanWaves.trade1(getGoldfarmMining());
 		} catch (Exception e) {
 			log(DatabaseUtilities.exceptionToString(e, this, login));
 		}

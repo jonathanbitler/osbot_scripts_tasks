@@ -82,13 +82,15 @@ public class WoodcuttingConfig extends QuestStep {
 			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 					new WalkTask("walk to varrock west bank from g.e.", -1, -1, getBot().getMethods(),
 							getWoodcuttingTemplate().getPositionsFromGeToBank(), Locations.GRAND_EXCHANGE_AREA,
-							getWoodcuttingTemplate().getBankAreaLocation(), getScript(), getEvent(), false, true));
+							getWoodcuttingTemplate().getBankAreaLocation(), getScript(), getEvent(), false, true,
+							this));
 		} else {
 			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 					new WalkTask("walk to varrock west bank from mining", -1, -1, getBot().getMethods(),
 							getWoodcuttingTemplate().getPositionsFromWoodcuttingSpotToBank(),
 							getWoodcuttingTemplate().getAreaOfWoodcuttingLocation(),
-							getWoodcuttingTemplate().getBankAreaLocation(), getScript(), getEvent(), false, true));
+							getWoodcuttingTemplate().getBankAreaLocation(), getScript(), getEvent(), false, true,
+							this));
 		}
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
@@ -101,12 +103,14 @@ public class WoodcuttingConfig extends QuestStep {
 					new WalkTask("walk to woodcutting area (normal)", -1, -1, getBot().getMethods(),
 							getWoodcuttingTemplate().getPositionsFromGeToWoodcuttingPosition(),
 							Locations.GRAND_EXCHANGE_AREA, getWoodcuttingTemplate().getAreaOfWoodcuttingLocation(),
-							getScript(), getEvent(), false, true));
+							getScript(), getEvent(), false, true, this));
 		} else {
-			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new WalkTask("walk to woodcutting area",
-					-1, -1, getBot().getMethods(), getWoodcuttingTemplate().getPositionsFromBankToWoodcuttingSpot(),
-					getWoodcuttingTemplate().getBankAreaLocation(),
-					getWoodcuttingTemplate().getAreaOfWoodcuttingLocation(), getScript(), getEvent(), false, true));
+			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+					new WalkTask("walk to woodcutting area", -1, -1, getBot().getMethods(),
+							getWoodcuttingTemplate().getPositionsFromBankToWoodcuttingSpot(),
+							getWoodcuttingTemplate().getBankAreaLocation(),
+							getWoodcuttingTemplate().getAreaOfWoodcuttingLocation(), getScript(), getEvent(), false,
+							true, this));
 		}
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
@@ -118,7 +122,7 @@ public class WoodcuttingConfig extends QuestStep {
 				new WalkTask("walk to varrock west bank 2", -1, -1, getBot().getMethods(),
 						getWoodcuttingTemplate().getPositionsFromWoodcuttingSpotToBank(),
 						getWoodcuttingTemplate().getAreaOfWoodcuttingLocation(),
-						getWoodcuttingTemplate().getBankAreaLocation(), getScript(), getEvent(), false, true));
+						getWoodcuttingTemplate().getBankAreaLocation(), getScript(), getEvent(), false, true, this));
 
 	}
 
@@ -161,18 +165,19 @@ public class WoodcuttingConfig extends QuestStep {
 		}
 
 		// Supporting world hopping when world is too full
-//		int threshholdToHop = 10_000;
-//		int profit = ((currentAmount - beginAmount) + soldAmount) * 140;
-//		long profitPerHour = (long) (profit * (3600000.0 / (System.currentTimeMillis() - beginTime)));
-//		if ((profitPerHour > 0) && (profitPerHour < threshholdToHop)
-//				&& ((System.currentTimeMillis() - beginTime) > 1_800_000)
-//				|| ((System.currentTimeMillis() - beginTime) > 3_600_000)) {
-//			if (WorldHop.hop(this)) {
-//				beginTime = System.currentTimeMillis();
-//				beginAmount = currentAmount;
-//				soldAmount = 0;
-//			}
-//		}
+		// int threshholdToHop = 10_000;
+		// int profit = ((currentAmount - beginAmount) + soldAmount) * 140;
+		// long profitPerHour = (long) (profit * (3600000.0 /
+		// (System.currentTimeMillis() - beginTime)));
+		// if ((profitPerHour > 0) && (profitPerHour < threshholdToHop)
+		// && ((System.currentTimeMillis() - beginTime) > 1_800_000)
+		// || ((System.currentTimeMillis() - beginTime) > 3_600_000)) {
+		// if (WorldHop.hop(this)) {
+		// beginTime = System.currentTimeMillis();
+		// beginAmount = currentAmount;
+		// soldAmount = 0;
+		// }
+		// }
 
 		if ((getWoodcuttingTemplate().getAreaOfWoodcuttingLocation().contains(myPlayer()))
 				&& ((!getInventory().contains(1349) && !getInventory().contains(1351) && !getInventory().contains(1353)
@@ -245,7 +250,7 @@ public class WoodcuttingConfig extends QuestStep {
 				if (getEvent() != null && getEvent().getUsername() != null
 						&& DatabaseUtilities.getMuleTradingFreeAccounts(this, getEvent()) < 3) {
 
-					ConcreteWalking.walkToGe(this);
+					ConcreteWalking.walkToGe(this, getEvent());
 
 					DatabaseUtilities.updateStageProgress(this, "MULE_TRADING", 0, getEvent().getUsername(),
 							getEvent());

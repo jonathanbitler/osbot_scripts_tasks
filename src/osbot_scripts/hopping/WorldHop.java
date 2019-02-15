@@ -21,7 +21,7 @@ public class WorldHop {
 	 *            the amount of players needed to perform a hop
 	 * @return true if the player count meets the limit
 	 */
-	private static boolean shouldWeHop(MethodProvider api, Area area, int playerLim) {
+	public static boolean shouldWeHop(MethodProvider api, Area area, int playerLim) {
 		int playersInArea = 0;
 		List<Player> nearbyPlayers = api.players.getAll();
 
@@ -33,6 +33,19 @@ public class WorldHop {
 			}
 		}
 		return playersInArea >= playerLim;
+	}
+
+	public static boolean hopClick(MethodProvider api) {
+		api.getWorlds().hopToF2PWorld();
+
+		try {
+			Thread.sleep(20_000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		api.log("Sleeping 20 seconds to ensure everything initialized");
+		return true;
 	}
 
 	public static boolean hop(MethodProvider api, int personAmount, int radius) {

@@ -117,8 +117,9 @@ public class CookingsAssistant extends QuestStep {
 
 	@Override
 	public void onStart() {
-		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new WalkTask("walk to cook", 0,
-				QUEST_CONFIG, getBot().getMethods(), PATH_TO_COOK, COOKS_AREA, getScript(), getEvent(), true, false));
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+				new WalkTask("walk to cook", 0, QUEST_CONFIG, getBot().getMethods(), PATH_TO_COOK, COOKS_AREA,
+						getScript(), getEvent(), true, false, this));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new DialogueTask("talk with cook", 0, QUEST_CONFIG, getBot().getMethods(), COOKS_AREA, 4626, 1,
@@ -127,21 +128,21 @@ public class CookingsAssistant extends QuestStep {
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("walk cow milking", 1, QUEST_CONFIG, getBot().getMethods(), PATH_TO_MILKING_COW,
-						MILKING_AREA, getScript(), getEvent(), true, false));
+						MILKING_AREA, getScript(), getEvent(), true, false, this));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new ClickObjectTask("fill bucket", 1,
 				QUEST_CONFIG, getBot().getMethods(), MILKING_AREA, 8689, "Milk", "Bucket of milk"));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("walk to chickens", 1, QUEST_CONFIG, getBot().getMethods(), PATH_TO_CHICKENS,
-						CHICKENS_AREA, getScript(), getEvent(), true, false));
+						CHICKENS_AREA, getScript(), getEvent(), true, false, this));
 
-		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
-				new PickupItemTask("pickup egg", 1, QUEST_CONFIG, getBot().getMethods(), CHICKENS_AREA, "Take", "Egg"));
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new PickupItemTask("pickup egg", 1,
+				QUEST_CONFIG, getBot().getMethods(), CHICKENS_AREA, "Take", "Egg", this));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("path to wheat field", 1, QUEST_CONFIG, getBot().getMethods(), PATH_TO_WHEAT_FIELD,
-						WHEAT_AREA, getScript(), getEvent(), true, false));
+						WHEAT_AREA, getScript(), getEvent(), true, false, this));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new ClickObjectTask("take wheat", 1,
 				QUEST_CONFIG, getBot().getMethods(), WHEAT_AREA, 15506, "Pick", "Grain"));
@@ -149,7 +150,7 @@ public class CookingsAssistant extends QuestStep {
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("path to wind mill", 1, QUEST_CONFIG, getBot().getMethods(),
 						new ArrayList<Position>(Arrays.asList(new Position(3165, 3308, 2))), WHEAT_FLOOR_2, getScript(),
-						getEvent(), true, false));
+						getEvent(), true, false, this));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new ItemOnObjectTask("grain on machine", 1, QUEST_CONFIG, getBot().getMethods(), FLOWER_AREA, 24961,
@@ -163,14 +164,14 @@ public class CookingsAssistant extends QuestStep {
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("path down", 1, QUEST_CONFIG, getBot().getMethods(),
 						new ArrayList<Position>(Arrays.asList(new Position(3167, 3305, 0))), WHEAT_FLOOR_2, FLOOR_ZERO,
-						getScript(), getEvent(), true, false));
+						getScript(), getEvent(), true, false, this));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new ClickObjectTask("get flour to pot", 1,
 				QUEST_CONFIG, getBot().getMethods(), WHEAT_FLOOR_0, 1781, "Pot of flour"));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("path to cook from mill", 1, QUEST_CONFIG, getBot().getMethods(), PATH_TO_COOK_FROM_MILL,
-						WHEAT_FLOOR_0, COOKS_AREA, getScript(), getEvent(), true, false));
+						WHEAT_FLOOR_0, COOKS_AREA, getScript(), getEvent(), true, false, this));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new DialogueTask("talk with cook final", 1,
 				QUEST_CONFIG, getBot().getMethods(), COOKS_AREA, 4626, 2, new String[] { "" }));
@@ -204,8 +205,8 @@ public class CookingsAssistant extends QuestStep {
 				{ 3241, 3288 }, { 3240, 3287 }, { 3240, 3285 }, { 3244, 3281 }, { 3244, 3280 }, { 3246, 3278 },
 				{ 3249, 3278 }, { 3251, 3276 }, { 3251, 3274 }, { 3253, 3272 }, { 3253, 3271 } }).contains(myPlayer())
 				&& isClickTask && tasks.getTaskAttempts() > 20) {
-			DatabaseUtilities.updateAccountStatusInDatabase(tasks.getProvider(), "MANUAL_REVIEW", getEvent().getUsername(),
-					tasks.getEvent());
+			DatabaseUtilities.updateAccountStatusInDatabase(tasks.getProvider(), "MANUAL_REVIEW",
+					getEvent().getUsername(), tasks.getEvent());
 			BotCommands.waitBeforeKill(tasks.getProvider(), "BECAUSE OF ACCOUNT IS STUCK");
 		}
 	}

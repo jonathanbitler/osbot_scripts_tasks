@@ -10,6 +10,7 @@ import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.api.ui.Tab;
 
 import osbot_scripts.TutorialScript;
+import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.framework.TabWid;
 import osbot_scripts.framework.Tabs;
 import osbot_scripts.sections.total.progress.MainState;
@@ -34,7 +35,7 @@ public class BankGuideSection extends TutorialSection {
 	public void onLoop() throws InterruptedException {
 		// TODO Auto-generated method stub
 		log(getProgress());
-		
+
 		if (pendingContinue()) {
 			selectContinue();
 			return;
@@ -55,6 +56,7 @@ public class BankGuideSection extends TutorialSection {
 					getDoorHandler().handleNextObstacle(BANK_AREA);
 				} else {
 					getWalking().webWalk(BANK_AREA);
+					DatabaseUtilities.insertLoggingMessage(this, login, "WEB_WALKING", "BANK GUIDE SECTION");
 				}
 			} else if (pendingContinue()) {
 				selectContinue();
@@ -71,9 +73,10 @@ public class BankGuideSection extends TutorialSection {
 					getDoorHandler().handleNextObstacle(BANK_AREA);
 				} else {
 					getWalking().webWalk(BANK_AREA);
+					DatabaseUtilities.insertLoggingMessage(this, login, "WEB_WALKING", "BANK GUIDE SECTION 2");
 				}
 			}
-			
+
 			if (pendingContinue()) {
 				selectContinue();
 				RS2Widget pollWidget = getWidgets().get(345, 2, 11);
@@ -100,7 +103,7 @@ public class BankGuideSection extends TutorialSection {
 		case 531:
 			isInInstrucorRoom();
 			Tabs.openTab(this, TabWid.ACCOUNT_MANAGER);
-//			getTabs().open(Tab.ACCOUNT_MANAGEMENT);
+			// getTabs().open(Tab.ACCOUNT_MANAGEMENT);
 			break;
 
 		case 532:

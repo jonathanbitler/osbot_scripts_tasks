@@ -6,6 +6,7 @@ import org.osbot.rs07.api.model.RS2Object;
 import org.osbot.rs07.api.ui.Tab;
 
 import osbot_scripts.TutorialScript;
+import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.framework.TabWid;
 import osbot_scripts.framework.Tabs;
 import osbot_scripts.sections.decide.CheckInWhatArea;
@@ -62,6 +63,7 @@ public class QuestGuideSection extends TutorialSection {
 			break;
 
 		case 510:
+			DatabaseUtilities.insertLoggingMessage(this, login, "WEB_WALKING", "QUEST GUIDE SECTION");
 			getWalking()
 					.webWalk(new Area(new int[][] { { 3119, 3124 }, { 3119, 3119 }, { 3125, 3119 }, { 3125, 3124 } }));
 			if (new Area(new int[][] { { 3119, 3124 }, { 3119, 3119 }, { 3125, 3119 }, { 3125, 3124 } })

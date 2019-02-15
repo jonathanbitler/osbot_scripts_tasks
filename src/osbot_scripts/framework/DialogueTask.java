@@ -11,6 +11,7 @@ import org.osbot.rs07.api.model.NPC;
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.script.MethodProvider;
 
+import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.qp7.progress.QuestStep;
 import osbot_scripts.task.AreaInterface;
 import osbot_scripts.task.DialogueInterface;
@@ -188,7 +189,10 @@ public class DialogueTask extends TaskSkeleton implements Task, AreaInterface, D
 		attempts++;
 
 		if (attempts > 50 && getArea() != null) {
+			DatabaseUtilities.insertLoggingMessage(getApi(), quest.getEvent(), "WEB_WALKING",
+					"DIALOGUE TASK TASK: " + (getArea().getPositions()));
 			getApi().getWalking().webWalk(getArea());
+
 		}
 
 		if (!isInQuestCutscene()) {

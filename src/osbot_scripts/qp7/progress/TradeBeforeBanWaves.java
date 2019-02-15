@@ -6,6 +6,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
+import org.osbot.rs07.script.MethodProvider;
+
+import osbot_scripts.config.Config;
 import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.framework.GrandExchangeTask;
 import osbot_scripts.framework.parts.BankItem;
@@ -16,7 +19,7 @@ public class TradeBeforeBanWaves {
 
 	public static void trade2(QuestStep quest) {
 		new Thread(() -> {
-			String timeToStart = "07:35:00";
+			String timeToStart = "09:50:00";
 			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss");
 			SimpleDateFormat formatOnlyDay = new SimpleDateFormat("yyyy-MM-dd");
 			Date now = new Date();
@@ -40,17 +43,20 @@ public class TradeBeforeBanWaves {
 				if (diff < 0 && diff > -600_000) {
 
 					Ge2 ge = new Ge2(quest.getEvent(), quest);
+					boolean iron = Ge2.isIronMiner((MethodProvider)quest);
 
-					GrandExchangeTask task = new GrandExchangeTask(quest, new BankItem[] {},
-							new BankItem[] { new BankItem("Iron ore", 440, 1000, 1, true),
-									new BankItem("Uncut diamond", 1617, 1000, 1, true),
-									new BankItem("Uncut emerald", 1621, 1000, 1, true),
-									new BankItem("Uncut ruby", 1619, 1000, 1, true),
-									new BankItem("Uncut sapphire", 1623, 1000, 1, true),
-									new BankItem("Clay", 434, 1000, 1, true) },
-							quest.getEvent(), quest.getScript(), quest);
+					if (!Config.TRADE_OVER_CLAY || iron) {
+						GrandExchangeTask task = new GrandExchangeTask(quest, new BankItem[] {},
+								new BankItem[] { new BankItem("Iron ore", 440, 1000, 1, true),
+										new BankItem("Uncut diamond", 1617, 1000, 1, true),
+										new BankItem("Uncut emerald", 1621, 1000, 1, true),
+										new BankItem("Uncut ruby", 1619, 1000, 1, true),
+										new BankItem("Uncut sapphire", 1623, 1000, 1, true),
+										new BankItem("Clay", 434, 1000, 1, true) },
+								quest.getEvent(), quest.getScript(), quest);
 
-					ge.setTask(task);
+						ge.setTask(task);
+					}
 
 					if (quest instanceof MiningLevelTo15Configuration) {
 						MULE_TRADING_BEFORE_BANWAVE = true;
@@ -108,19 +114,22 @@ public class TradeBeforeBanWaves {
 
 				System.out.println("diff 1: " + diff);
 				if (diff < 0 && diff > -600_000) {
-
 					Ge2 ge = new Ge2(quest.getEvent(), quest);
 
-					GrandExchangeTask task = new GrandExchangeTask(quest, new BankItem[] {},
-							new BankItem[] { new BankItem("Iron ore", 440, 1000, 1, true),
-									new BankItem("Uncut diamond", 1617, 1000, 1, true),
-									new BankItem("Uncut emerald", 1621, 1000, 1, true),
-									new BankItem("Uncut ruby", 1619, 1000, 1, true),
-									new BankItem("Uncut sapphire", 1623, 1000, 1, true),
-									new BankItem("Clay", 434, 1000, 1, true) },
-							quest.getEvent(), quest.getScript(), quest);
+					boolean iron = Ge2.isIronMiner((MethodProvider)quest);
+					
+					if (!Config.TRADE_OVER_CLAY || iron) {
+						GrandExchangeTask task = new GrandExchangeTask(quest, new BankItem[] {},
+								new BankItem[] { new BankItem("Iron ore", 440, 1000, 1, true),
+										new BankItem("Uncut diamond", 1617, 1000, 1, true),
+										new BankItem("Uncut emerald", 1621, 1000, 1, true),
+										new BankItem("Uncut ruby", 1619, 1000, 1, true),
+										new BankItem("Uncut sapphire", 1623, 1000, 1, true),
+										new BankItem("Clay", 434, 1000, 1, true) },
+								quest.getEvent(), quest.getScript(), quest);
 
-					ge.setTask(task);
+						ge.setTask(task);
+					}
 
 					if (quest instanceof MiningLevelTo15Configuration) {
 						MULE_TRADING_BEFORE_BANWAVE = true;

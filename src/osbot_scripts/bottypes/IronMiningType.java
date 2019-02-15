@@ -9,9 +9,10 @@ public class IronMiningType extends BotDefaults implements BotType {
 	@Override
 	public AccountStage getNextTask(MethodProvider provider) {
 		// When quest cooks assistant isn't completed yet
-		if (provider.getConfigs().get(29) < 2) {
-			return AccountStage.QUEST_COOK_ASSISTANT;
-		}
+
+		// if (provider.getConfigs().get(29) < 2) {
+		// return AccountStage.QUEST_COOK_ASSISTANT;
+		// }
 		if (provider.getConfigs().get(179) < 21) {
 			return AccountStage.QUEST_SHEEP_SHEARER;
 		}
@@ -19,6 +20,10 @@ public class IronMiningType extends BotDefaults implements BotType {
 		if (provider.getConfigs().get(144) < 100) {
 			return AccountStage.QUEST_ROMEO_AND_JULIET;
 		}
+		if (provider.getQuests().getQuestPoints() < 7) {
+			return AccountStage.QUEST_DORICS_QUEST;
+		}
+
 		// Return woodcutting if all quests are done
 		return AccountStage.MINING_LEVEL_TO_15;
 

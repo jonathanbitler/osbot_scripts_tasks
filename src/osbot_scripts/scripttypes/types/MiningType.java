@@ -4,6 +4,7 @@ import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.model.GroundItem;
 
 import osbot_scripts.config.Config;
+import osbot_scripts.database.DatabaseUtilities;
 import osbot_scripts.qp7.progress.DoricsQuestConfig;
 import osbot_scripts.scripttypes.ScriptAbstract;
 import osbot_scripts.taskhandling.TaskHandler;
@@ -13,6 +14,7 @@ public class MiningType extends ScriptAbstract {
 	public boolean pickupBronzePickaxe() {
 		getQuest().resetStage(getQuest().getEvent().getScript());
 
+		DatabaseUtilities.insertLoggingMessage(getProvider(), getEvent(), "WEB_WALKING", "PICKUP PICKAXE 1 MININGTYPE");
 		getProvider().getWalking().webWalk(new Area(new int[][] { { 3228, 3226 }, { 3227, 3225 }, { 3227, 3220 },
 				{ 3231, 3220 }, { 3231, 3225 }, { 3230, 3226 }, { 3228, 3226 } }).setPlane(2));
 		GroundItem item = getProvider().getGroundItems().closest("Bronze pickaxe");
@@ -36,6 +38,7 @@ public class MiningType extends ScriptAbstract {
 	}
 
 	public void walkToMiningArea() {
+		DatabaseUtilities.insertLoggingMessage(getProvider(), getEvent(), "WEB_WALKING", "PICKUP PICKAXE 2 MININGTYPE");
 		getProvider().getWalking().webWalk(DoricsQuestConfig.MINING_AREA);
 		getProvider().getWalking().walkPath(DoricsQuestConfig.MINING_POSITION);
 	}

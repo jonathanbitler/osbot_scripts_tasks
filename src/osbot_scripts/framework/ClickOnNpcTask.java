@@ -4,6 +4,8 @@ import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.model.NPC;
 import org.osbot.rs07.script.MethodProvider;
 
+import osbot_scripts.database.DatabaseUtilities;
+import osbot_scripts.qp7.progress.QuestStep;
 import osbot_scripts.task.Task;
 import osbot_scripts.task.TaskSkeleton;
 import osbot_scripts.util.Sleep;
@@ -22,6 +24,8 @@ public class ClickOnNpcTask extends TaskSkeleton implements Task {
 
 	private Area area;
 
+	private QuestStep step;
+
 	/**
 	 * 
 	 * @param scriptName
@@ -32,7 +36,7 @@ public class ClickOnNpcTask extends TaskSkeleton implements Task {
 	 * @param objectId
 	 */
 	public ClickOnNpcTask(String scriptName, int questProgress, int questConfig, MethodProvider prov,
-			String interactOption, int[] npcIds, String waitForItem, int amount, Area withinArea) {
+			String interactOption, int[] npcIds, String waitForItem, int amount, Area withinArea, QuestStep step) {
 		setScriptName(scriptName);
 		setProv(prov);
 		setInteractOption(interactOption);
@@ -41,6 +45,7 @@ public class ClickOnNpcTask extends TaskSkeleton implements Task {
 		setWaitForItem(waitForItem);
 		setRequiredAmountTask(amount);
 		setArea(withinArea);
+		this.step = step;
 	}
 
 	@Override
@@ -79,6 +84,9 @@ public class ClickOnNpcTask extends TaskSkeleton implements Task {
 		if (getApi() != null && !getArea().contains(getApi().myPlayer())) {
 			getApi().log("wasn't in area.. walking to it!");
 			getApi().getWalking().webWalk(getArea());
+
+			DatabaseUtilities.insertLoggingMessage(getApi(), step.getEvent(), "WEB_WALKING",
+					"CLICK ON NPC TASK: " + (getArea().getPositions()));
 		}
 
 		NPC npc = getApi().getNpcs().closest(getNpcId());

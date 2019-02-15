@@ -59,11 +59,9 @@ public class Ge2 extends Script {
 		// new Thread(demo).start();
 		// }
 
-		if (!Config.TRADE_OVER_CLAY) {
-			if (getTask() == null) {
-				log("Trying to get a task...");
-				sideLoop();
-			}
+		if (getTask() == null) {
+			log("Trying to get a task...");
+			sideLoop();
 		}
 
 		tries++;
@@ -92,20 +90,7 @@ public class Ge2 extends Script {
 		}
 
 		// If the player is not in the grand exchange area, then walk to it
-		if (myPlayer() != null
-				&& !new Area(new int[][] { { 3144, 3508 }, { 3144, 3471 }, { 3183, 3470 }, { 3182, 3509 } })
-						.contains(myPlayer())) {
-
-			// Contains in banking area varrock
-			if (new Area(new int[][] { { 3180, 3438 }, { 3180, 3433 }, { 3186, 3433 }, { 3186, 3438 } })
-					.contains(myPlayer())) {
-				getWalking().walkPath(GE_PATH);
-			} else {
-				getWalking().webWalk(
-						new Area(new int[][] { { 3160, 3494 }, { 3168, 3494 }, { 3168, 3485 }, { 3160, 3485 } }));
-				log("The player has a grand exchange task but isn't there, walking to there");
-			}
-		}
+		WalkToGrandExchangeIfNotThere.walk(this, login);
 
 		log("task: " + getTask());
 		if (getTask() != null && !getTask().finished()) {
@@ -178,7 +163,7 @@ public class Ge2 extends Script {
 	public void sideLoop() throws InterruptedException {
 		log("Running the side loop..");
 
-		boolean iron = getSkills().getStatic(Skill.MINING) >= 15 && getQuests().getQuestPoints() >= 7;
+		boolean iron = Ge2.isIronMiner((MethodProvider) quest);
 
 		// Opening bank
 		openBank();
@@ -201,18 +186,22 @@ public class Ge2 extends Script {
 		openBank();
 
 		// When having more than 200 clay, then go to the g.e. and sell it
-		if (getBank().isOpen() && (getAmountOfItemInBankAndInventory("Iron ore") > 200
-				|| getAmountOfItemInBankAndInventory("Clay") > 200)) {
-			// int ironOreAmount = (int) (getAmountOfItemInBankAndInventory("Iron ore"));
-			// int clayAmount = (int) (getAmountOfItemInBankAndInventory("Clay"));
-			setTask(new GrandExchangeTask(this, new BankItem[] {}, new BankItem[] {
-					iron ? new BankItem("Iron ore", 440, 1000, 1, true) : new BankItem("null", -1, -1, -1, false),
-					new BankItem("Uncut diamond", 1617, 1000, 1, true),
-					new BankItem("Uncut emerald", 1621, 1000, 1, true), new BankItem("Uncut ruby", 1619, 1000, 1, true),
-					new BankItem("Uncut sapphire", 1623, 1000, 1, true), new BankItem("Clay", 434, 1000, 1, true) },
-					login, (Script) this, getQuest()));
-			return;
 
+		if (!Config.TRADE_OVER_CLAY || iron) {
+			if (getBank().isOpen() && (getAmountOfItemInBankAndInventory("Iron ore") > 200
+					|| getAmountOfItemInBankAndInventory("Clay") > 200)) {
+				// int ironOreAmount = (int) (getAmountOfItemInBankAndInventory("Iron ore"));
+				// int clayAmount = (int) (getAmountOfItemInBankAndInventory("Clay"));
+				setTask(new GrandExchangeTask(this, new BankItem[] {}, new BankItem[] {
+						iron ? new BankItem("Iron ore", 440, 1000, 1, true) : new BankItem("null", -1, -1, -1, false),
+						new BankItem("Uncut diamond", 1617, 1000, 1, true),
+						new BankItem("Uncut emerald", 1621, 1000, 1, true),
+						new BankItem("Uncut ruby", 1619, 1000, 1, true),
+						new BankItem("Uncut sapphire", 1623, 1000, 1, true), new BankItem("Clay", 434, 1000, 1, true) },
+						login, (Script) this, getQuest()));
+				return;
+
+			}
 		}
 
 		if (Config.doesntHaveAnyPickaxe(this)) {
@@ -227,7 +216,7 @@ public class Ge2 extends Script {
 								new BankItem("Uncut emerald", 1621, 1000, 1, true),
 								new BankItem("Uncut ruby", 1619, 1000, 1, true),
 								new BankItem("Uncut sapphire", 1623, 1000, 1, true),
-								new BankItem("Clay", 434, 1000, 1, true) },
+								new BankItem("Clay", 434, 15, 1, true) },
 						login, (Script) this, getQuest()));
 				return;
 
@@ -238,7 +227,7 @@ public class Ge2 extends Script {
 						new BankItem[] {
 								iron ? new BankItem("Iron ore", 440, 1000, 1, true)
 										: new BankItem("null", -1, -1, -1, false),
-								new BankItem("Clay", 434, 1000, 1, true),
+								new BankItem("Clay", 434, 70, 1, true),
 								new BankItem("Uncut diamond", 1617, 1000, 1, true),
 								new BankItem("Uncut emerald", 1621, 1000, 1, true),
 								new BankItem("Uncut ruby", 1619, 1000, 1, true),
@@ -253,7 +242,7 @@ public class Ge2 extends Script {
 						new BankItem[] {
 								iron ? new BankItem("Iron ore", 440, 1000, 1, true)
 										: new BankItem("null", -1, -1, -1, false),
-								new BankItem("Clay", 434, 1000, 1, true),
+								new BankItem("Clay", 434, 90, 1, true),
 								new BankItem("Uncut diamond", 1617, 1000, 1, true),
 								new BankItem("Uncut emerald", 1621, 1000, 1, true),
 								new BankItem("Uncut ruby", 1619, 1000, 1, true),
@@ -272,7 +261,7 @@ public class Ge2 extends Script {
 								new BankItem("Uncut emerald", 1621, 1000, 1, true),
 								new BankItem("Uncut ruby", 1619, 1000, 1, true),
 								new BankItem("Uncut sapphire", 1623, 1000, 1, true),
-								new BankItem("Clay", 434, 1000, 1, true) },
+								new BankItem("Clay", 434, 150, 1, true) },
 						login, (Script) this, getQuest()));
 				return;
 
@@ -287,7 +276,7 @@ public class Ge2 extends Script {
 								new BankItem("Uncut emerald", 1621, 1000, 1, true),
 								new BankItem("Uncut ruby", 1619, 1000, 1, true),
 								new BankItem("Uncut sapphire", 1623, 1000, 1, true),
-								new BankItem("Clay", 434, 1000, 1, true) },
+								new BankItem("Clay", 434, 250, 1, true) },
 						login, (Script) this, getQuest()));
 				return;
 
@@ -299,7 +288,7 @@ public class Ge2 extends Script {
 						new BankItem[] {
 								iron ? new BankItem("Iron ore", 440, 1000, 1, true)
 										: new BankItem("null", -1, -1, -1, false),
-								new BankItem("Clay", 434, 1000, 1, true),
+								new BankItem("Clay", 434, 700, 1, true),
 								new BankItem("Uncut diamond", 1617, 1000, 1, true),
 								new BankItem("Uncut emerald", 1621, 1000, 1, true),
 								new BankItem("Uncut ruby", 1619, 1000, 1, true),
@@ -332,7 +321,7 @@ public class Ge2 extends Script {
 							new BankItem("Uncut emerald", 1621, 1000, 1, true),
 							new BankItem("Uncut ruby", 1619, 1000, 1, true),
 							new BankItem("Uncut sapphire", 1623, 1000, 1, true),
-							new BankItem("Clay", 434, 1000, 1, true) },
+							new BankItem("Clay", 434, 15, 1, true) },
 					login, (Script) this, getQuest()));
 			return;
 
@@ -345,8 +334,7 @@ public class Ge2 extends Script {
 					new BankItem[] {
 							iron ? new BankItem("Iron ore", 440, 1000, 1, true)
 									: new BankItem("null", -1, -1, -1, false),
-							new BankItem("Clay", 434, 1000, 1, true),
-							new BankItem("Uncut diamond", 1617, 1000, 1, true),
+							new BankItem("Clay", 434, 70, 1, true), new BankItem("Uncut diamond", 1617, 1000, 1, true),
 							new BankItem("Uncut emerald", 1621, 1000, 1, true),
 							new BankItem("Uncut ruby", 1619, 1000, 1, true),
 							new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
@@ -362,8 +350,7 @@ public class Ge2 extends Script {
 					new BankItem[] {
 							iron ? new BankItem("Iron ore", 440, 1000, 1, true)
 									: new BankItem("null", -1, -1, -1, false),
-							new BankItem("Clay", 434, 1000, 1, true),
-							new BankItem("Uncut diamond", 1617, 1000, 1, true),
+							new BankItem("Clay", 434, 90, 1, true), new BankItem("Uncut diamond", 1617, 1000, 1, true),
 							new BankItem("Uncut emerald", 1621, 1000, 1, true),
 							new BankItem("Uncut ruby", 1619, 1000, 1, true),
 							new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
@@ -383,7 +370,7 @@ public class Ge2 extends Script {
 							new BankItem("Uncut emerald", 1621, 1000, 1, true),
 							new BankItem("Uncut ruby", 1619, 1000, 1, true),
 							new BankItem("Uncut sapphire", 1623, 1000, 1, true),
-							new BankItem("Clay", 434, 1000, 1, true) },
+							new BankItem("Clay", 434, 150, 1, true) },
 					login, (Script) this, getQuest()));
 			return;
 
@@ -400,7 +387,7 @@ public class Ge2 extends Script {
 							new BankItem("Uncut emerald", 1621, 1000, 1, true),
 							new BankItem("Uncut ruby", 1619, 1000, 1, true),
 							new BankItem("Uncut sapphire", 1623, 1000, 1, true),
-							new BankItem("Clay", 434, 1000, 1, true) },
+							new BankItem("Clay", 434, 250, 1, true) },
 					login, (Script) this, getQuest()));
 			return;
 
@@ -413,8 +400,7 @@ public class Ge2 extends Script {
 					new BankItem[] {
 							iron ? new BankItem("Iron ore", 440, 1000, 1, true)
 									: new BankItem("null", -1, -1, -1, false),
-							new BankItem("Clay", 434, 1000, 1, true),
-							new BankItem("Uncut diamond", 1617, 1000, 1, true),
+							new BankItem("Clay", 434, 700, 1, true), new BankItem("Uncut diamond", 1617, 1000, 1, true),
 							new BankItem("Uncut emerald", 1621, 1000, 1, true),
 							new BankItem("Uncut ruby", 1619, 1000, 1, true),
 							new BankItem("Uncut sapphire", 1623, 1000, 1, true), },
@@ -422,13 +408,20 @@ public class Ge2 extends Script {
 			return;
 		}
 
-		// int ironOreAmount = (int) (getAmountOfItemInBankAndInventory("Iron ore"));
-		// int clayAmount = (int) (getAmountOfItemInBankAndInventory("Clay"));
-		setTask(new GrandExchangeTask(this, new BankItem[] {}, new BankItem[] {
-				iron ? new BankItem("Iron ore", 440, 1000, 1, true) : new BankItem("null", -1, -1, -1, false),
-				new BankItem("Uncut diamond", 1617, 1000, 1, true), new BankItem("Uncut emerald", 1621, 1000, 1, true),
-				new BankItem("Uncut ruby", 1619, 1000, 1, true), new BankItem("Uncut sapphire", 1623, 1000, 1, true),
-				new BankItem("Clay", 434, 1000, 1, true) }, login, (Script) this, getQuest()));
+		if (!Config.TRADE_OVER_CLAY || iron) {
+			// int ironOreAmount = (int) (getAmountOfItemInBankAndInventory("Iron ore"));
+			// int clayAmount = (int) (getAmountOfItemInBankAndInventory("Clay"));
+			setTask(new GrandExchangeTask(this, new BankItem[] {}, new BankItem[] {
+					iron ? new BankItem("Iron ore", 440, 1000, 1, true) : new BankItem("null", -1, -1, -1, false),
+					new BankItem("Uncut diamond", 1617, 1000, 1, true),
+					new BankItem("Uncut emerald", 1621, 1000, 1, true), new BankItem("Uncut ruby", 1619, 1000, 1, true),
+					new BankItem("Uncut sapphire", 1623, 1000, 1, true), new BankItem("Clay", 434, 1000, 1, true) },
+					login, (Script) this, getQuest()));
+		}
+	}
+
+	public static boolean isIronMiner(MethodProvider api) {
+		return api.getSkills().getStatic(Skill.MINING) >= 15 && api.getQuests().getQuestPoints() >= 7;
 	}
 
 	public void setTask() throws InterruptedException {
@@ -444,10 +437,8 @@ public class Ge2 extends Script {
 		// log("Waiting for bank to open..");
 		// Thread.sleep(1000);
 		// }
-		if (!Config.TRADE_OVER_CLAY) {
-			if (getTask() == null) {
-				sideLoop();
-			}
+		if (getTask() == null) {
+			sideLoop();
 		}
 		// login = LoginHandler.login(this, getParameters());
 		// DatabaseUtilities.updateLoginStatus(this, login.getUsername(), "LOGGED_IN");

@@ -13,7 +13,7 @@ public class ClayMiningRimmington implements MiningLocationTemplate {
 
 	@Override
 	public Area getBankAreaLocation() {
-		return new Area(new int[][] { { 3009, 3358 }, { 3009, 3355 }, { 3019, 3355 }, { 3019, 3358 }, { 3009, 3358 } });
+		return new Area(new int[][] { { 3009, 3359 }, { 3019, 3359 }, { 3019, 3354 }, { 3009, 3354 }, { 3009, 3359 } });
 	}
 
 	@Override
@@ -74,7 +74,8 @@ public class ClayMiningRimmington implements MiningLocationTemplate {
 
 	@Override
 	public Area getAreaOfMiningLocation() {
-		return new Area(new int[][] { { 2984, 3243 }, { 2990, 3243 }, { 2990, 3237 }, { 2984, 3238 }, { 2984, 3243 } });
+		return new Area(new int[][] { { 2983, 3243 }, { 2990, 3243 }, { 2990, 3237 }, { 2985, 3238 }, { 2983, 3238 },
+				{ 2983, 3243 } });
 	}
 
 	@Override
@@ -86,50 +87,50 @@ public class ClayMiningRimmington implements MiningLocationTemplate {
 	@Override
 	public ArrayList<Position> getPositionsFromMiningSpotToBank() {
 		ArrayList<Position>[] pos = new ArrayList[1];
-		pos[0] = new ArrayList<Position>(Arrays.asList(new Position(2984, 3239, 0), new Position(2984, 3239, 0),
-				new Position(2984, 3240, 0), new Position(2984, 3241, 0), new Position(2984, 3242, 0),
-				new Position(2983, 3243, 0), new Position(2982, 3244, 0), new Position(2981, 3245, 0),
-				new Position(2981, 3246, 0), new Position(2981, 3247, 0), new Position(2981, 3248, 0),
-				new Position(2980, 3249, 0), new Position(2979, 3250, 0), new Position(2978, 3251, 0),
-				new Position(2978, 3252, 0), new Position(2979, 3253, 0), new Position(2980, 3254, 0),
-				new Position(2981, 3255, 0), new Position(2981, 3256, 0), new Position(2981, 3257, 0),
-				new Position(2981, 3258, 0), new Position(2981, 3259, 0), new Position(2982, 3260, 0),
-				new Position(2982, 3261, 0), new Position(2982, 3262, 0), new Position(2983, 3263, 0),
-				new Position(2984, 3263, 0), new Position(2985, 3264, 0), new Position(2986, 3265, 0),
-				new Position(2987, 3266, 0), new Position(2988, 3267, 0), new Position(2989, 3268, 0),
-				new Position(2989, 3269, 0), new Position(2990, 3270, 0), new Position(2991, 3271, 0),
-				new Position(2992, 3272, 0), new Position(2993, 3273, 0), new Position(2994, 3274, 0),
-				new Position(2995, 3275, 0), new Position(2996, 3276, 0), new Position(2997, 3277, 0),
-				new Position(2998, 3278, 0), new Position(2999, 3279, 0), new Position(3000, 3280, 0),
-				new Position(3001, 3281, 0), new Position(3001, 3282, 0), new Position(3002, 3283, 0),
-				new Position(3002, 3284, 0), new Position(3003, 3285, 0), new Position(3003, 3286, 0),
-				new Position(3003, 3287, 0), new Position(3003, 3288, 0), new Position(3003, 3289, 0),
-				new Position(3003, 3290, 0), new Position(3003, 3291, 0), new Position(3003, 3292, 0),
-				new Position(3003, 3293, 0), new Position(3003, 3294, 0), new Position(3004, 3295, 0),
-				new Position(3005, 3296, 0), new Position(3005, 3297, 0), new Position(3005, 3298, 0),
-				new Position(3005, 3299, 0), new Position(3005, 3300, 0), new Position(3005, 3301, 0),
-				new Position(3005, 3302, 0), new Position(3005, 3303, 0), new Position(3005, 3304, 0),
-				new Position(3005, 3305, 0), new Position(3005, 3306, 0), new Position(3005, 3307, 0),
-				new Position(3005, 3308, 0), new Position(3005, 3309, 0), new Position(3005, 3310, 0),
-				new Position(3005, 3311, 0), new Position(3005, 3312, 0), new Position(3005, 3313, 0),
-				new Position(3005, 3314, 0), new Position(3005, 3315, 0), new Position(3005, 3316, 0),
-				new Position(3005, 3317, 0), new Position(3005, 3318, 0), new Position(3005, 3319, 0),
-				new Position(3005, 3320, 0), new Position(3005, 3321, 0), new Position(3006, 3322, 0),
-				new Position(3006, 3323, 0), new Position(3006, 3324, 0), new Position(3006, 3325, 0),
-				new Position(3006, 3326, 0), new Position(3006, 3327, 0), new Position(3006, 3328, 0),
-				new Position(3006, 3329, 0), new Position(3006, 3330, 0), new Position(3006, 3331, 0),
-				new Position(3006, 3332, 0), new Position(3006, 3333, 0), new Position(3006, 3334, 0),
-				new Position(3006, 3335, 0), new Position(3006, 3336, 0), new Position(3006, 3337, 0),
-				new Position(3006, 3338, 0), new Position(3006, 3339, 0), new Position(3006, 3340, 0),
-				new Position(3006, 3341, 0), new Position(3006, 3342, 0), new Position(3006, 3343, 0),
-				new Position(3006, 3344, 0), new Position(3006, 3345, 0), new Position(3006, 3346, 0),
-				new Position(3006, 3347, 0), new Position(3006, 3348, 0), new Position(3006, 3349, 0),
-				new Position(3006, 3350, 0), new Position(3007, 3351, 0), new Position(3007, 3352, 0),
-				new Position(3007, 3353, 0), new Position(3007, 3354, 0), new Position(3007, 3355, 0),
-				new Position(3007, 3356, 0), new Position(3007, 3357, 0), new Position(3007, 3358, 0),
-				new Position(3008, 3359, 0), new Position(3009, 3359, 0), new Position(3010, 3359, 0),
-				new Position(3011, 3359, 0), new Position(3012, 3359, 0), new Position(3012, 3358, 0),
-				new Position(3012, 3357, 0), new Position(3013, 3356, 0)));
+		pos[0] = new ArrayList<Position>(
+				Arrays.asList(new Position(2985, 3240, 0), new Position(2985, 3240, 0), new Position(2985, 3241, 0),
+						new Position(2985, 3242, 0), new Position(2985, 3243, 0), new Position(2984, 3244, 0),
+						new Position(2983, 3245, 0), new Position(2982, 3246, 0), new Position(2982, 3247, 0),
+						new Position(2981, 3248, 0), new Position(2980, 3249, 0), new Position(2979, 3250, 0),
+						new Position(2978, 3251, 0), new Position(2978, 3252, 0), new Position(2979, 3253, 0),
+						new Position(2980, 3254, 0), new Position(2981, 3255, 0), new Position(2981, 3256, 0),
+						new Position(2981, 3257, 0), new Position(2981, 3258, 0), new Position(2981, 3259, 0),
+						new Position(2982, 3260, 0), new Position(2982, 3261, 0), new Position(2982, 3262, 0),
+						new Position(2983, 3263, 0), new Position(2984, 3263, 0), new Position(2985, 3264, 0),
+						new Position(2986, 3265, 0), new Position(2987, 3266, 0), new Position(2988, 3267, 0),
+						new Position(2989, 3268, 0), new Position(2989, 3269, 0), new Position(2990, 3270, 0),
+						new Position(2991, 3271, 0), new Position(2992, 3272, 0), new Position(2993, 3273, 0),
+						new Position(2994, 3274, 0), new Position(2995, 3275, 0), new Position(2996, 3276, 0),
+						new Position(2997, 3277, 0), new Position(2998, 3278, 0), new Position(2999, 3279, 0),
+						new Position(3000, 3280, 0), new Position(3001, 3281, 0), new Position(3001, 3282, 0),
+						new Position(3002, 3283, 0), new Position(3002, 3284, 0), new Position(3003, 3285, 0),
+						new Position(3003, 3286, 0), new Position(3003, 3287, 0), new Position(3003, 3288, 0),
+						new Position(3003, 3289, 0), new Position(3003, 3290, 0), new Position(3003, 3291, 0),
+						new Position(3003, 3292, 0), new Position(3003, 3293, 0), new Position(3003, 3294, 0),
+						new Position(3004, 3295, 0), new Position(3005, 3296, 0), new Position(3005, 3297, 0),
+						new Position(3005, 3298, 0), new Position(3005, 3299, 0), new Position(3005, 3300, 0),
+						new Position(3005, 3301, 0), new Position(3005, 3302, 0), new Position(3005, 3303, 0),
+						new Position(3005, 3304, 0), new Position(3005, 3305, 0), new Position(3005, 3306, 0),
+						new Position(3005, 3307, 0), new Position(3005, 3308, 0), new Position(3005, 3309, 0),
+						new Position(3005, 3310, 0), new Position(3005, 3311, 0), new Position(3005, 3312, 0),
+						new Position(3005, 3313, 0), new Position(3005, 3314, 0), new Position(3005, 3315, 0),
+						new Position(3005, 3316, 0), new Position(3005, 3317, 0), new Position(3005, 3318, 0),
+						new Position(3005, 3319, 0), new Position(3005, 3320, 0), new Position(3005, 3321, 0),
+						new Position(3006, 3322, 0), new Position(3006, 3323, 0), new Position(3006, 3324, 0),
+						new Position(3006, 3325, 0), new Position(3006, 3326, 0), new Position(3006, 3327, 0),
+						new Position(3006, 3328, 0), new Position(3006, 3329, 0), new Position(3006, 3330, 0),
+						new Position(3006, 3331, 0), new Position(3006, 3332, 0), new Position(3006, 3333, 0),
+						new Position(3006, 3334, 0), new Position(3006, 3335, 0), new Position(3006, 3336, 0),
+						new Position(3006, 3337, 0), new Position(3006, 3338, 0), new Position(3006, 3339, 0),
+						new Position(3006, 3340, 0), new Position(3006, 3341, 0), new Position(3006, 3342, 0),
+						new Position(3006, 3343, 0), new Position(3006, 3344, 0), new Position(3006, 3345, 0),
+						new Position(3006, 3346, 0), new Position(3006, 3347, 0), new Position(3006, 3348, 0),
+						new Position(3006, 3349, 0), new Position(3006, 3350, 0), new Position(3006, 3351, 0),
+						new Position(3006, 3352, 0), new Position(3006, 3353, 0), new Position(3006, 3354, 0),
+						new Position(3006, 3355, 0), new Position(3006, 3356, 0), new Position(3006, 3357, 0),
+						new Position(3007, 3358, 0), new Position(3008, 3359, 0), new Position(3009, 3359, 0),
+						new Position(3010, 3359, 0), new Position(3011, 3359, 0), new Position(3012, 3359, 0),
+						new Position(3012, 3358, 0), new Position(3012, 3357, 0), new Position(3012, 3356, 0)));
 
 		return new RandomLocation(pos).getRandomPosition();
 	}
@@ -233,8 +234,10 @@ public class ClayMiningRimmington implements MiningLocationTemplate {
 				new Position(3008, 3356, 0), new Position(3008, 3357, 0), new Position(3008, 3358, 0),
 				new Position(3008, 3359, 0), new Position(3009, 3359, 0), new Position(3010, 3359, 0),
 				new Position(3011, 3359, 0), new Position(3012, 3359, 0), new Position(3012, 3358, 0),
-				new Position(3012, 3357, 0), new Position(3012, 3356, 0), new Position(3013, 3355, 0)));
+				new Position(3012, 3357, 0), new Position(3012, 3356, 0), new Position(3013, 3355, 0),
+				new Position(3014, 3355, 0), new Position(3015, 3355, 0)));
 		return new RandomLocation(pos).getRandomPosition();
+
 	}
 
 	@Override

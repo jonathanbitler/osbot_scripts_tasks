@@ -72,8 +72,9 @@ public class RimmingTonIronConfig extends QuestStep {
 	public void onStart() {
 		if (beginTime == -1) {
 			beginTime = System.currentTimeMillis();
-			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new WalkTask("walk to falador bank", -1,
-					-1, getBot().getMethods(), BANK_POSITION, FALADOR_BANK_AREA, getScript(), getEvent(), true, false));//
+			getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+					new WalkTask("walk to falador bank", -1, -1, getBot().getMethods(), BANK_POSITION,
+							FALADOR_BANK_AREA, getScript(), getEvent(), true, false, this));//
 		}
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
@@ -82,10 +83,11 @@ public class RimmingTonIronConfig extends QuestStep {
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("walk to mining area", -1, -1, getBot().getMethods(), BANK_PATH_TO_MINING_AREA,
-						FALADOR_BANK_AREA, RIMMINGTON_MINING_AREA, getScript(), getEvent(), false, true));
+						FALADOR_BANK_AREA, RIMMINGTON_MINING_AREA, getScript(), getEvent(), false, true, this));
 
-		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(), new WalkTask("walk to mining spot", -1, -1,
-				getBot().getMethods(), MINING_POSITION, RIMMINGTON_MINING_AREA, getScript(), getEvent(), false, true));
+		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
+				new WalkTask("walk to mining spot", -1, -1, getBot().getMethods(), MINING_POSITION,
+						RIMMINGTON_MINING_AREA, getScript(), getEvent(), false, true, this));
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new ClickObjectTask("click mining", -1, -1, getBot().getMethods(), RIMMINGTON_MINING_AREA, 7488,
@@ -99,7 +101,7 @@ public class RimmingTonIronConfig extends QuestStep {
 
 		getTaskHandler().getTasks().put(getTaskHandler().getTasks().size(),
 				new WalkTask("walk to falador bank 2", -1, -1, getBot().getMethods(), MINING_AREA_TO_BANK,
-						FALADOR_BANK_AREA, getScript(), getEvent(), false, true));
+						FALADOR_BANK_AREA, getScript(), getEvent(), false, true, this));
 
 	}
 
@@ -145,18 +147,19 @@ public class RimmingTonIronConfig extends QuestStep {
 		}
 
 		// Supporting world hopping when world is too full
-//		int threshholdToHop = 10_000;
-//		int profit = ((currentAmount - beginAmount) + soldAmount) * 140;
-//		long profitPerHour = (long) (profit * (3600000.0 / (System.currentTimeMillis() - beginTime)));
-//		if ((profitPerHour > 0) && (profitPerHour < threshholdToHop)
-//				&& ((System.currentTimeMillis() - beginTime) > 1_800_000)
-//				|| ((System.currentTimeMillis() - beginTime) > 3_600_000)) {
-//			if (WorldHop.hop(this)) {
-//				beginTime = System.currentTimeMillis();
-//				beginAmount = currentAmount;
-//				soldAmount = 0;
-//			}
-//		}
+		// int threshholdToHop = 10_000;
+		// int profit = ((currentAmount - beginAmount) + soldAmount) * 140;
+		// long profitPerHour = (long) (profit * (3600000.0 /
+		// (System.currentTimeMillis() - beginTime)));
+		// if ((profitPerHour > 0) && (profitPerHour < threshholdToHop)
+		// && ((System.currentTimeMillis() - beginTime) > 1_800_000)
+		// || ((System.currentTimeMillis() - beginTime) > 3_600_000)) {
+		// if (WorldHop.hop(this)) {
+		// beginTime = System.currentTimeMillis();
+		// beginAmount = currentAmount;
+		// soldAmount = 0;
+		// }
+		// }
 
 		if (RIMMINGTON_MINING_AREA.contains(myPlayer()) && !getInventory().contains("Bronze pickaxe")
 				&& !getInventory().contains("Iron pickaxe") && !getInventory().contains("Steel pickaxe")
@@ -395,11 +398,11 @@ public class RimmingTonIronConfig extends QuestStep {
 	public void setPickaxe(String pickaxe) {
 		this.pickaxe = pickaxe;
 	}
-	
+
 	@Override
 	public void timeOutHandling(TaskHandler tasks) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }

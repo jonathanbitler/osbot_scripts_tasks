@@ -24,59 +24,41 @@ public class DatabaseConnection {
 	public Connection conn;
 
 	public Connection getConnection(MethodProvider api, LoginEvent login) {
-		// if (conn == null || conn.isClosed()) {
 		try {
-			DatabaseConnection con = new DatabaseConnection();
-			con.setApi(api);
-			return conn = con.connect(login);
-		} catch (Exception e) {
+			setApi(api);
+			if (conn == null || conn.isClosed()) {
+				api.log("Trying to connect with DB!");
+
+				conn = connect(login);
+			}
+			api.log("Returning conneciton: " + conn);
+			return conn;
+		} catch (SQLException e) {
 			api.log(exceptionToString(e));
-			BotCommands.waitBeforeKill(api, "CANT MAKE CONNECTION");
 		}
-		return null;
+		return conn;
 	}
 
-	// public ResultSet getResult(String query) {
-	// try {
-	// PreparedStatement statement = getConnection().prepareStatement(query);
-	//
-	// ResultSet resultSet = statement.executeQuery(query);
-	// return resultSet;
-	//
-	// } catch (Exception e) {
-	// e.printStackTrace();
-	// }
-	// return null;
-	// }
-
-	// connect database
 	public Connection connect(LoginEvent login) {
-		if (conn == null) {
-			String host = "131.153.18.105:3306";
-			String db = login.getDbName().replaceAll("%", "_");
-			getApi().log("db: " + db);
-			// "saluss1q_001_dragon";
-			String user = login.getDbUsername().replaceAll("%", "_");
-			getApi().log("user: " + user);
-			// "saluss1q_osbot";
-			String pass = login.getDbPassword().replaceAll("%", "_");
-			getApi().log("pass: " + pass);
-			// "pB4864EnHMcVJt9PiycLYq6U7e6ZUjc5VYn1vrBe";
+		String host = "131.153.18.105:3306";
+		String db = login.getDbName().replaceAll("%", "_");
+		getApi().log("db: " + db);
+		String user = login.getDbUsername().replaceAll("%", "_");
+		getApi().log("user: " + user);
+		String pass = login.getDbPassword().replaceAll("%", "_");
+		getApi().log("pass: " + pass);
 
-			String connStr = String.format(
-					"jdbc:mysql://%s/%s?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC",
-					host, db);
+		String connStr = String.format(
+				"jdbc:mysql://%s/%s?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC",
+				host, db);
 
-			try {
-				Connection conn2 = DriverManager.getConnection(connStr, user, pass);
-				conn = conn2;
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				api.log(exceptionToString(e));
-				BotCommands.waitBeforeKill(api, "CANT CONNECT");
-			}
-			// Class.forName(DATABASE_DRIVER);
-			// connection = DriverManager.getConnection(DATABASE_URL, getProperties());
+		try {
+			Connection conn2 = DriverManager.getConnection(connStr, user, pass);
+			conn = conn2;
+		} catch (SQLException e) {
+			api.log(exceptionToString(e));
+			api.log("Failed to connect to DB!");
+			BotCommands.waitBeforeKill(api, "CANT CONNECT");
 		}
 		return conn;
 	}
