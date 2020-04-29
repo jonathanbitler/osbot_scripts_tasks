@@ -1,7 +1,7 @@
 # Oldschool Runescape Tutorial Island Open Source Bot
 A script written for the Oldschool Runescape Tutorial Island in the OSBot API made open source
 
-This will let you finish the tutorial island on the game Oldscool Runescape Island in about 15 minutes made with the Osbot API found here: https://osbot.org/api/. You may use this script for whatever you want.
+This including tutorial island, cooking assistant, romeo and juliet, dormics quest and some other features.
 
 ## Features
 * Creating a random appearance
